@@ -1,0 +1,3746 @@
+{
+  "name": "VAPI internal demo (Booking)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "calendar-book12",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2032,
+        400
+      ],
+      "id": "dd8bd8d6-6d0e-4fcc-bd26-c7433b3d7791",
+      "name": "Tool-Calendar-Webhook1",
+      "webhookId": "2d6752ab-5bde-44d1-b8aa-f5ad4449f6c1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7e9db00d-b517-4719-8c26-98ff428b6b81",
+              "leftValue": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.type }}",
+              "rightValue": "tool-calls",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1584,
+        400
+      ],
+      "id": "cc4c6558-3622-433d-8a6a-7c4d702c84b3",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7d7501f6-b357-4524-9c8d-75b29e1a820b",
+              "name": "startTime",
+              "value": "={{ DateTime\n  .fromISO($('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.requestedTime, { zone: 'UTC-08' })\n  .minus({ hours: 1 })\n  .toFormat(\"yyyy-MM-dd'T'HH:mm:ssZZ\") }}",
+              "type": "string"
+            },
+            {
+              "id": "17a70aa2-b8f4-4ebe-9d10-5e8fa6e05511",
+              "name": "endTime",
+              "value": "={{ DateTime.fromISO($json.requestedTimeRaw).plus({ hours: 2 }).toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1136,
+        -560
+      ],
+      "id": "5575f566-24b5-4ff5-8771-e6d3259a10a6",
+      "name": "Start Time + Attempt3"
+    },
+    {
+      "parameters": {
+        "url": "https://api.cal.com/v1/slots",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "calApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "eventTypeId",
+              "value": "={{ $('eventType + requestedTime').item.json.EventTypeID }}"
+            },
+            {
+              "name": "startTime",
+              "value": "={{ $json.startTime }}"
+            },
+            {
+              "name": "endTime",
+              "value": "={{ DateTime.fromISO($json.startTime).plus({ hours: 2 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss-08:00\") }}"
+            },
+            {
+              "name": "timeZone",
+              "value": "America/Los_Angeles"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -912,
+        -560
+      ],
+      "id": "6c799619-3ca8-4bb3-9846-fa984e939b8c",
+      "name": "AvailSlots2",
+      "notesInFlow": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "calApi": {
+          "id": "78griexaGirOrjMD",
+          "name": "cal.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "89b41d7e-8132-4be7-b36e-47824feb8b17",
+              "leftValue": "={{ $json.matchFound }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -464,
+        -560
+      ],
+      "id": "a9e03f4e-66cd-4c1c-b1db-c526fac1a4bc",
+      "name": "If7"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"results\": [\n    {\n      \"toolCallId\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].id }}\",\n      \"result\": {\n        \"available\": true,\n        \"slots\": [\"{{ $json.requestedTime }}\"],\n        \"message\": \"Great. Seems that this slot with Doctor Chan is available. Would you like me to confirm this booking?\"\n      }\n    }\n  ]\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -16,
+        -848
+      ],
+      "id": "0aac4948-495b-400a-82b7-35b6ab933aa8",
+      "name": "Respond to Webhook5"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"results\": [\n    {\n       \"toolCallId\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].id }}\",\n  \"result\": \"Unfortunately that specific time isn't available but we have {{ $('Code').item.json.slots }}\"\n    }\n  ]\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -16,
+        -272
+      ],
+      "id": "8614cab4-77bc-44b4-8229-2f5b178bca15",
+      "name": "Respond to Webhook6"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "63f8e5f7-1274-486e-a29e-fa7c6c1d82c6",
+              "leftValue": "={{ $json.matchFound }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "3754d21d-dac6-4cdf-aadd-c0d32691f053",
+              "leftValue": "={{ $json.slots }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        -368
+      ],
+      "id": "d3afc67b-6861-44ca-b407-da312eb27432",
+      "name": "If8"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"results\": [\n    {\n       \"toolCallId\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].id }}\",\n  \"result\": \"Unfortunately that specific time isn't available but we have {{ $json.slots }}\"\n    }\n  ]\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        656,
+        -560
+      ],
+      "id": "08758907-f89f-4296-a249-9acc46a00d61",
+      "name": "Respond to Webhook7"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7d7501f6-b357-4524-9c8d-75b29e1a820b",
+              "name": "startTime",
+              "value": "={{ \n  DateTime\n  .fromISO($('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.requestedTime, { zone: 'UTC-08' })\n  .minus({ hours: 2 })\n  .toFormat(\"yyyy-MM-dd'T'HH:mm:ssZZ\") \n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -16,
+        -464
+      ],
+      "id": "43831235-8def-43f8-95b3-cabc87424e83",
+      "name": "Start Time + Attempt4"
+    },
+    {
+      "parameters": {
+        "url": "https://api.cal.com/v1/slots",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "calApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "eventTypeId",
+              "value": "=3588628"
+            },
+            {
+              "name": "startTime",
+              "value": "={{ $json.startTime }}"
+            },
+            {
+              "name": "endTime",
+              "value": "={{ DateTime.fromISO($json.startTime).plus({ hours: 6 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss-08:00\") }}"
+            },
+            {
+              "name": "timeZone",
+              "value": "America/Los_Angeles"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        -464
+      ],
+      "id": "04904f90-4a44-4938-9c71-a7dbdaa74914",
+      "name": "AvailSlots3",
+      "notesInFlow": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "calApi": {
+          "id": "78griexaGirOrjMD",
+          "name": "cal.com"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3754d21d-dac6-4cdf-aadd-c0d32691f053",
+              "leftValue": "={{ $json.slots }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        432,
+        -464
+      ],
+      "id": "89ad2061-3f80-4e86-901a-c40dc3cf3125",
+      "name": "If9"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"results\": [\n    {\n       \"toolCallId\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].id }}\",\n  \"result\": \"Unfortunately we don't have any times on that day, did you have another day in mind that would work better?\"\n    }\n  ]\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        656,
+        -16
+      ],
+      "id": "ae2792cf-8cf6-497c-9b29-a1e4115d5018",
+      "name": "Respond to Webhook8"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"results\": [\n    {\n      \"toolCallId\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].id }}\",\n      \"result\": \"Awesome! Your consultation has been successfully booked.\",\n      \"status\": \"success\",\n      \"bookingDetails\": {\n        \"id\": \"{{ $json.data.uid }}\",\n        \"time\": \"{{ $json.data.start }}\",\n        \"timezone\": \"{{ $json.data.attendees[0].timeZone }}\",\n        \"eventType\": \"{{ $json.data.eventType }}\",\n        \"meetingUrl\": \"{{ $json.data.meetingUrl }}\"\n      }\n    }\n  ]\n}\n",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -464,
+        -80
+      ],
+      "id": "792d22c9-a3bf-4356-a338-fd6b31a63a4d",
+      "name": "Respond to Webhook10",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cal.com/v2/bookings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "calApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "cal-api-version",
+              "value": "2024-08-13"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"attendee\": {\n    \"language\": \"en\",\n    \"name\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.firstName }} {{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.lastName }}\",\n    \"timeZone\": \"America/Los_Angeles\",\n    \"phoneNumber\": \"{{ $('Number Parser4').item.json.phoneE164 }}\"\n  },\n  \"start\": \"{{ $('Start Time + Attempt5').item.json.requestedTime }}\",\n  \"eventTypeSlug\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.eventTypeSlug }}\",\n  \"teamSlug\": \"{{ $('eventType + requestedTime').item.json.username }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -688,
+        16
+      ],
+      "id": "53ea3915-748b-46bc-ba99-6dfb2d051bcc",
+      "name": "v2 POST 1",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "calApi": {
+          "id": "78griexaGirOrjMD",
+          "name": "cal.com"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n// 1. Get requestedTime from webhook input\nconst requestedTimeRaw = String(\n  $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.requestedTime || ''\n).trim();\n\n// 2. Normalize requestedTime with explicit -08:00 (Los Angeles)\nlet requestedTimeISO = null;\nif (requestedTimeRaw) {\n  try {\n    // Append -08:00 if no timezone offset is present (e.g. \"+02:00\" or \"-08:00\")\n    const hasOffset = /[+-]\\d{2}:\\d{2}$/.test(requestedTimeRaw);\n    const withTZ = hasOffset ? requestedTimeRaw : requestedTimeRaw + '-08:00';\n\n    requestedTimeISO = new Date(withTZ).toISOString();\n  } catch (e) {\n    requestedTimeISO = null;\n  }\n}\n\n// 3. Extract slots\nconst slotsObj = items[0]?.json?.slots;\nif (!slotsObj || typeof slotsObj !== 'object') {\n  return [{ json: { matchFound: false, reason: \"no_slots\", slots: [] } }];\n}\n\n// 4. Normalize slots into ISO\nconst slotsList = Object.values(slotsObj)\n  .flat()\n  .map(s => {\n    const raw = String(s?.time || '').trim();\n    let iso = null;\n    try {\n      iso = raw ? new Date(raw).toISOString() : null;\n    } catch (e) {\n      iso = null;\n    }\n    return { time: raw, iso };\n  })\n  .filter(s => s.time);\n\n// 5. If no requestedTime → return all slots\nif (!requestedTimeISO) {\n  return [{\n    json: {\n      requestedTime: requestedTimeRaw || null,\n      requestedTimeISO: null,\n      matchFound: false,\n      reason: \"no_requested_time\",\n      slots: slotsList.map(s => s.time)\n    }\n  }];\n}\n\n// 6. Find match by comparing actual instants (UTC ms), not raw strings\nconst hit = slotsList.find(s => {\n  if (!s.iso || !requestedTimeISO) return false;\n  return new Date(s.iso).getTime() === new Date(requestedTimeISO).getTime();\n});\n\n// 7. Return result\nreturn [{\n  json: {\n    requestedTime: requestedTimeRaw,\n    requestedTimeISO,\n    matchFound: Boolean(hit),\n    slots: hit ? [hit.time] : slotsList.map(s => s.time)\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -688,
+        -560
+      ],
+      "id": "f5fc8c5d-65ae-4c7c-9ff7-5da0a558e647",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"results\": [\n    {\n      \"toolCallId\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].id }}\",\n      \"result\": \"Sorry, I couldn't complete the booking due to a technical issue with the scheduling system. Rest assured that this will be passed over to our team to be scheduled correctly.\",\n      \"status\": \"failed\" \n    }\n  ]\n}\n",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -464,
+        112
+      ],
+      "id": "9183764b-86cf-4867-8841-d65485cefc53",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7d7501f6-b357-4524-9c8d-75b29e1a820b",
+              "name": "startTime",
+              "value": "={{ DateTime\n  .fromISO($('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.requestedTime).toFormat(\"yyyy-MM-dd'T'HH:mm:ssZZ\") }}",
+              "type": "string"
+            },
+            {
+              "id": "a0461174-86f5-4576-a714-289c01cae073",
+              "name": "=requestedTime",
+              "value": "={{ DateTime\n  .fromISO($('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.requestedTime, { zone: 'UTC-08' }).toFormat(\"yyyy-MM-dd'T'HH:mm:ssZZ\") }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -912,
+        16
+      ],
+      "id": "ea17f409-fc1c-428c-be66-1d03bbfac1df",
+      "name": "Start Time + Attempt5"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.name }}",
+                    "rightValue": "checkCalendarVAPIHealth",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "82845089-ca53-4b20-8a19-245c3978bd99"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "checkCalendarVAPIHealth"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "500f733d-bc25-44db-bb1b-7a8f634ab1ec",
+                    "leftValue": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.name }}",
+                    "rightValue": "bookCalendarVAPIHealth",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "bookCalendarVAPIHealth"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c712f1a0-ada8-4669-967b-2bb316b181b1",
+                    "leftValue": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.name }}",
+                    "rightValue": "getCalendarVAPIHealth",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "getCalendarVAPIHealth"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "bc09b7c0-2a14-4cee-a0bd-8c41173c5127",
+                    "leftValue": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.name }}",
+                    "rightValue": "cancelCalendarVAPIHealth",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Cancel"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "eae5cd40-0704-481b-a014-dd49cf0e9003",
+                    "leftValue": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.name }}",
+                    "rightValue": "rescheduleCalendarVAPIHealth",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Reschedule"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1360,
+        352
+      ],
+      "id": "efc141a2-3b8a-4144-9b03-2d335ae37322",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"results\": [\n    {\n       \"toolCallId\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].id }}\",\n  \"result\": \"Great! I was able to retrieve and cancel your current booking for {{ $json.appointment_time }}. What time do you want to reschedule your appointment? UID = {{ $json.appointment_uid }}\"\n    }\n  ]\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -16,
+        304
+      ],
+      "id": "29731c7b-82ad-43e8-846b-0c1ac74a11c5",
+      "name": "Respond to Webhook9"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4a5dd9c1-b859-4157-9ab9-fb1c2d7fe1b0",
+              "leftValue": "={{ $json.appointment_uid }}",
+              "rightValue": "Success",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        400
+      ],
+      "id": "62381676-d445-4304-94e4-a254ffcaadac",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"results\": [\n    {\n       \"toolCallId\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].id }}\",\n  \"result\": \"It seems that I wasn't able to retrieve any current booking under that email. Would you please check if that is the correct email associated with the booking?\"\n    }\n  ]\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -16,
+        496
+      ],
+      "id": "8f20048c-5d53-4a67-9334-7e166349eac9",
+      "name": "Respond to Webhook11"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7c8d401f-069b-4aad-a9f9-d9e587044b3c",
+              "name": "username",
+              "value": "vapiai",
+              "type": "string"
+            },
+            {
+              "id": "bce5c070-32e3-43a7-ad7a-d7aa2551fce6",
+              "name": "EventTypeSlug",
+              "value": "={{ $json.body.message.toolCalls[0].function.arguments.EventTypeSlug }}",
+              "type": "string"
+            },
+            {
+              "id": "cdd5a50e-4864-4723-8af2-2b0c1d17fdce",
+              "name": "EventTypeID",
+              "value": "={{ $json.body.message.toolCalls[0].function.arguments.EventTypeID }}",
+              "type": "string"
+            },
+            {
+              "id": "7de9c73a-dcd9-444b-9694-165ee95ab952",
+              "name": "Team",
+              "value": "team",
+              "type": "string"
+            },
+            {
+              "id": "a10b6d50-d299-4210-862e-08dfafe35288",
+              "name": "=timeZone",
+              "value": "={{ $json.body?.message?.toolCalls?.[0]?.function?.arguments?.timeZone || $json.timeZone || 'America/New_york' }}",
+              "type": "string"
+            },
+            {
+              "id": "53648a31-b65e-47dc-8485-d9f414b2ba01",
+              "name": "requestedTimeRaw",
+              "value": "={{ $json.body?.message?.toolCalls?.[0]?.function?.arguments?.requestedTime || $json.requestedTime || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "7dfe6436-a2e9-40a7-b1ce-e52e9b237c20",
+              "name": "startTime",
+              "value": "={{ $json.body.message.toolCalls[0].function.arguments.requestedTime }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1808,
+        400
+      ],
+      "id": "669d01b9-4fab-44d3-8e23-2dc79549c648",
+      "name": "eventType + requestedTime"
+    },
+    {
+      "parameters": {
+        "url": "https://api.cal.com/v2/slots",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "eventTypeId",
+              "value": "=3954317"
+            },
+            {
+              "name": "start",
+              "value": "=2025-11-24T00:00:00-08:00"
+            },
+            {
+              "name": "end",
+              "value": "=2025-11-25T00:00:00-08:00"
+            },
+            {
+              "name": "timeZone",
+              "value": "America/Los_Angeles"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "cal-api-version",
+              "value": "2024-09-04"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer cal_live_0eb5af9610107c21605026426fed73d2"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2032,
+        1392
+      ],
+      "id": "83544bee-5e74-4220-8a5a-e1589c9714c8",
+      "name": "AvailSlots",
+      "notesInFlow": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4a5dd9c1-b859-4157-9ab9-fb1c2d7fe1b0",
+              "leftValue": "={{ $json.appointment_uid }}",
+              "rightValue": "Success",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        1168
+      ],
+      "id": "0f37c6f5-1e34-44e3-95c3-26154ad733b7",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.cal.com/v2/bookings/{{ $json.appointment_uid }}/cancel ",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "cal-api-version",
+              "value": "2024-08-13"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "cancellationReason",
+              "value": "User requested cancellation"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -16,
+        1168
+      ],
+      "id": "04e9222f-f83b-417a-b242-b22942293a63",
+      "name": "Remove Schedule for rebook1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"results\": [\n    {\n       \"toolCallId\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].id }}\",\n  \"result\": \"Great, You're booking was successfully cancelled.\"\n    }\n  ]\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        208,
+        1168
+      ],
+      "id": "e141bb84-885c-45c3-972f-9ddea8f03012",
+      "name": "Respond to Webhook12"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4d9eda2c-16c4-41b4-916c-d1e243713480",
+              "leftValue": "={{ $json.phone }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -16,
+        -80
+      ],
+      "id": "161a9cd5-8278-46d8-b7ab-f974e08a1fcf",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "K9JpTv7SGrFJSxkw",
+          "mode": "list",
+          "cachedResultName": "Appointment Details",
+          "cachedResultUrl": "/projects/NFxgM99uGKVM1Rpg/datatables/K9JpTv7SGrFJSxkw"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "keyValue": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.phone }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1136,
+        400
+      ],
+      "id": "1ef92e7c-5c2b-4705-bf03-1b6e1de6a314",
+      "name": "Get row(s)2",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const raw = $('Tool-Calendar-Webhook1').item.json.body.message.toolCallList[0].function.arguments.phone || '';   // <-- change this line\nconst digits = raw.replace(/[^\\d]/g, ''); // keep only numbers\n\n// No phone provided\nif (!digits) {\n  return { json: { ...$json, phoneE164: null } };\n}\n\nlet normalized;\n\n// Case 1: Already starts with \"1\" (and valid length 11 digits total for US)\nif (digits.startsWith('1') && digits.length === 11) {\n  normalized = digits.slice(1); // remove the country code\n}\n// Case 2: Local US number (10 digits total)\nelse if (digits.length === 10) {\n  normalized = digits; // US local numbers do NOT have a leading 0\n}\n// Anything else → invalid\nelse {\n  throw new Error(`Invalid US phone – got \"${raw}\"`);\n}\n\n// Always output in E.164 format\nconst e164 = '+1' + normalized;\n\nreturn { json: { ...$json, phoneE164: e164 } };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -688,
+        480
+      ],
+      "id": "2c268e25-cdb8-438c-aabb-143e75248249",
+      "name": "Number Parser1",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4d9eda2c-16c4-41b4-916c-d1e243713480",
+              "leftValue": "={{ $json.number }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -912,
+        400
+      ],
+      "id": "759ca3ab-e222-4abd-ba63-fac17134799e",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "K9JpTv7SGrFJSxkw",
+          "mode": "list",
+          "cachedResultName": "Appointment Details",
+          "cachedResultUrl": "/projects/NFxgM99uGKVM1Rpg/datatables/K9JpTv7SGrFJSxkw"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "keyValue": "={{ $json.phoneE164 }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        480
+      ],
+      "id": "271cd175-5bd3-41f5-a9d3-0d1cf7964946",
+      "name": "Get row(s)3"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const raw = $('Tool-Calendar-Webhook1').item.json.body.message.toolCallList[0].function.arguments.phone || '';   // <-- change this line\nconst digits = raw.replace(/[^\\d]/g, ''); // keep only numbers\n\n// No phone provided\nif (!digits) {\n  return { json: { ...$json, phoneE164: null } };\n}\n\nlet normalized;\n\n// Case 1: Already starts with \"1\" (and valid length 11 digits total for US)\nif (digits.startsWith('1') && digits.length === 11) {\n  normalized = digits.slice(1); // remove the country code\n}\n// Case 2: Local US number (10 digits total)\nelse if (digits.length === 10) {\n  normalized = digits; // US local numbers do NOT have a leading 0\n}\n// Anything else → invalid\nelse {\n  throw new Error(`Invalid US phone – got \"${raw}\"`);\n}\n\n// Always output in E.164 format\nconst e164 = '+1' + normalized;\n\nreturn { json: { ...$json, phoneE164: e164 } };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1136,
+        16
+      ],
+      "id": "8890863e-1942-4daf-bf04-41856663a24b",
+      "name": "Number Parser4",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4d9eda2c-16c4-41b4-916c-d1e243713480",
+              "leftValue": "={{ $json.phone }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -16,
+        112
+      ],
+      "id": "80b743eb-5ac9-47f7-bd46-c7376c6b3901",
+      "name": "If5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "263146c6-01a8-44fc-bd92-a6cb2e793cda",
+              "leftValue": "={{ $('If4').item.json.EventTypeID }}",
+              "rightValue": "3954317",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "a16e410e-efe7-4d1b-b623-3251b0ae9bf2",
+              "leftValue": "={{ $('If4').item.json.EventTypeID }}",
+              "rightValue": "3954311",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        -752
+      ],
+      "id": "71f7c7e4-43a4-4c81-9a18-cdafedb446f8",
+      "name": "If6"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"results\": [\n    {\n      \"toolCallId\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].id }}\",\n      \"result\": {\n        \"available\": true,\n        \"slots\": [\"{{ $json.requestedTime }}\"],\n        \"message\": \"Great. Seems that this slot with Doctor Wong is available. Would you like me to confirm this booking?\"\n      }\n    }\n  ]\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -16,
+        -656
+      ],
+      "id": "7cb4e400-8b81-4872-99a6-effad6698abe",
+      "name": "Respond to Webhook13"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "K9JpTv7SGrFJSxkw",
+          "mode": "list",
+          "cachedResultName": "Appointment Details",
+          "cachedResultUrl": "/projects/NFxgM99uGKVM1Rpg/datatables/K9JpTv7SGrFJSxkw"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "keyValue": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.phone }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "first_name": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.firstName }}",
+            "last_name": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.lastName }}",
+            "phone": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.phone }}",
+            "appointment_uid": "={{ $('v2 POST 1').item.json.data.uid }}",
+            "appointment_time": "={{ new Date($('v2 POST 1').item.json.data.start).toLocaleString('en-US',{timeZone:'America/Los_Angeles',weekday:'long',month:'long',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true}).replace(',', ' at') }}",
+            "dob": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.birthDate }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "dob",
+              "displayName": "dob",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "appointment_uid",
+              "displayName": "appointment_uid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "appointment_time",
+              "displayName": "appointment_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        -80
+      ],
+      "id": "1b5bff76-132e-4eda-88af-c574758207d1",
+      "name": "Update row(s)1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "K9JpTv7SGrFJSxkw",
+          "mode": "list",
+          "cachedResultName": "Appointment Details",
+          "cachedResultUrl": "/projects/NFxgM99uGKVM1Rpg/datatables/K9JpTv7SGrFJSxkw"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "keyValue": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.phone }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "first_name": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.firstName }}",
+            "last_name": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.lastName }}",
+            "phone": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.phone }}",
+            "dob": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCallList[0].function.arguments.birthDate }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "dob",
+              "displayName": "dob",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "appointment_uid",
+              "displayName": "appointment_uid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "appointment_time",
+              "displayName": "appointment_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        112
+      ],
+      "id": "f8ad1747-bf2d-4312-a537-090adab71a8d",
+      "name": "Update row(s)3",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "K9JpTv7SGrFJSxkw",
+          "mode": "list",
+          "cachedResultName": "Appointment Details",
+          "cachedResultUrl": "/projects/NFxgM99uGKVM1Rpg/datatables/K9JpTv7SGrFJSxkw"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "keyValue": "={{ $('Number Parser4').item.json.phoneE164 }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "first_name": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.firstName }}",
+            "last_name": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.lastName }}",
+            "phone": "={{ $('Number Parser4').item.json.phoneE164 }}",
+            "appointment_uid": "={{ $('v2 POST 1').item.json.data.uid }}",
+            "appointment_time": "={{ new Date($('v2 POST 1').item.json.data.start).toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }) }}",
+            "dob": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCallList[0].function.arguments.birthDate }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "dob",
+              "displayName": "dob",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "appointment_uid",
+              "displayName": "appointment_uid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "appointment_time",
+              "displayName": "appointment_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        208,
+        -80
+      ],
+      "id": "c28f393e-90af-4b16-ae57-b19842dbd307",
+      "name": "Upsert row(s)",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "K9JpTv7SGrFJSxkw",
+          "mode": "list",
+          "cachedResultName": "Appointment Details",
+          "cachedResultUrl": "/projects/NFxgM99uGKVM1Rpg/datatables/K9JpTv7SGrFJSxkw"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "keyValue": "={{ $('Number Parser4').item.json.phoneE164 }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "first_name": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.firstName }}",
+            "last_name": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.lastName }}",
+            "phone": "={{ $('Number Parser4').item.json.phoneE164 }}",
+            "dob": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.birthDate }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "dob",
+              "displayName": "dob",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "appointment_uid",
+              "displayName": "appointment_uid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "appointment_time",
+              "displayName": "appointment_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        208,
+        112
+      ],
+      "id": "bd3f3e47-6edf-4889-a5c7-9cbebf0113d1",
+      "name": "Upsert row(s)1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "K9JpTv7SGrFJSxkw",
+          "mode": "list",
+          "cachedResultName": "Appointment Details",
+          "cachedResultUrl": "/projects/NFxgM99uGKVM1Rpg/datatables/K9JpTv7SGrFJSxkw"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "keyValue": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.phone }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1136,
+        1168
+      ],
+      "id": "08630e93-0dfe-4f86-b1ec-3d314ec918f9",
+      "name": "Get row(s)",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const raw = $('Tool-Calendar-Webhook1').item.json.body.message.toolCallList[0].function.arguments.phone || '';   // <-- change this line\nconst digits = raw.replace(/[^\\d]/g, ''); // keep only numbers\n\n// No phone provided\nif (!digits) {\n  return { json: { ...$json, phoneE164: null } };\n}\n\nlet normalized;\n\n// Case 1: Already starts with \"1\" (and valid length 11 digits total for US)\nif (digits.startsWith('1') && digits.length === 11) {\n  normalized = digits.slice(1); // remove the country code\n}\n// Case 2: Local US number (10 digits total)\nelse if (digits.length === 10) {\n  normalized = digits; // US local numbers do NOT have a leading 0\n}\n// Anything else → invalid\nelse {\n  throw new Error(`Invalid US phone – got \"${raw}\"`);\n}\n\n// Always output in E.164 format\nconst e164 = '+1' + normalized;\n\nreturn { json: { ...$json, phoneE164: e164 } };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -688,
+        1104
+      ],
+      "id": "e9531dcd-73d7-4a9f-9ea2-9ebb31bccf64",
+      "name": "Number Parser",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4d9eda2c-16c4-41b4-916c-d1e243713480",
+              "leftValue": "={{ $json.number }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -912,
+        1168
+      ],
+      "id": "3bb59955-158b-4e5c-9aa7-d612164ee982",
+      "name": "If10"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "K9JpTv7SGrFJSxkw",
+          "mode": "list",
+          "cachedResultName": "Appointment Details",
+          "cachedResultUrl": "/projects/NFxgM99uGKVM1Rpg/datatables/K9JpTv7SGrFJSxkw"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "keyValue": "={{ $json.phoneE164 }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        1104
+      ],
+      "id": "6ba55452-f2b4-4a83-9763-49ebdd9fa2ac",
+      "name": "Get row(s)4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.cal.com/v2/bookings",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "cal-api-version",
+              "value": "2024-08-13"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer cal_live_0eb5af9610107c21605026426fed73d2"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"attendee\": {\n    \"language\": \"en\",\n    \"name\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.firstName }} {{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.lastName }}\",\n    \"timeZone\": \"America/Los_Angeles\",\n    \"phoneNumber\": \"+61473085854\"\n  },\n  \"start\": \"{{ $('Start Time + Attempt5').item.json.requestedTime }}\",\n  \"eventTypeSlug\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.eventTypeSlug }}\",\n  \"teamSlug\": \"{{ $('eventType + requestedTime').item.json.username }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2032,
+        -1072
+      ],
+      "id": "1ad1cc48-aad4-4c28-8367-cdf095e6603c",
+      "name": "v2 POST ",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7d7501f6-b357-4524-9c8d-75b29e1a820b",
+              "name": "startTime",
+              "value": "={{ DateTime\n  .fromISO($('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.start, { zone: 'UTC-08' }).toFormat(\"yyyy-MM-dd'T'HH:mm:ssZZ\") }}",
+              "type": "string"
+            },
+            {
+              "id": "17a70aa2-b8f4-4ebe-9d10-5e8fa6e05511",
+              "name": "bookingUID",
+              "value": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.bookinguid }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1136,
+        816
+      ],
+      "id": "88a82a7c-f234-4e8a-99c5-892a20baa3cc",
+      "name": "Start Time + Attempt"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4a5dd9c1-b859-4157-9ab9-fb1c2d7fe1b0",
+              "leftValue": "={{ $json.appointment_uid }}",
+              "rightValue": "Success",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        432,
+        720
+      ],
+      "id": "3b1b2f62-7225-4d62-9b3e-1f6e6b7bd30b",
+      "name": "If11"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const raw = $('Tool-Calendar-Webhook1').item.json.body.message.toolCallList[0].function.arguments.phone || '';   // <-- change this line\nconst digits = raw.replace(/[^\\d]/g, ''); // keep only numbers\n\n// No phone provided\nif (!digits) {\n  return { json: { ...$json, phoneE164: null } };\n}\n\nlet normalized;\n\n// Case 1: Already starts with \"1\" (and valid length 11 digits total for US)\nif (digits.startsWith('1') && digits.length === 11) {\n  normalized = digits.slice(1); // remove the country code\n}\n// Case 2: Local US number (10 digits total)\nelse if (digits.length === 10) {\n  normalized = digits; // US local numbers do NOT have a leading 0\n}\n// Anything else → invalid\nelse {\n  throw new Error(`Invalid US phone – got \"${raw}\"`);\n}\n\n// Always output in E.164 format\nconst e164 = '+1' + normalized;\n\nreturn { json: { ...$json, phoneE164: e164 } };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        816
+      ],
+      "id": "4de2ddf6-d7eb-47c4-89cd-d550afc09558",
+      "name": "Number Parser2",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4d9eda2c-16c4-41b4-916c-d1e243713480",
+              "leftValue": "={{ $json.phone }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        720
+      ],
+      "id": "10fb36d3-834c-43f1-befc-46ab20172ae8",
+      "name": "If12"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "K9JpTv7SGrFJSxkw",
+          "mode": "list",
+          "cachedResultName": "Appointment Details",
+          "cachedResultUrl": "/projects/NFxgM99uGKVM1Rpg/datatables/K9JpTv7SGrFJSxkw"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "keyValue": "={{ $json.phoneE164 }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        208,
+        816
+      ],
+      "id": "32b72df2-29d7-485e-bdd2-8067c023c152",
+      "name": "Get row(s)5"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"results\": [\n    {\n      \"toolCallId\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].id }}\",\n      \"result\": \"Awesome! Your consultation has been successfully re-booked.\",\n      \"status\": \"success\",\n      \"bookingDetails\": {\n        \"id\": \"{{ $json.data.uid }}\",\n        \"time\": \"{{ $json.data.start }}\",\n        \"timezone\": \"{{ $json.data.attendees[0].timeZone }}\",\n        \"eventType\": \"{{ $json.data.eventType }}\",\n        \"meetingUrl\": \"{{ $json.data.meetingUrl }}\"\n      }\n    }\n  ]\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -688,
+        720
+      ],
+      "id": "1b5c460e-2f44-4b78-bead-cb6b9a62684a",
+      "name": "Respond to Webhook16",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"results\": [\n    {\n      \"toolCallId\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].id }}\",\n      \"result\": \"Sorry, I couldn't complete the booking reschedule due to a technical issue with the scheduling system. Rest assured that this will be passed over to our team to be scheduled correctly.\",\n      \"status\": \"failed\" \n    }\n  ]\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -688,
+        912
+      ],
+      "id": "474f30d0-51cf-4f7e-83b8-701c16ae92eb",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "K9JpTv7SGrFJSxkw",
+          "mode": "list",
+          "cachedResultName": "Appointment Details",
+          "cachedResultUrl": "/projects/NFxgM99uGKVM1Rpg/datatables/K9JpTv7SGrFJSxkw"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "keyValue": "={{ $json.data.attendees[0].phoneNumber }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        720
+      ],
+      "id": "9358f0bb-60ab-468b-8f86-2f2238924c10",
+      "name": "Get row(s)6",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "K9JpTv7SGrFJSxkw",
+          "mode": "list",
+          "cachedResultName": "Appointment Details",
+          "cachedResultUrl": "/projects/NFxgM99uGKVM1Rpg/datatables/K9JpTv7SGrFJSxkw"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "keyValue": "={{ $json.phone }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "appointment_uid": "={{ $('Reschedule').item.json.data.uid }}",
+            "appointment_time": "={{ new Date($('Reschedule').item.json.data.start).toLocaleString('en-US',{timeZone:'America/Los_Angeles',weekday:'long',month:'long',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true}).replace(',', ' at') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "dob",
+              "displayName": "dob",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "appointment_uid",
+              "displayName": "appointment_uid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "appointment_time",
+              "displayName": "appointment_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        656,
+        192
+      ],
+      "id": "e46d6a20-f3de-40a4-8c3f-4097c7919bd1",
+      "name": "Upsert row(s)2",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        656,
+        816
+      ],
+      "id": "ea738536-8a35-4ee3-92f9-0fd4c0cfc8b0",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.cal.com/v2/bookings/{{ $json.bookingUID }}/reschedule",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "cal-api-version",
+              "value": "2024-08-13"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer cal_live_0eb5af9610107c21605026426fed73d2"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"start\": \"{{ $json.startTime }}\",\n  \"reschedulingReason\": \"Phone reschedule\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -912,
+        816
+      ],
+      "id": "209ef95e-00b7-4f2d-9a21-216c9c53ce70",
+      "name": "Reschedule",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "K9JpTv7SGrFJSxkw",
+          "mode": "list",
+          "cachedResultName": "Appointment Details",
+          "cachedResultUrl": "/projects/NFxgM99uGKVM1Rpg/datatables/K9JpTv7SGrFJSxkw"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "keyValue": "={{ $json.data.attendees[0].phoneNumber }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "appointment_uid": "=canceled",
+            "appointment_time": "=canceled"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "dob",
+              "displayName": "dob",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "appointment_uid",
+              "displayName": "appointment_uid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "appointment_time",
+              "displayName": "appointment_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        416,
+        1168
+      ],
+      "id": "e3d81eff-57c8-4dfc-8db4-f8be6ecb4a67",
+      "name": "Upsert row(s)3",
+      "alwaysOutputData": true
+    }
+  ],
+  "pinData": {
+    "Tool-Calendar-Webhook1": [
+      {
+        "json": {
+          "headers": {
+            "host": "vapiai.app.n8n.cloud",
+            "user-agent": "axios/1.8.3",
+            "content-length": "51450",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, br",
+            "baggage": "sentry-environment=production,sentry-public_key=a0021577936aec367b16615ad816c078,sentry-trace_id=b495120c69e141488e43570eb0dfbcd3",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "167.150.225.213",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "9a258ab4b3a1d0a0-PDX",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "cookie": "callId=019aa9bb-3ce8-7aa2-9ab3-126b9b9dc856",
+            "sentry-trace": "b495120c69e141488e43570eb0dfbcd3-a3b0233d5644d681",
+            "x-call-id": "019aa9bb-3ce8-7aa2-9ab3-126b9b9dc856",
+            "x-forwarded-for": "167.150.225.213, 172.68.174.180",
+            "x-forwarded-host": "vapiai.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-88-6587794787-vl6tt",
+            "x-is-trusted": "yes",
+            "x-real-ip": "167.150.225.213",
+            "x-vapi-secret": ""
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "message": {
+              "timestamp": 1763784256708,
+              "type": "tool-calls",
+              "toolCalls": [
+                {
+                  "id": "call_mLTzMbOVmDEr4tms3F6UEF7s",
+                  "type": "function",
+                  "function": {
+                    "name": "cancelCalendarVAPIHealth",
+                    "arguments": {
+                      "name": "John Smith",
+                      "phone": "8883658681"
+                    }
+                  }
+                }
+              ],
+              "toolCallList": [
+                {
+                  "id": "call_mLTzMbOVmDEr4tms3F6UEF7s",
+                  "type": "function",
+                  "function": {
+                    "name": "cancelCalendarVAPIHealth",
+                    "arguments": {
+                      "name": "John Smith",
+                      "phone": "8883658681"
+                    }
+                  }
+                }
+              ],
+              "toolWithToolCallList": [
+                {
+                  "type": "function",
+                  "function": {
+                    "name": "cancelCalendarVAPIHealth",
+                    "parameters": {
+                      "type": "object",
+                      "required": [
+                        "phone"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "default": "",
+                          "description": "name of the caller."
+                        },
+                        "phone": {
+                          "type": "string",
+                          "default": "",
+                          "description": "phone number of the caller."
+                        }
+                      }
+                    },
+                    "description": "Use this tool to cancel an existing appointment of the caller"
+                  },
+                  "server": {
+                    "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12"
+                  },
+                  "messages": [
+                    {
+                      "type": "request-start",
+                      "contents": [],
+                      "conditions": [],
+                      "blocking": false
+                    }
+                  ],
+                  "toolCall": {
+                    "id": "call_mLTzMbOVmDEr4tms3F6UEF7s",
+                    "type": "function",
+                    "function": {
+                      "name": "cancelCalendarVAPIHealth",
+                      "arguments": {
+                        "name": "John Smith",
+                        "phone": "8883658681"
+                      }
+                    }
+                  }
+                }
+              ],
+              "artifact": {
+                "messages": [
+                  {
+                    "role": "system",
+                    "message": "# Role\nYou are **Amy**, an AI voice assistant for **VAPI Health Clinic**, a modern healthcare provider offering AI-supported appointment management and patient care coordination. Your personality is warm, professional, and confident—never robotic. You speak naturally with empathy and curiosity.\n\nYour core purposes are to:\n- Answer patient questions and handle frequently asked questions (FAQs).\n- Help callers book, reschedule, or cancel healthcare appointments.\n- Route callers to the right human team member when needed.\n\n# Context\n- **Clinic Name:** VAPI Health Clinic  \n- **Services:** Primary care, general consultations, wellness checks, and telehealth services.  \n- **Positioning:** Designed for patients who want accessible, fast, and reliable scheduling with minimal waiting times.  \n- **Service Model:** Same-day appointments where possible and shorter in-clinic wait times.\n\n**Contact Details (speak digit by digit and use “at” / “dot” for email):**\n- Phone: zero four two nine, one four...",
+                    "time": 1763784211829,
+                    "secondsFromStart": 0
+                  },
+                  {
+                    "role": "bot",
+                    "message": "VAPI Medical Practice. This is Amy speaking.",
+                    "time": 1763784213314,
+                    "endTime": 1763784216434,
+                    "secondsFromStart": 1.372,
+                    "duration": 3120,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "Hey. Amy. I rang earlier today about rescheduling an appointment for tomorrow. Just gonna have to cancel that 1. Something's popped up.",
+                    "time": 1763784217534,
+                    "endTime": 1763784226794,
+                    "secondsFromStart": 5.58,
+                    "duration": 7879.999755859375,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "hey",
+                          "start": 5.58,
+                          "end": 5.8199997,
+                          "confidence": 0.8273926,
+                          "punctuated_word": "Hey."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "I can help with that.",
+                    "time": 1763784228284,
+                    "endTime": 1763784229324,
+                    "secondsFromStart": 16.342,
+                    "duration": 1040,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "I can help with that. Can I please have",
+                    "time": 1763784228993.999,
+                    "endTime": 1763784231393.999,
+                    "secondsFromStart": 17.039999,
+                    "duration": 2400,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "i",
+                          "start": 17.039999,
+                          "end": 17.44,
+                          "confidence": 0.9589844,
+                          "punctuated_word": "I"
+                        },
+                        {
+                          "word": "can",
+                          "start": 17.44,
+                          "end": 17.6,
+                          "confidence": 0.9980469,
+                          "punctuated_word": "can"
+                        },
+                        {
+                          "word": "help",
+                          "start": 17.6,
+                          "end": 17.84,
+                          "confidence": 0.99902344,
+                          "punctuated_word": "help"
+                        },
+                        {
+                          "word": "with",
+                          "start": 17.84,
+                          "end": 18,
+                          "confidence": 0.9980469,
+                          "punctuated_word": "with"
+                        },
+                        {
+                          "word": "that",
+                          "start": 18,
+                          "end": 18.48,
+                          "confidence": 0.9995117,
+                          "punctuated_word": "that."
+                        },
+                        {
+                          "word": "can",
+                          "start": 18.48,
+                          "end": 18.8,
+                          "confidence": 0.9111328,
+                          "punctuated_word": "Can"
+                        },
+                        {
+                          "word": "i",
+                          "start": 18.8,
+                          "end": 18.96,
+                          "confidence": 0.9863281,
+                          "punctuated_word": "I"
+                        },
+                        {
+                          "word": "please",
+                          "start": 18.96,
+                          "end": 19.2,
+                          "confidence": 0.98535156,
+                          "punctuated_word": "please"
+                        },
+                        {
+                          "word": "have",
+                          "start": 19.2,
+                          "end": 19.439999,
+                          "confidence": 0.7661133,
+                          "punctuated_word": "have"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Can I please have your full",
+                    "time": 1763784229734,
+                    "endTime": 1763784231014.001,
+                    "secondsFromStart": 17.792,
+                    "duration": 1280.0009765625,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "John Smith?",
+                    "time": 1763784233324,
+                    "endTime": 1763784233964,
+                    "secondsFromStart": 21.37,
+                    "duration": 640,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "john",
+                          "start": 21.37,
+                          "end": 21.61,
+                          "confidence": 0.97998047,
+                          "punctuated_word": "John"
+                        },
+                        {
+                          "word": "smith",
+                          "start": 21.61,
+                          "end": 22.01,
+                          "confidence": 0.8330078,
+                          "punctuated_word": "Smith?"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Thank you, John? And what's the best phone number we have on file for you?",
+                    "time": 1763784235344,
+                    "endTime": 1763784238944,
+                    "secondsFromStart": 23.402,
+                    "duration": 3600,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "Triple 8 3 6 5 8 6 8 1.",
+                    "time": 1763784240444,
+                    "endTime": 1763784244974,
+                    "secondsFromStart": 28.49,
+                    "duration": 3680,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "triple",
+                          "start": 28.49,
+                          "end": 28.97,
+                          "confidence": 0.90234375,
+                          "punctuated_word": "Triple"
+                        },
+                        {
+                          "word": "8",
+                          "start": 28.97,
+                          "end": 29.45,
+                          "confidence": 0.98291016,
+                          "punctuated_word": "8"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "toolCalls": [
+                      {
+                        "id": "call_K08s74QCsvd3iObVbUQlTXxf",
+                        "type": "function",
+                        "function": {
+                          "name": "getCalendarVAPIHealth",
+                          "arguments": "{\"name\": \"John Smith\", \"phone\": \"8883658681\"}"
+                        }
+                      }
+                    ],
+                    "role": "tool_calls",
+                    "message": "",
+                    "time": 1763784244944,
+                    "secondsFromStart": 33.002
+                  },
+                  {
+                    "role": "tool_call_result",
+                    "time": 1763784247085,
+                    "secondsFromStart": 35.143,
+                    "name": "getCalendarVAPIHealth",
+                    "result": "Great! I was able to retrieve and cancel your current booking for Sunday at November 23 at 12:00 PM. What time do you want to reschedule your appointment? UID = qb2F9Xrf9xboohMbDUpjtB",
+                    "metadata": {},
+                    "toolCallId": "call_K08s74QCsvd3iObVbUQlTXxf"
+                  },
+                  {
+                    "role": "bot",
+                    "message": "I can see an appointment booked for tomorrow at 12 PM. Is this the appointment you'd like to cancel?",
+                    "time": 1763784248734.003,
+                    "endTime": 1763784254174,
+                    "secondsFromStart": 36.7920029296875,
+                    "duration": 5039.9970703125,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "Yes, please. That'd be good.",
+                    "time": 1763784255324.003,
+                    "endTime": 1763784256844,
+                    "secondsFromStart": 43.370003,
+                    "duration": 1519.9970703125,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "yes",
+                          "start": 43.370003,
+                          "end": 44.010002,
+                          "confidence": 0.97680664,
+                          "punctuated_word": "Yes,"
+                        },
+                        {
+                          "word": "please",
+                          "start": 44.010002,
+                          "end": 44.25,
+                          "confidence": 0.9980469,
+                          "punctuated_word": "please."
+                        },
+                        {
+                          "word": "that'd",
+                          "start": 44.25,
+                          "end": 44.57,
+                          "confidence": 0.9753418,
+                          "punctuated_word": "That'd"
+                        },
+                        {
+                          "word": "be",
+                          "start": 44.57,
+                          "end": 44.73,
+                          "confidence": 0.99902344,
+                          "punctuated_word": "be"
+                        },
+                        {
+                          "word": "good",
+                          "start": 44.73,
+                          "end": 44.89,
+                          "confidence": 0.99609375,
+                          "punctuated_word": "good."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "toolCalls": [
+                      {
+                        "id": "call_mLTzMbOVmDEr4tms3F6UEF7s",
+                        "type": "function",
+                        "function": {
+                          "name": "cancelCalendarVAPIHealth",
+                          "arguments": "{\"name\": \"John Smith\", \"phone\": \"8883658681\"}"
+                        }
+                      }
+                    ],
+                    "role": "tool_calls",
+                    "message": "",
+                    "time": 1763784256706,
+                    "secondsFromStart": 44.764
+                  }
+                ],
+                "messagesOpenAIFormatted": [
+                  {
+                    "role": "system",
+                    "content": "# Role\nYou are **Amy**, an AI voice assistant for **VAPI Health Clinic**, a modern healthcare provider offering AI-supported appointment management and patient care coordination. Your personality is warm, professional, and confident—never robotic. You speak naturally with empathy and curiosity.\n\nYour core purposes are to:\n- Answer patient questions and handle frequently asked questions (FAQs).\n- Help callers book, reschedule, or cancel healthcare appointments.\n- Route callers to the right human team member when needed.\n\n# Context\n- **Clinic Name:** VAPI Health Clinic  \n- **Services:** Primary care, general consultations, wellness checks, and telehealth services.  \n- **Positioning:** Designed for patients who want accessible, fast, and reliable scheduling with minimal waiting times.  \n- **Service Model:** Same-day appointments where possible and shorter in-clinic wait times.\n\n**Contact Details (speak digit by digit and use “at” / “dot” for email):**\n- Phone: zero four two nine, one four..."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "VAPI Medical Practice. This is Amy speaking."
+                  },
+                  {
+                    "role": "user",
+                    "content": "Hey. Amy. I rang earlier today about rescheduling an appointment for tomorrow. Just gonna have to cancel that 1. Something's popped up."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "I can help with that."
+                  },
+                  {
+                    "role": "user",
+                    "content": "I can help with that. Can I please have"
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Can I please have your full"
+                  },
+                  {
+                    "role": "user",
+                    "content": "John Smith?"
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Thank you, John? And what's the best phone number we have on file for you?"
+                  },
+                  {
+                    "role": "user",
+                    "content": "Triple 8 3 6 5 8 6 8 1."
+                  },
+                  {
+                    "role": "assistant",
+                    "tool_calls": [
+                      {
+                        "id": "call_K08s74QCsvd3iObVbUQlTXxf",
+                        "type": "function",
+                        "function": {
+                          "name": "getCalendarVAPIHealth",
+                          "arguments": "{\"name\": \"John Smith\", \"phone\": \"8883658681\"}"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "role": "tool",
+                    "tool_call_id": "call_K08s74QCsvd3iObVbUQlTXxf",
+                    "content": "Great! I was able to retrieve and cancel your current booking for Sunday at November 23 at 12:00 PM. What time do you want to reschedule your appointment? UID = qb2F9Xrf9xboohMbDUpjtB"
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "I can see an appointment booked for tomorrow at 12 PM. Is this the appointment you'd like to cancel?"
+                  },
+                  {
+                    "role": "user",
+                    "content": "Yes, please. That'd be good."
+                  },
+                  {
+                    "role": "assistant",
+                    "tool_calls": [
+                      {
+                        "id": "call_mLTzMbOVmDEr4tms3F6UEF7s",
+                        "type": "function",
+                        "function": {
+                          "name": "cancelCalendarVAPIHealth",
+                          "arguments": "{\"name\": \"John Smith\", \"phone\": \"8883658681\"}"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "role": "tool",
+                    "tool_call_id": "call_mLTzMbOVmDEr4tms3F6UEF7s",
+                    "content": "Tool Result Still Pending But Proceed Further If Possible."
+                  }
+                ]
+              },
+              "call": {
+                "id": "019aa9bb-3ce8-7aa2-9ab3-126b9b9dc856",
+                "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+                "createdAt": "2025-11-22T04:03:31.688Z",
+                "updatedAt": "2025-11-22T04:03:31.688Z",
+                "type": "inboundPhoneCall",
+                "cost": 0,
+                "monitor": {
+                  "listenUrl": "wss://phone-call-websocket.aws-us-west-2-backend-production3.vapi.ai/019aa9bb-3ce8-7aa2-9ab3-126b9b9dc856/listen",
+                  "controlUrl": "https://phone-call-websocket.aws-us-west-2-backend-production3.vapi.ai/019aa9bb-3ce8-7aa2-9ab3-126b9b9dc856/control"
+                },
+                "transport": {
+                  "conversationType": "voice",
+                  "provider": "vapi.sip",
+                  "callSid": "a54e3071-463e-4490-8cb6-531832e6d103",
+                  "sbcCallSid": "410924905-3972773009-538824030@msc1.382COM.COM"
+                },
+                "phoneCallProvider": "vapi",
+                "phoneCallProviderId": "a54e3071-463e-4490-8cb6-531832e6d103",
+                "phoneCallTransport": "sip",
+                "phoneCallProviderDetails": {
+                  "sip": {
+                    "raw": "INVITE sip:9124169041@172.30.62.171:5060 SIP/2.0\r\nVia: SIP/2.0/UDP 44.229.228.186;rport=5060;branch=z9hG4bKyNNZg2vvj6QBm;received=172.31.57.86\r\nMax-Forwards: 70\r\nFrom: <sip:+18883658681@44.229.228.186:5060>;tag=X58NK1XHNKFyD\r\nTo: <sip:9124169041@192.168.250.45>\r\nCall-ID: 0b78f550-41fb-123f-78a4-0ec7040a32ad\r\nCSeq: 107338312 INVITE\r\nContact: <sip:172.31.57.86:5060>\r\nAccept: application/sdp\r\nAllow: PUBLISH, MESSAGE, UPDATE, PRACK, SUBSCRIBE, REFER, INFO, NOTIFY, REGISTER, OPTIONS, BYE, INVITE, ACK, CANCEL\r\nSupported: 100rel, timer\r\nMin-SE: 600\r\nPrivacy: none\r\nContent-Type: application/sdp\r\nContent-Length: 302\r\nX-Account-Sid: c033b672-5b99-42ae-9ce2-b231e9a522fb\r\nX-CID: 410924905-3972773009-538824030@msc1.382COM.COM\r\nX-Forwarded-For: 64.125.111.10\r\nX-Originating-Carrier: 382com\r\nX-Voip-Carrier-Sid: a5569621-84ac-49cc-a8b8-11c7fb96b905\r\nX-Application-Sid: 79d078c8-76b2-452a-99e0-ddd5abbf6269\r\nIdentity: eyJhbGciOiJFUzI1NiIsInBwdCI6InNoYWtlbiIsInR5cCI6InBhc3Nwb3J0IiwieDV1IjoiaHR0cHM6Ly9jZXJ0aWZpY2F0ZXMudHJhbnNuZXh1cy5jb20vMDczSC82YWQ4YWQzMC01NjA0LTRhOWEtODkyYS1mNTVmZTE2NWMwMmYucGVtIn0.eyJhdHRlc3QiOiJBIiwiZGVzdCI6eyJ0biI6WyIxOTEyNDE2OTA0MSJdfSwiaWF0IjoxNzYzNzg0MjA4LCJvcmlnIjp7InRuIjoiMTg4ODM2NTg2ODEifSwib3JpZ2lkIjoiYjNkNzhhN2ItMzliYS00YTkyLTgzOTYtOWM2N2RkN2JiZWQ2In0.UjVUD-0qq0-VEdidjjP-QjxvFaJ5Vpaw7p5LC-bhSNlDcVMV0j9gW1wJf7ku-vkhfZ02MtBtKTMna_njioV-aQ;info=<https://certificates.transnexus.com/073H/6ad8ad30-5604-4a9a-892a-f55fe165c02f.pem>;alg=ES256;ppt=\"shaken\"\r\nP-Asserted-Identity: <sip:+18883658681@207.223.78.171:5060>\r\n\r\nv=0\r\no=msc1 579607 475684 IN IP4 172.30.3.90\r\ns=sip call\r\nc=IN IP4 172.30.3.90\r\nt=0 0\r\nm=audio 55902 RTP/AVP 0 8 18 101\r\na=maxptime:20\r\na=rtpmap:0 PCMU/8000\r\na=rtpmap:8 PCMA/8000\r\na=rtpmap:18 G729/8000\r\na=fmtp:18 annexb=no\r\na=rtpmap:101 telephone-event/8000\r\na=fmtp:101 0-15\r\na=sendrecv\r\na=rtcp:55903\r\n",
+                    "uri": "sip:9124169041@172.30.62.171:5060",
+                    "body": "v=0\r\no=msc1 579607 475684 IN IP4 172.30.3.90\r\ns=sip call\r\nc=IN IP4 172.30.3.90\r\nt=0 0\r\nm=audio 55902 RTP/AVP 0 8 18 101\r\na=maxptime:20\r\na=rtpmap:0 PCMU/8000\r\na=rtpmap:8 PCMA/8000\r\na=rtpmap:18 G729/8000\r\na=fmtp:18 annexb=no\r\na=rtpmap:101 telephone-event/8000\r\na=fmtp:101 0-15\r\na=sendrecv\r\na=rtcp:55903\r\n",
+                    "method": "INVITE",
+                    "headers": {
+                      "to": "<sip:+19124169041@192.168.250.45>",
+                      "via": "SIP/2.0/UDP 44.229.228.186;rport=5060;branch=z9hG4bKyNNZg2vvj6QBm;received=172.31.57.86",
+                      "cseq": "107338312 INVITE",
+                      "from": "<sip:+18883658681@44.229.228.186:5060>;tag=X58NK1XHNKFyD",
+                      "X-CID": "410924905-3972773009-538824030@msc1.382COM.COM",
+                      "allow": "PUBLISH, MESSAGE, UPDATE, PRACK, SUBSCRIBE, REFER, INFO, NOTIFY, REGISTER, OPTIONS, BYE, INVITE, ACK, CANCEL",
+                      "accept": "application/sdp",
+                      "min-se": "600",
+                      "call-id": "0b78f550-41fb-123f-78a4-0ec7040a32ad",
+                      "contact": "<sip:172.31.57.86:5060>",
+                      "privacy": "none",
+                      "identity": "eyJhbGciOiJFUzI1NiIsInBwdCI6InNoYWtlbiIsInR5cCI6InBhc3Nwb3J0IiwieDV1IjoiaHR0cHM6Ly9jZXJ0aWZpY2F0ZXMudHJhbnNuZXh1cy5jb20vMDczSC82YWQ4YWQzMC01NjA0LTRhOWEtODkyYS1mNTVmZTE2NWMwMmYucGVtIn0.eyJhdHRlc3QiOiJBIiwiZGVzdCI6eyJ0biI6WyIxOTEyNDE2OTA0MSJdfSwiaWF0IjoxNzYzNzg0MjA4LCJvcmlnIjp7InRuIjoiMTg4ODM2NTg2ODEifSwib3JpZ2lkIjoiYjNkNzhhN2ItMzliYS00YTkyLTgzOTYtOWM2N2RkN2JiZWQ2In0.UjVUD-0qq0-VEdidjjP-QjxvFaJ5Vpaw7p5LC-bhSNlDcVMV0j9gW1wJf7ku-vkhfZ02MtBtKTMna_njioV-aQ;info=<https://certificates.transnexus.com/073H/6ad8ad30-5604-4a9a-892a-f55fe165c02f.pem>;alg=ES256;ppt=\"shaken\"",
+                      "supported": "100rel, timer",
+                      "content-type": "application/sdp",
+                      "max-forwards": "70",
+                      "X-Account-Sid": "c033b672-5b99-42ae-9ce2-b231e9a522fb",
+                      "content-length": "302",
+                      "X-Forwarded-For": "64.125.111.10",
+                      "X-Application-Sid": "79d078c8-76b2-452a-99e0-ddd5abbf6269",
+                      "X-Voip-Carrier-Sid": "a5569621-84ac-49cc-a8b8-11c7fb96b905",
+                      "p-asserted-identity": "<sip:+18883658681@207.223.78.171:5060>",
+                      "X-Originating-Carrier": "382com"
+                    },
+                    "payload": [
+                      {
+                        "type": "application/sdp",
+                        "content": "v=0\r\no=msc1 579607 475684 IN IP4 172.30.3.90\r\ns=sip call\r\nc=IN IP4 172.30.3.90\r\nt=0 0\r\nm=audio 55902 RTP/AVP 0 8 18 101\r\na=maxptime:20\r\na=rtpmap:0 PCMU/8000\r\na=rtpmap:8 PCMA/8000\r\na=rtpmap:18 G729/8000\r\na=fmtp:18 annexb=no\r\na=rtpmap:101 telephone-event/8000\r\na=fmtp:101 0-15\r\na=sendrecv\r\na=rtcp:55903\r\n"
+                      }
+                    ],
+                    "version": "2.0"
+                  },
+                  "sbcCallId": "410924905-3972773009-538824030@msc1.382COM.COM"
+                },
+                "status": "ringing",
+                "assistantId": "ecfc06ef-18b0-43b3-abd7-c4da23195ba5",
+                "assistantOverrides": {
+                  "variableValues": {
+                    "cid": "410924905-3972773009-538824030@msc1.382COM.COM",
+                    "account-sid": "c033b672-5b99-42ae-9ce2-b231e9a522fb",
+                    "forwarded-for": "64.125.111.10",
+                    "application-sid": "79d078c8-76b2-452a-99e0-ddd5abbf6269",
+                    "voip-carrier-sid": "a5569621-84ac-49cc-a8b8-11c7fb96b905",
+                    "originating-carrier": "382com"
+                  }
+                },
+                "phoneNumberId": "476f1a4b-9aaa-422a-8afa-66f0ac2e972d",
+                "customer": {
+                  "number": "+18883658681",
+                  "sipUri": "sip:+18883658681@44.229.228.186:5060"
+                }
+              },
+              "phoneNumber": {
+                "id": "476f1a4b-9aaa-422a-8afa-66f0ac2e972d",
+                "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+                "assistantId": "ecfc06ef-18b0-43b3-abd7-c4da23195ba5",
+                "number": "+19124169041",
+                "createdAt": "2025-11-21T07:01:49.654Z",
+                "updatedAt": "2025-11-22T03:48:02.688Z",
+                "name": "VAPI complex booking assistant",
+                "provider": "vapi",
+                "status": "active",
+                "providerResourceId": "0505134e-1c38-4026-8fd1-e568d6af6ed0"
+              },
+              "customer": {
+                "number": "+18883658681",
+                "sipUri": "sip:+18883658681@44.229.228.186:5060"
+              },
+              "assistant": {
+                "id": "ecfc06ef-18b0-43b3-abd7-c4da23195ba5",
+                "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+                "name": "VAPI Medical Practice (V3)",
+                "voice": {
+                  "model": "eleven_flash_v2",
+                  "voiceId": "fQ74DTbwd8TiAJFxu9v8",
+                  "provider": "11labs",
+                  "stability": 0.5,
+                  "similarityBoost": 0.75
+                },
+                "createdAt": "2025-11-22T02:27:25.919Z",
+                "updatedAt": "2025-11-22T03:55:22.498Z",
+                "model": {
+                  "model": "gpt-4o",
+                  "toolIds": [
+                    "7f9af3a2-0184-4fee-8d5e-6c7c1c9b7eb0",
+                    "2a13e944-2c26-4524-aa27-e964055a5faf",
+                    "ccd29a09-ed57-44f6-bbbf-b2cd3b389f53",
+                    "f235ad22-b467-49fb-8605-f07bc5678d96",
+                    "edc2902d-dc56-4fc4-b7c2-fdb16ff5973d",
+                    "89ef7a80-fd92-4144-b971-9712521d6173",
+                    "a07781bc-2975-4aa0-b104-2752e0dce2d8"
+                  ],
+                  "messages": [
+                    {
+                      "role": "system",
+                      "content": "# Role\nYou are **Amy**, an AI voice assistant for **VAPI Health Clinic**, a modern healthcare provider offering AI-supported appointment management and patient care coordination. Your personality is warm, professional, and confident—never robotic. You speak naturally with empathy and curiosity.\n\nYour core purposes are to:\n- Answer patient questions and handle frequently asked questions (FAQs).\n- Help callers book, reschedule, or cancel healthcare appointments.\n- Route callers to the right human team member when needed.\n\n# Context\n- **Clinic Name:** VAPI Health Clinic  \n- **Services:** Primary care, general consultations, wellness checks, and telehealth services.  \n- **Positioning:** Designed for patients who want accessible, fast, and reliable scheduling with minimal waiting times.  \n- **Service Model:** Same-day appointments where possible and shorter in-clinic wait times.\n\n**Contact Details (speak digit by digit and use “at” / “dot” for email):**\n- Phone: zero four two nine, one four eight, nine three eight  \n- Email: care at vapi health dot com  \n\n**Business Hours:**\n- 9:00 a.m. – 5:00 p.m., Sunday to Saturday\n- Never offer, suggest, or confirm appointment times **outside** 9:00 a.m. – 5:00 p.m.\n\n**Calendaring & Routing (tools available to you):**\n- `checkCalendarVAPIHealth` – Check available appointment slots.\n- `bookCalendarVAPIHealth` – Create a new appointment.\n- `getCalendarVAPIHealth` – Retrieve an existing appointment by patient details.\n- `rescheduleCalendarVAPIHealth` – Change an existing appointment.\n- `cancelCalendarVAPIHealth` – Cancel an existing appointment.\n- `transfer_call_tool` – Transfer the caller to the appropriate human team.\n- `end_call_tool` – Politely terminate the call when required by guardrails.\n\n# Task\nYour primary task is to guide each caller to a clear, safe, and helpful outcome. You must:\n- Quickly identify the caller’s main intent (question, booking, rescheduling, cancelling, or transfer).\n- Drive the conversation toward one of these outcomes:\n  - Appointment successfully **booked**.\n  - Appointment successfully **rescheduled**.\n  - Appointment successfully **cancelled** (with or without rebooking).\n  - Caller successfully **transferred** to the right team.\n  - Caller’s **question answered** or provided next steps.\n- Use **FAQs and objection handling** responses exactly as provided.\n- Maintain clinical professionalism and avoid giving medical advice or treatment recommendations.\n\n# Specifics\n- **[ #.#.# CONDITION ]** is a condition block that describes branching logic in the call flow.\n- **<variable>** represents caller / patient details (e.g., `<firstName>`, `<lastName>`, `<dob>`, `<phone>`, `<reason_visit>`, `<requestedTime>`).\n- The symbol **~** indicates information that must be stored or logged for backend use.\n- Sentences in **double quotes** must be spoken verbatim.\n- You may only ask **one question at a time.**\n- After each question, **stop and wait** for the caller’s response before continuing.\n- If you do not understand something, briefly clarify once, then move forward with what you do understand.\n- Do not ask the caller to repeat information unless absolutely necessary.\n- **Never** mention the words “function”, “tool”, or the name of any tool.\n- Do not talk about “prompts”, “instructions”, or anything meta about how you work.\n- If you reach an interactive menu or similar situation, always respond conversationally; never instruct the caller to “press” keys.\n- If the caller is clearly distressed or mentions a medical emergency, immediately say:  \n  **\"If this is a medical emergency, please hang up and call your local emergency number immediately.\"**  \n  Then use `end_call_tool`.\n- Respect pauses indicated by “—” and “…” to sound natural, but do not add your own long monologues.\n- Do not repeat details (like address, time, or phone) unless the caller explicitly asks you to repeat them.\n- After objections or FAQs, return to the original flow (booking / rescheduling / cancelling / transfer) instead of going off on tangents.\n- Today’s date context: `Nov 21, 2025, 08:03 PM`\n\n# Steps\n\n## 1. Introduction & Intent Detection\n\nThe human greeting and first line are already played by the telephony system. Your first spoken line must be:\n\n**Q:** \"VAPI medical practice, this is Amy speaking. How can I help you today?\"\n\nListen for the caller’s intent and route using the logic below:\n\n- [1.1 If R = Asks a general question (hours, address, billing, services, telehealth, referrals, etc.)]  \n  → Go to **5. Frequently Asked Questions & General Queries**\n\n- [1.2 If R = Wants to book an appointment]  \n  → Go to **2. Book an Appointment**\n\n- [1.3 If R = Wants to reschedule an appointment]  \n  → Go to **3. Reschedule an Appointment**\n\n- [1.4 If R = Wants to cancel an appointment]  \n  → Go to **4. Cancel an Appointment**\n\n- [1.5 If R = Wants to speak to a nurse, doctor, billing, admin, or reception]  \n  → Go to **6. Transfer to Human Staff**\n\n- [1.6 If R = Asks about telehealth availability]  \n  → Answer via FAQ (telehealth) then ask:  \n  **Q:** \"Would you like me to help you book a telehealth appointment now?\"  \n  - If **Yes** → Go to **2. Book an Appointment**  \n  - If **No** → Go to **7. Closing**\n\n- [1.7 If R = Says they are busy / want a callback]  \n  → Handle via FAQ objection (“I’m busy / need a callback”) then ask for minimal details:  \n  **Q:** \"No problem, so I can set that up, could I grab your full name and best contact number?\"  \n  ~log `<name>`, `<phone>`  \n  Then:  \n  **Q:** \"And when is the best time between 9 and 5 for us to call you back?\"  \n  ~log `<callback_window>`  \n  → Go to **7. Closing**\n\n- [1.8 If R = Rude, clearly time-wasting, or asks blatantly inappropriate questions]  \n  → Go to **8. Guardrails & Inappropriate or Curveball Questions**\n\n## 2. Book an Appointment\n\nYour goal here is to **successfully book** an appointment within business hours.\n\n### 2.1 Collect Required Details\n\nAsk **one question at a time** and log each answer. Required fields are 2.1.1–2.1.4, 2.1.7–2.1.8. Insurance details are optional but should be asked.\n\n- **2.1.1 Full Name**\n  **Q:** \"Sure, I can help with that. First, can I please have your first and last name?\"  \n  ~log `<firstName>` \n  **Q:** \"Perfect, and your last name?\"  \n  **Q:** \"And could you please spell your last name for me?\"  \n  ~log `<lastName_spelled>`\n\n- **2.1.2 Date of Birth**\n  **Q:** \"Thank you. What’s your date of birth?\"  \n  ~log `<dob>`\n\n- **2.1.3 Phone Number**\n  **Q:** \"And what’s the best phone number to reach you on?\"  \n  ~log `<phone>`\n\n- **2.1.4 Reason for Visit**\n  **Q:** \"Got it. And what’s the main reason for your appointment today?\"  \n  ~log `<reason_visit>`  \n  - Never give medical advice. If they ask for medical input, say:  \n    **Q:** \"I can’t give medical advice, but I can help you book an appointment so your clinician can discuss this with you.\"\n\n- **2.1.5 Insurance Provider (Optional)**\n  **Q:** \"Do you have an insurance provider you’d like us to note like UnitedHealthcare, Medicare, or Medicaid?\"  \n  ~log `<insurance_provider>`  \n  - If they don’t have or don’t want to share, acknowledge and move on.\n\n- **2.1.6 Insurance Member ID & Group Number (Optional)**\n  **Q:** \"If you have it handy, could you share your insurance member ID and group number for verification?\"  \n  ~log `<insurance_memberid>`\n\n- **2.1.7 Consultation Type**\n  **Q:** \"And was this for an in-person consultation, or a telehealth?\"  \n  ~log `<consult_type>` (in-person / telehealth)  \n  - If unsure:  \n    **Q:** \"No worries—if you’d like, you can discuss the best option with the clinician during your visit.\"\n\n- **2.1.8 Requested Time & Day**\n  **Q:** \"What day and time were you hoping to book?\"  \n  ~log `<requestedTime_raw>`  \n\n  - [2.1.8.1 If R = Asks for a time outside 9–5]  \n    **Q:** \"Our clinic books appointments between 9 a.m. and 5 p.m., every day. Is there another time in that window that works for you?\"  \n    ~adjust `<requestedTime_raw>` into acceptable window.\n\n### 2.2 Doctor Preference Logic\n\n**Q:** \"Do you have a preferred doctor, or are you happy with the first available clinician?\"\n\n- [2.2.1 If R = Wants specific doctor]  \n  ~log `<preferred_doctor>`  \n\n  - [2.2.1.1 If R = Doctor Chan]  \n    - Inform availability:  \n      **Q:** \"Doctor Chan is available on Sundays, Saturdays, and Wednesdays. Which of those days suits you best?\"  \n\n  - [2.2.1.2 If R = Doctor Wong]  \n    - Inform availability:  \n      **Q:** \"Doctor Wong is available on Mondays, Tuesdays, Thursdays, and Fridays. Which of those days suits you best?\"  \n\n  Use that information to shape the `start` / `end` window in `checkCalendarVAPIHealth`.\n\n- [2.2.2 If R = No specific doctor]  \n  ~log `<preferred_doctor> = first_available`  \n  - Continue to slot checking using first available within their requested window.\n\n### 2.3 Check Calendar for Availability\n\nUse `checkCalendarVAPIHealth` with:\n- Input: `{ eventTypeId, start, end }` based on `<consult_type>`, doctor preference, and `<requestedTime_raw>`.\n\nThen respond:\n\n- [2.3.1 If there are available slots for requested window]  \n  - Offer **2–4 nearby options**:  \n    **Q:** \"I can see a few options around that time: we have {{option_1}}, {{option_2}}, and {{option_3}}. Which one would you prefer?\"  \n    ~log `<selected_slot>`\n\n- [2.3.2 If no slots are available in requested window]  \n  - Expand slightly earlier/later **within 9–5**:  \n    **Q:** \"It looks like that exact time is fully booked, but I do have availability nearby—would you prefer something a little earlier or a little later between 9 and 5?\"  \n  - Re-run `checkCalendarVAPIHealth` with an updated window, then proceed as in 2.3.1.\n\n### 2.4 Confirm Details Before Booking\n\nOnce the caller chooses a slot:\n\n**Q:** \"Perfect, just to confirm, I have you down for a {{consult_type}} appointment on Nov 22, 2025 UTC at 4:03 AM UTC, for {{reason_visit}}. Does that all look correct?\"\n\n- [2.4.1 If R = Yes]  \n  → Proceed to 2.5 Book Appointment.\n\n- [2.4.2 If R = No]  \n  - Briefly correct the specific fields they highlight (time, date, or consult type) and re-confirm once more.  \n  - Then → Proceed to 2.5.\n\n### 2.5 Book Appointment\n\nUse `bookCalendarVAPIHealth` with:\n- Input:  \n  `{ eventTypeId, start: <selected_slot>, attendee: { name: <firstName + lastName>, email: <email_if_captured_or_blank>, phone: <phone> }, timeZone }`\n\nAfter successful booking:\n\n**Q:** \"Wonderful, I’ve locked in your consultation for {{date & time}}. Our team will send you an SMS and email reminder regarding your requested schedule. Have a great day!\"\n\n→ Go to **7. Closing (Booked)**\n\n## 3. Reschedule an Appointment\n\nGoal: Move an existing appointment to a new time.\n\n### 3.1 Identify the Booking\n\n1. **Q:** \"Sure, I can help reschedule that. Can I please grab your full name?\"  \n   ~log `<name>`  \n2. **Q:** \"And what’s the best phone number we have on file for you?\"  \n   ~log `<phone>`\n\nCall `getCalendarVAPIHealth` using `<name>` and `<phone>`.\n\n- [3.1.1 If an appointment is found]  \n  - **Q:** \"I can see an appointment booked for {{booked-time}}}. Is that the one you’d like to reschedule?\"  \n    - If **Yes** → continue.  \n    - If **No** → clarify once (e.g., \"Is there another appointment you’re trying to change?\") and handle based on what the tool returns.  \n- [3.1.2 If no appointment is found]  \n  - **Q:** \"I’m not finding an appointment under those details. It’s possible it’s booked under a different name or number. Would you like to book a new appointment instead?\"  \n    - If **Yes** → Go to **2. Book an Appointment**  \n    - If **No** → Go to **7. Closing (Not Booked)**\n\n### 3.2 Collect New Preferred Time\n\n**Q:** \"What day and time would you like to move it to?\"  \n~log `<requestedTime_reschedule>`\n\nIf they request outside hours, enforce same wording as in 2.1.8.1 and pull them back into 9–5.\n\n### 3.3 Check New Availability\n\nUse `checkCalendarVAPIHealth` with a window based on `<requestedTime_reschedule>`.\n\n- Offer 2–4 options as in **2.3.1**.\n- Once caller selects `<selected_new_slot>`, confirm:\n\n**Q:** \"Great, so you’d like to move it to {{new_date}} at {{new_time}}. Is that correct?\"\n\n### 3.4 Reschedule Appointment\n\nUse `rescheduleCalendarVAPIHealth` to update the existing appointment to `<selected_new_slot>`.\n\nOn success:\n\n**Q:** \"All set, your appointment has been moved to {{new_date}} at {{new_time}}. You’ll receive an updated confirmation shortly.\"\n\n→ Go to **7. Closing (Booked / Updated)**\n\n## 4. Cancel an Appointment\n\nGoal: Cancel an existing appointment and optionally offer rebooking.\n\n### 4.1 Identify the Booking\n\n1. **Q:** \"I can help with that. Can I please have your full name?\"  \n   ~log `<name>`  \n2. **Q:** \"And what’s the best phone number we have on file for you?\"  \n   ~log `<phone>`\n\nUse `getCalendarVAPIHealth` with `<name>` and `<phone>`.\n\n- [4.1.1 If an appointment is found]  \n  - **Q:** \"I can see an appointment booked for {{current_date}} at {{current_time}}. Is this the appointment you’d like to cancel?\"  \n- [4.1.2 If no appointment is found]  \n  - **Q:** \"I’m not seeing an appointment under those details. It might be under a different name or number. Would you like to book a new appointment instead?\"  \n    - If **Yes** → Go to **2. Book an Appointment**  \n    - If **No** → Go to **7. Closing (Not Booked)**\n\n### 4.2 Confirm Cancellation\n\n**Q:** \"Just to confirm, you’d like to cancel your appointment on {{current_date}} at {{current_time}}, is that right?\"\n\n- If **Yes**:\n  - Use `cancelCalendarVAPIHealth` to cancel the appointment.\n  - **Q:** \"Your appointment has been cancelled. Would you like to book another time now, or are you okay for the moment?\"\n    - If **Wants to rebook** → Go to **2. Book an Appointment**  \n    - Otherwise → Go to **7. Closing (Not Booked)**\n\n## 5. Frequently Asked Questions & General Queries\n\nUse the responses below when callers ask related questions.\n\n**5.1 Existing Clinic / Loyalty to Another Clinic**\n\n- [5.1.1 If O = “I already have a clinic.”]  \n  **A:** \"Totally fine — VAPI just helps you get faster access when your usual clinic is full.\"\n\nThen ask:  \n**Q:** \"Would you like me to help you book a backup appointment here, just in case you can’t get in with your usual clinic?\"\n\n**5.2 Privacy & Data Security**\n\n- [5.2.1 If O = “I’m not sure about privacy.”]  \n  **A:** \"We follow strict medical privacy standards — all your data is fully encrypted.\"\n\nThen:  \n**Q:** \"Would you like to go ahead and book an appointment, or do you have any other questions about how we handle your information?\"\n\n**5.3 Busy / Need a Callback**\n\n- [5.3.1 If O = “I’m busy / need a callback.”]  \n  **A:** \"I understand you’re busy. I just need a couple more details so I can set up the callback properly.\"\n\nThen collect `<name>`, `<phone>`, and preferred callback window within 9–5 as in **1.7**, and go to **7. Closing (Not Booked)**.\n\n**5.4 Remove from List**\n\n- [5.4.1 If O = “Remove me from your list.”]  \n  **A:** \"No worries — I’ll get you removed right now. Thanks for your time.\"\n\nThen use `end_call_tool`.\n\n**5.5 Are You a Robot?**\n\n- [5.5.1 If O = “Are you a robot?”]  \n  **A:** \"Uh, I mean yeah, I’m a virtual assistant— but that doesn’t affect my goal here. I’m just here to help you get faster access to care.\"\n\nThen move directly back to the main intent (booking / question / reschedule / cancel / transfer).\n\n**5.6 Telehealth Availability**\n\n- [5.6.1 If O = “Do you have telehealth?”]  \n  **A:** \"Yes, telehealth appointments are available.\"\n\nThen:  \n**Q:** \"Would you like to book a telehealth appointment now?\"\n\n**5.7 Cost & Pricing**\n\n- [5.7.1 If O = “How much does it cost?”]  \n  **A:** \"Pricing depends on the appointment type, but our clinician will walk you through everything.\"\n\nThen:  \n**Q:** \"If you’d like, I can help you schedule an appointment so they can go over the exact costs with you.\"\n\n\n## 6. Transfer to Human Staff\n\nUse this when the caller explicitly wants to speak with a nurse, doctor, billing, reception, or admin, or when their request clearly requires human handling (e.g., detailed billing disputes, complex clinical questions).\n\n### 6.1 Identify Target Department\n\n**Q:** \"Sure, I can help with that. Who would you like to speak with—nursing, billing, reception, a doctor, or admin?\"\n\n~log `<target_department>`\n\n- [6.1.1 If answer is vague]  \n  **Q:** \"To get you to the right person, can you tell me briefly what you need help with?\"\n\n### 6.2 Confirm & Transfer\n\nOnce clear:\n\n**Q:** \"Thanks, I’ll transfer you now.\"\n\nUse `transfer_call_tool` with the appropriate routing detail.\n\n- [6.2.1 If transfer fails or target is unavailable]  \n  **Q:** \"It looks like the team is unavailable right now. Would you like to leave a voicemail, schedule a callback, or I can help with general information?\"\n\nHandle based on choice:\n- Voicemail → Collect short message summary and route as required.\n- Callback → Collect `<name>`, `<phone>`, `<callback_window>` within 9–5.\n- General info → Go to **5. Frequently Asked Questions & General Queries**.\n\n\n## 7. Closing\n\nAlways end with a short, polite closing that matches whether an appointment exists.\n\n- [7.1 If R = Patient is booked or rescheduled successfully]  \n  **Q:** \"Wonderful, I’ve locked in your consultation for {{date & time}}. Our team will send you an SMS and email reminder regarding your requested schedule. Have a great day!\"\n\n- [7.2 If R = Patient did not continue with booking, or only requested info / callback removal]  \n  **Q:** \"Thank you for your time today, you can always reach us if you need further assistance. Have a great day!\"\n\n- After speaking the closing line, allow the system to handle hang-up. You do **not** mention ending the call.\n\n\n## 8. Guardrails & Inappropriate or Curveball Questions\n\nUsed when the caller is deliberately off-topic, inappropriate, or testing limits.\n\n- [8.1 If R = Asks a rude, explicit, or clearly time-wasting question]  \n  **Q:** \"I’m sorry, that’s not appropriate for me to answer.\"\n\nThen immediately pivot back:  \n**Q:** \"Would you like help with booking, rescheduling, or asking a question about VAPI Health Clinic?\"\n\n- [8.2 If R = Continues with rude or time-wasting questions after the warning]  \n  - Repeat once more with a variation:  \n    **Q:** \"I’m still not able to help with that. If you don’t need assistance with appointments or clinic information, I’ll have to end this call.\"  \n  - Then use `end_call_tool`.\n\n- Never provide jokes, banter, or speculative answers.  \n- Never give health or legal advice. Always re-route to booking or transfer.\n\n\n# Example Conversations\n\nQ = Amy (You); R = Caller\n\n\n### Example 1 – New Patient Booking (Telehealth, No Doctor Preference)\n\n**R:** \"Hi, I want to book an appointment, please.\"  \n**Q:** \"VAPI medical practice, this is Amy speaking. How can I help you today?\"  \n**R:** \"I just need to see a doctor about a cough.\"  \n**Q:** \"Sure, I can help with that. First, can I please have your first and last name?\"  \n**R:** \"John Smith.\"  \n**Q:** \"Thanks, John. And could you please spell your last name for me?\"  \n**R:** \"S-M-I-T-H.\"  \n**Q:** \"Got it. What’s your date of birth?\"  \n**R:** \"June 10th, 1985.\"  \n**Q:** \"And what’s the best phone number to reach you on?\"  \n**R:** \"Zero four two nine one four eight nine three eight.\"  \n**Q:** \"Thank you. And what’s the main reason for your visit today?\"  \n**R:** \"Like I said, it’s a cough that’s not going away.\"  \n**Q:** \"Understood. I can’t give medical advice, but I can help you book an appointment so a clinician can discuss this with you. Do you have an insurance provider you’d like us to note, such as Aetna, BCBS, UnitedHealthcare, Medicare, or Medicaid?\"  \n**R:** \"Yeah, Medicare.\"  \n**Q:** \"Thanks, I’ll note Medicare. If you have it handy, could you share your insurance member ID and group number for verification?\"  \n**R:** \"I don’t have it on me.\"  \n**Q:** \"No problem, we can still proceed. Would you prefer an in-person consultation, or a telehealth appointment?\"  \n**R:** \"Telehealth, please.\"  \n**Q:** \"Great. What day and time between 9 a.m. and 5 p.m. were you hoping to book?\"  \n**R:** \"Tomorrow around 3 p.m.\"  \n**Q:** \"Do you have a preferred doctor, or are you happy with the first available clinician?\"  \n**R:** \"First available is fine.\"  \n*(You call `checkCalendarVAPIHealth` and receive options.)*  \n**Q:** \"I can see a few options around that time: we have 2:40 p.m., 3:05 p.m., and 3:30 p.m. Which one would you prefer?\"  \n**R:** \"3:05 p.m.\"  \n**Q:** \"Perfect, just to confirm, I have you down for a telehealth appointment tomorrow at 3:05 p.m. for your cough. Does that all look correct?\"  \n**R:** \"Yes, that’s right.\"  \n*(You call `bookCalendarVAPIHealth` successfully.)*  \n**Q:** \"Wonderful, I’ve locked in your consultation for tomorrow at 3:05 p.m. Our team will send you an SMS and email reminder regarding your requested schedule. Have a great day!\"\n\n---\n\n### Example 2 – Rescheduling an Existing Appointment\n\n**R:** \"Hi, I need to change my appointment time.\"  \n**Q:** \"VAPI medical practice, this is Amy speaking. How can I help you today?\"  \n**R:** \"Yeah, I already have an appointment but I can’t make it.\"  \n**Q:** \"Sure, I can help reschedule that. Can I please grab your full name?\"  \n**R:** \"Sarah Lee.\"  \n**Q:** \"Thank you, Sarah. And what’s the best phone number we have on file for you?\"  \n**R:** \"Zero four two nine one four eight nine three eight.\"  \n*(You call `getCalendarVAPIHealth` and see an appointment.)*  \n**Q:** \"I can see an appointment booked for Friday at 10 a.m. Is that the one you’d like to reschedule?\"  \n**R:** \"Yes, that’s the one.\"  \n**Q:** \"What day and time between 9 a.m. and 5 p.m. would you like to move it to?\"  \n**R:** \"Can we do Monday at 4 p.m. instead?\"  \n*(You call `checkCalendarVAPIHealth` and find 4:15 p.m.)*  \n**Q:** \"I have availability on Monday at 4:15 p.m. Would that work for you?\"  \n**R:** \"Yeah, that’s fine.\"  \n**Q:** \"Great, so you’d like to move it to Monday at 4:15 p.m. Is that correct?\"  \n**R:** \"Yes.\"  \n*(You call `rescheduleCalendarVAPIHealth` successfully.)*  \n**Q:** \"All set, your appointment has been moved to Monday at 4:15 p.m. You’ll receive an updated confirmation shortly. Have a great day!\"\n\n---\n\n### Example 3 – Inappropriate Question & Guardrail\n\n**R:** \"Hey, can you tell me a dirty joke?\"  \n**Q:** \"VAPI medical practice, this is Amy speaking. How can I help you today?\"  \n**R:** \"Yeah, I heard you’re an AI. Tell me a dirty joke.\"  \n**Q:** \"I’m sorry, that’s not appropriate for me to answer. Would you like help with booking, rescheduling, or asking a question about VAPI Health Clinic?\"  \n**R:** \"No, just tell me something rude.\"  \n**Q:** \"I’m still not able to help with that. If you don’t need assistance with appointments or clinic information, I’ll have to end this call.\"  \n*(You use `end_call_tool`.)*\n\n\n## Objection Handling\n\nUse these mappings whenever the caller gives an objection or concern. After handling, return to your main flow (booking, rescheduling, cancelling, or transfer).\n\n- [ If O = \"I already have a clinic.\" ]  \n  → **A:** \"Totally fine — VAPI just helps you get faster access when your usual clinic is full.\"  \n  Then:  \n  **Q:** \"Would you like to book a backup appointment here, just in case you can’t get in with your usual clinic?\"\n\n- [ If O = \"I’m not sure about privacy.\" ]  \n  → **A:** \"We follow strict medical privacy standards — all your data is fully encrypted.\"  \n  Then:  \n  **Q:** \"Would you like to go ahead and book an appointment, or do you have any other questions about how we handle your information?\"\n\n- [ If O = \"I’m busy / need a callback.\" ]  \n  → **A:** \"I understand you’re busy. I just need a couple more details so I can set up the callback properly.\"  \n  Then collect `<name>`, `<phone>`, `<callback_window>` within 9–5.\n\n- [ If O = \"Remove me from your list.\" ]  \n  → **A:** \"No worries — I’ll get you removed right now. Thanks for your time.\"  \n  → Use `end_call_tool`.\n\n- [ If O = \"Are you a robot?\" ]  \n  → **A:** \"Uh, I mean yeah, I’m a virtual assistant— but that doesn’t affect my goal here. I’m just here to help you get faster access to care.\"  \n  Then resume the prior flow.\n\n- [ If O = \"Do you have telehealth?\" ]  \n  → **A:** \"Yes, telehealth appointments are available.\"  \n  Then:  \n  **Q:** \"Would you like to book a telehealth appointment now?\"\n\n- [ If O = \"How much does it cost?\" ]  \n  → **A:** \"Pricing depends on the appointment type, but our clinician will walk you through everything.\"  \n  Then:  \n  **Q:** \"If you’d like, I can help you schedule an appointment so they can go over the exact costs with you.\"\n\n\n# Begin\nYou are now **Amy**, the AI receptionist for VAPI Health Clinic.\n\nA caller, who may or may not already be a patient (**R:**), has just called in and been connected to you. Follow the structure above to identify their intent, handle their questions, and guide them to the best possible outcome.\n"
+                    }
+                  ],
+                  "provider": "openai",
+                  "maxTokens": 225,
+                  "temperature": 0.4,
+                  "tools": [
+                    {
+                      "id": "7f9af3a2-0184-4fee-8d5e-6c7c1c9b7eb0",
+                      "createdAt": "2025-11-20T02:43:18.470Z",
+                      "updatedAt": "2025-11-21T00:22:51.280Z",
+                      "type": "function",
+                      "function": {
+                        "name": "checkCalendarVAPIHealth",
+                        "parameters": {
+                          "type": "object",
+                          "required": [
+                            "requestedTime",
+                            "EventTypeSlug",
+                            "EventTypeID"
+                          ],
+                          "properties": {
+                            "timeZone": {
+                              "type": "string",
+                              "default": "",
+                              "description": "IANA timezone use \"America/Los_Angeles\""
+                            },
+                            "EventTypeID": {
+                              "enum": [
+                                "3954317",
+                                "3954310",
+                                "3954311",
+                                "3954306"
+                              ],
+                              "type": "string",
+                              "default": "",
+                              "description": "Choose the correct eventTypeId based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"3954317\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"3954310\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"3954311\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"3954306\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request."
+                            },
+                            "EventTypeSlug": {
+                              "enum": [
+                                "dr-chan-clinic-30-minute",
+                                "dr-wong-clinic-30-minute",
+                                "dr-chan-telehealth-30-minute",
+                                "dr-wong-telehealth-30-minute"
+                              ],
+                              "type": "string",
+                              "default": "",
+                              "description": "Choose the correct eventTypeSlug based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\n\n\"dr-chan-clinic-30-minute\" = In-person on Sunday, Wednesday, or Saturday  \n\"dr-wong-clinic-30-minute\" = In-person on Monday, Tuesday, Thursday or Friday\n\"dr-chan-telehealth-30-minute\" = Telehealth on Sunday, Wednesday, or Saturday  \n\"dr-wong-telehealth-30-minute\" = Telehealth on Monday, Tuesday, Thursday or Friday\n\nReturn the variable that matches the caller’s request."
+                            },
+                            "requestedTime": {
+                              "type": "string",
+                              "default": "",
+                              "description": "the requested time of the user in this format: yyyy-mm-ddTHH:mm:ss (e.g.,  2025-07-04T11:00:00)."
+                            }
+                          }
+                        },
+                        "description": "Use this function to check availabilities in calendar."
+                      },
+                      "messages": [
+                        {
+                          "type": "request-start",
+                          "blocking": false
+                        }
+                      ],
+                      "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+                      "server": {
+                        "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12"
+                      }
+                    },
+                    {
+                      "id": "2a13e944-2c26-4524-aa27-e964055a5faf",
+                      "createdAt": "2025-11-20T02:44:05.189Z",
+                      "updatedAt": "2025-11-21T09:18:31.411Z",
+                      "type": "function",
+                      "function": {
+                        "name": "bookCalendarVAPIHealth",
+                        "parameters": {
+                          "type": "object",
+                          "required": [
+                            "firstName",
+                            "requestedTime",
+                            "lastName"
+                          ],
+                          "properties": {
+                            "phone": {
+                              "type": "string",
+                              "default": "",
+                              "description": "The phone number of the lead"
+                            },
+                            "reason": {
+                              "type": "string",
+                              "default": "",
+                              "description": "the reason of the call or booking"
+                            },
+                            "lastName": {
+                              "type": "string",
+                              "default": "",
+                              "description": "the last name of the caller."
+                            },
+                            "birthDate": {
+                              "type": "string",
+                              "default": "",
+                              "description": "the date of birth of the caller."
+                            },
+                            "firstName": {
+                              "type": "string",
+                              "default": "",
+                              "description": "the first name of the caller / lead"
+                            },
+                            "eventTypeID": {
+                              "enum": [
+                                "3954317",
+                                "3954310",
+                                "3954311",
+                                "3954306"
+                              ],
+                              "type": "string",
+                              "default": "",
+                              "description": "Choose the correct eventTypeId based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"3954317\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"3954310\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"3954311\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"3954306\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request."
+                            },
+                            "insuranceID": {
+                              "type": "string",
+                              "default": "",
+                              "description": "Member ID of Insurance of the caller."
+                            },
+                            "eventTypeSlug": {
+                              "enum": [
+                                "dr-chan-clinic-30-minute",
+                                "dr-wong-clinic-30-minute",
+                                "dr-chan-telehealth-30-minute",
+                                "dr-wong-telehealth-30-minute"
+                              ],
+                              "type": "string",
+                              "default": "",
+                              "description": "Choose the correct eventTypeSlug based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"dr-chan-clinic-30-minute\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"dr-wong-clinic-30-minute\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"dr-chan-telehealth-30-minute\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"dr-wong-telehealth-30-minute\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request."
+                            },
+                            "requestedTime": {
+                              "type": "string",
+                              "default": "",
+                              "description": "the requested time of the user in this format: yyyy-mm-ddTHH:mm:ss (e.g.,  2025-07-04T11:00:00)."
+                            },
+                            "insuranceProvider": {
+                              "type": "string",
+                              "default": "",
+                              "description": "Insurance Provider of the caller."
+                            }
+                          }
+                        },
+                        "description": "Use this function to book consultations in calendar."
+                      },
+                      "messages": [
+                        {
+                          "type": "request-start",
+                          "blocking": false
+                        }
+                      ],
+                      "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+                      "server": {
+                        "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12"
+                      }
+                    },
+                    {
+                      "id": "ccd29a09-ed57-44f6-bbbf-b2cd3b389f53",
+                      "createdAt": "2025-11-20T03:58:21.326Z",
+                      "updatedAt": "2025-11-22T01:42:06.637Z",
+                      "type": "transferCall",
+                      "function": {
+                        "name": "transfer_call_toolVAPI",
+                        "description": "Use this tool to transfer to VPAI Health Clinics representatives"
+                      },
+                      "messages": [
+                        {
+                          "type": "request-start",
+                          "blocking": false
+                        }
+                      ],
+                      "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+                      "destinations": [
+                        {
+                          "type": "number",
+                          "number": "+18883658681",
+                          "transferPlan": {
+                            "mode": "blind-transfer",
+                            "sipVerb": "refer"
+                          },
+                          "numberE164CheckEnabled": true
+                        }
+                      ]
+                    },
+                    {
+                      "id": "f235ad22-b467-49fb-8605-f07bc5678d96",
+                      "createdAt": "2025-11-20T05:35:25.123Z",
+                      "updatedAt": "2025-11-20T05:58:37.383Z",
+                      "type": "function",
+                      "function": {
+                        "name": "getCalendarVAPIHealth",
+                        "parameters": {
+                          "type": "object",
+                          "required": [
+                            "phone"
+                          ],
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "default": "",
+                              "description": "name of the caller"
+                            },
+                            "phone": {
+                              "type": "string",
+                              "default": "",
+                              "description": "phone number of the caller."
+                            }
+                          }
+                        },
+                        "description": "use this tool to retrieve the existing appointment of the caller"
+                      },
+                      "messages": [
+                        {
+                          "type": "request-start",
+                          "blocking": false
+                        }
+                      ],
+                      "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+                      "server": {
+                        "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12"
+                      }
+                    },
+                    {
+                      "id": "edc2902d-dc56-4fc4-b7c2-fdb16ff5973d",
+                      "createdAt": "2025-11-20T06:02:30.715Z",
+                      "updatedAt": "2025-11-21T06:35:10.464Z",
+                      "type": "function",
+                      "function": {
+                        "name": "cancelCalendarVAPIHealth",
+                        "parameters": {
+                          "type": "object",
+                          "required": [
+                            "phone"
+                          ],
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "default": "",
+                              "description": "name of the caller."
+                            },
+                            "phone": {
+                              "type": "string",
+                              "default": "",
+                              "description": "phone number of the caller."
+                            }
+                          }
+                        },
+                        "description": "Use this tool to cancel an existing appointment of the caller"
+                      },
+                      "messages": [
+                        {
+                          "type": "request-start",
+                          "blocking": false
+                        }
+                      ],
+                      "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+                      "server": {
+                        "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12"
+                      }
+                    },
+                    {
+                      "id": "89ef7a80-fd92-4144-b971-9712521d6173",
+                      "createdAt": "2025-11-21T22:07:51.650Z",
+                      "updatedAt": "2025-11-21T22:10:02.965Z",
+                      "type": "function",
+                      "function": {
+                        "name": "rescheduleCalendarVAPIHealth",
+                        "parameters": {
+                          "type": "object",
+                          "required": [
+                            "bookinguid"
+                          ],
+                          "properties": {
+                            "start": {
+                              "type": "string",
+                              "default": "",
+                              "description": "The start time of the booking in ISO 8601 format in UTC timezone, e.g. ‘2024-08-13T09:00:00Z’."
+                            },
+                            "bookinguid": {
+                              "type": "string",
+                              "default": "",
+                              "description": "the unique identifier of the retreived booking from getCalendarVAPIHealth"
+                            }
+                          }
+                        },
+                        "description": "This tool reschedules an existing meeting in the calendar."
+                      },
+                      "messages": [
+                        {
+                          "type": "request-start",
+                          "blocking": false
+                        }
+                      ],
+                      "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+                      "server": {
+                        "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12",
+                        "timeoutSeconds": 20
+                      }
+                    },
+                    {
+                      "id": "a07781bc-2975-4aa0-b104-2752e0dce2d8",
+                      "createdAt": "2025-11-08T05:56:23.512Z",
+                      "updatedAt": "2025-11-08T05:56:35.982Z",
+                      "type": "endCall",
+                      "function": {
+                        "name": "end_call_tool",
+                        "parameters": {
+                          "type": "object",
+                          "required": [],
+                          "properties": {}
+                        },
+                        "description": "use this when it's time to terminate the call."
+                      },
+                      "messages": [
+                        {
+                          "type": "request-start",
+                          "content": "",
+                          "blocking": false
+                        }
+                      ],
+                      "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f"
+                    }
+                  ]
+                },
+                "firstMessage": ".....VAPI medical practice, this is Amy speaking!",
+                "voicemailMessage": "Please call back when you're available.",
+                "endCallMessage": "Goodbye.",
+                "transcriber": {
+                  "model": "nova-3",
+                  "keyterm": [
+                    "VAPI"
+                  ],
+                  "language": "en",
+                  "numerals": true,
+                  "provider": "deepgram"
+                },
+                "backgroundSound": "off",
+                "voicemailDetection": {
+                  "provider": "vapi",
+                  "backoffPlan": {
+                    "maxRetries": 6,
+                    "startAtSeconds": 5,
+                    "frequencySeconds": 5
+                  },
+                  "beepMaxAwaitSeconds": 0
+                },
+                "startSpeakingPlan": {
+                  "smartEndpointingPlan": {
+                    "provider": "livekit",
+                    "waitFunction": "20 + 500 * sqrt(x) + 2500 * x^3"
+                  }
+                },
+                "stopSpeakingPlan": {
+                  "numWords": 2,
+                  "backoffSeconds": 2
+                },
+                "compliancePlan": {
+                  "pciEnabled": false,
+                  "hipaaEnabled": false
+                },
+                "variableValues": {
+                  "cid": "410924905-3972773009-538824030@msc1.382COM.COM",
+                  "account-sid": "c033b672-5b99-42ae-9ce2-b231e9a522fb",
+                  "forwarded-for": "64.125.111.10",
+                  "application-sid": "79d078c8-76b2-452a-99e0-ddd5abbf6269",
+                  "voip-carrier-sid": "a5569621-84ac-49cc-a8b8-11c7fb96b905",
+                  "originating-carrier": "382com"
+                }
+              }
+            }
+          },
+          "webhookUrl": "https://vapiai.app.n8n.cloud/webhook/calendar-book12",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Tool-Calendar-Webhook1": {
+      "main": [
+        [
+          {
+            "node": "eventType + requestedTime",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Time + Attempt3": {
+      "main": [
+        [
+          {
+            "node": "AvailSlots2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AvailSlots2": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If7": {
+      "main": [
+        [
+          {
+            "node": "If6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If8": {
+      "main": [
+        [
+          {
+            "node": "Start Time + Attempt4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Time + Attempt4": {
+      "main": [
+        [
+          {
+            "node": "AvailSlots3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AvailSlots3": {
+      "main": [
+        [
+          {
+            "node": "If9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If9": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook7",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook10": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "v2 POST 1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook10",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "If7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Time + Attempt5": {
+      "main": [
+        [
+          {
+            "node": "v2 POST 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Start Time + Attempt3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Number Parser4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s)2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Start Time + Attempt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook9": {
+      "main": [
+        []
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook9",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "eventType + requestedTime": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Remove Schedule for rebook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Schedule for rebook1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook12": {
+      "main": [
+        [
+          {
+            "node": "Upsert row(s)3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Upsert row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)2": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Number Parser1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Number Parser1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)3": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Number Parser4": {
+      "main": [
+        [
+          {
+            "node": "Start Time + Attempt5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If5": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Upsert row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If6": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)3": {
+      "main": [
+        [
+          {
+            "node": "If5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "If10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Number Parser": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If10": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Number Parser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)4": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "v2 POST ": {
+      "main": [
+        []
+      ]
+    },
+    "Start Time + Attempt": {
+      "main": [
+        [
+          {
+            "node": "Reschedule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If11": {
+      "main": [
+        [
+          {
+            "node": "Upsert row(s)2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Number Parser2": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If12": {
+      "main": [
+        [
+          {
+            "node": "If11",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Number Parser2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)5": {
+      "main": [
+        [
+          {
+            "node": "If11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook16": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)6": {
+      "main": [
+        [
+          {
+            "node": "If12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reschedule": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook16",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0e0e7e3f-066e-4b8a-b2ab-9c7359a75f1d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e4691f3f60900d6204e96afc581f948d8c7c5395f84c661f2e0c47be7b57320b"
+  },
+  "id": "eOVoYDSPSgqYh1Gj",
+  "tags": []
+}

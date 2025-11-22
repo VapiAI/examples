@@ -1,0 +1,36 @@
+{
+    "id": "7f9af3a2-0184-4fee-8d5e-6c7c1c9b7eb0",
+    "type": "function",
+    "function": {
+      "name": "getCalendarVAPIHealth",
+      "description": "use this tool to retrieve the existing appointment of the caller",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "name of the caller",
+            "type": "string",
+            "default": ""
+          },
+          "phone": {
+            "description": "phone number of the caller.",
+            "type": "string",
+            "default": ""
+          }
+        },
+        "required": [
+          "phone"
+        ]
+      }
+    },
+    "messages": [
+      {
+        "type": "request-start",
+        "blocking": false
+      }
+    ],
+    "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+    "server": {
+      "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12"
+    }
+  }

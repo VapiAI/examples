@@ -1,0 +1,26 @@
+{
+    "id": "a07781bc-2975-4aa0-b104-2752e0dce2d8",
+    "type": "transferCall",
+    "function": {
+      "name": "transfer_call_toolVAPI",
+      "description": "Use this tool to transfer to VPAI Health Clinics representatives"
+    },
+    "messages": [
+      {
+        "type": "request-start",
+        "blocking": false
+      }
+    ],
+    "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+    "destinations": [
+      {
+        "type": "number",
+        "number": "+18883658681",
+        "transferPlan": {
+          "mode": "blind-transfer",
+          "sipVerb": "refer"
+        },
+        "numberE164CheckEnabled": true
+      }
+    ]
+  }

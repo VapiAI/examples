@@ -1,0 +1,53 @@
+{
+    "assistantId": "55d10262-d23c-40a5-9d46-8fdcc168f785",
+    "assistantOverrides": {
+      "variableValues": {
+        "companyId": "f6446fad-b227-48f6-ba80-551448794044",
+        "companyApplicantPhoneNumber": null,
+        "companyApplicantWebsite": null,
+        "companyDNIS": "5555557001",
+        "companyName": "Summit Roofing",
+        "companyFullName": "Summit Roofing & Restoration Demo",
+        "companyTrades": [
+          "Roofing"
+        ],
+        "companyVendorPhoneNumber": "5555554321",
+        "companyWebsite": "https://summitroofing.example.com",
+        "greetingMessage": "Thank you for calling Summit Roofing, how can I help you?",
+        "globalCompanyList": [
+          {
+            "name": "Global Ridge Roofing",
+            "number": "5555551111",
+            "trade": "Roofing"
+          },
+          {
+            "name": "Continental Gutter Works",
+            "number": "5555552222",
+            "trade": "Gutters"
+          },
+          {
+            "name": "Skyline Solar",
+            "number": "5555553333",
+            "trade": "Solar"
+          }
+        ],
+        "partnerCompanyList": [
+          {
+            "partnerCompanyId": "2239fc0a-b222-458f-bc19-250421ca3740",
+            "name": "Blue Horizon Roofing",
+            "trades": [
+              "Roofing"
+            ]
+          },
+          {
+            "partnerCompanyId": "6c86f41d-882a-42e5-a5d7-7eeef390e44b",
+            "name": "Evergreen Exteriors",
+            "trades": [
+              "Siding"
+            ]
+          }
+        ],
+        "aiVoiceId": "727ffd5e-5115-4452-9991-efd061d466b6"
+      }
+    }
+  }

@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Environment files (secrets - never commit these!)
+.env
+.env.dev
+.env.staging
+.env.prod
+.env.local
+.env.*.local
+
+# Keep the example file
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

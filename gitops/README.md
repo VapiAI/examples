@@ -1,0 +1,435 @@
+# Vapi GitOps
+
+Manage Vapi resources (Assistants, Structured Outputs, and Tools) via Git using YAML as the source-of-truth.
+
+## Why GitOps?
+
+| | Dashboard / Ad-hoc API | GitOps |
+|---|---|---|
+| **History** | Limited visibility of who changed what | Full git history with blame |
+| **Review** | Changes go live immediately (can break things) | PR review before deploy |
+| **Rollback** | Manual recreation | `git revert` + apply |
+| **Environments** | Tedious to copy-paste between envs | Same config, different state files |
+| **Collaboration** | One person at a time. Need to duplicate assistants, tools, etc. | Team can collaborate and use git branching |
+| **Reproducibility** | "It worked on my assistant!" | Declarative, version-controlled |
+| **Disaster Recovery** | Hope you have backups | Re-apply from git |
+
+### Key Benefits
+
+- **Audit Trail** — Every change is a commit with author, timestamp, and reason
+- **Code Review** — Catch misconfigurations before they hit production
+- **Environment Parity** — Dev, staging, and prod stay in sync
+- **No Drift** — Git is the truth; manual console changes get overwritten
+- **Automation Ready** — Plug into CI/CD pipelines
+
+### Supported Resources
+
+> ⚠️ **Note:** This project currently supports:
+> - ✅ Assistants
+> - ✅ Tools
+> - ✅ Structured Outputs
+>
+> Want to manage other Vapi resources? The codebase is designed to be extensible.
+> Add support for **Squads**, **Phone Numbers**, **Files**, **Knowledge Bases**, and more
+> by following the patterns in `src/`.
+
+## Quick Start
+
+### Prerequisites
+
+- [Bun](https://bun.sh) installed
+- Vapi API token
+
+### Installation
+
+```bash
+cd gitops
+bun install
+```
+
+### Setup Environment
+
+```bash
+# Create your .env file with your Vapi token
+echo "VAPI_TOKEN=your-token-here" > .env.dev
+
+# Run the apply script
+bun run apply:dev
+```
+
+---
+
+## How-To Guides
+
+### How to Add a New Tool
+
+**Step 1:** Create a new YAML file in `resources/tools/`
+
+```bash
+touch resources/tools/my-new-tool.yml
+```
+
+**Step 2:** Define the tool configuration
+
+```yaml
+# resources/tools/my-new-tool.yml
+type: function
+function:
+  name: get_weather
+  description: Get the current weather for a location
+  parameters:
+    type: object
+    properties:
+      location:
+        type: string
+        description: The city name
+    required:
+      - location
+server:
+  url: https://my-api.com/weather
+```
+
+**Step 3:** Apply the changes
+
+```bash
+bun run apply:dev
+```
+
+The tool will be created and its UUID saved to `.vapi-state.dev.json`.
+
+---
+
+### How to Attach a Tool to an Assistant
+
+**Step 1:** Note the tool's filename (without extension) - this is its resource ID
+
+```
+resources/tools/my-new-tool.yml  →  resource ID: "my-new-tool"
+```
+
+**Step 2:** Edit your assistant YAML and add the tool reference
+
+```yaml
+# resources/assistants/my-assistant.yml
+name: My Assistant
+model:
+  provider: openai
+  model: gpt-4o
+  messages:
+    - role: system
+      content: You are a helpful assistant.
+  toolIds:
+    - my-new-tool    # ← Reference by filename (without .yml)
+    - transfer-call  # ← You can add multiple tools
+firstMessage: Hello! How can I help you?
+```
+
+**Step 3:** Apply the changes
+
+```bash
+bun run apply:dev
+```
+
+The apply engine will:
+1. Create/update the tool first
+2. Resolve `my-new-tool` → actual Vapi UUID
+3. Create/update the assistant with the resolved UUID
+
+---
+
+### How to Add a Structured Output to an Assistant
+
+**Step 1:** Create a structured output in `resources/structuredOutputs/`
+
+```yaml
+# resources/structuredOutputs/call-summary.yml
+name: Call Summary
+type: ai
+description: Summarizes the key points of a call
+schema:
+  type: object
+  properties:
+    summary:
+      type: string
+      description: Brief summary of the call
+    sentiment:
+      type: string
+      enum: [positive, neutral, negative]
+    actionItems:
+      type: array
+      items:
+        type: string
+model:
+  provider: openai
+  model: gpt-4o
+assistant_ids:
+  - my-assistant  # ← Links to the assistant
+workflow_ids: []
+```
+
+**Step 2:** Reference it in your assistant's artifact plan
+
+```yaml
+# resources/assistants/my-assistant.yml
+name: My Assistant
+model:
+  provider: openai
+  model: gpt-4o
+  # ... other config
+artifactPlan:
+  structuredOutputIds:
+    - call-summary  # ← Reference by filename
+```
+
+**Step 3:** Apply
+
+```bash
+bun run apply:dev
+```
+
+---
+
+### How to Delete a Resource
+
+**Step 1:** Remove any references to the resource first
+
+If deleting a tool, remove it from all assistants' `toolIds`:
+
+```yaml
+# Before - resources/assistants/my-assistant.yml
+model:
+  toolIds:
+    - transfer-call
+    - my-tool-to-delete  # ← Remove this line
+
+# After
+model:
+  toolIds:
+    - transfer-call
+```
+
+**Step 2:** Delete the resource file
+
+```bash
+rm resources/tools/my-tool-to-delete.yml
+```
+
+**Step 3:** Apply
+
+```bash
+bun run apply:dev
+```
+
+The apply engine will:
+1. Detect the resource is in state but not in filesystem
+2. Check for orphan references (will error if still referenced)
+3. Delete the resource from Vapi
+4. Remove it from the state file
+
+> ⚠️ **Important**: If you try to delete a resource that's still referenced, you'll get an error like:
+> ```
+> Cannot delete tool "my-tool" - still referenced by: assistants/my-assistant
+> ```
+
+---
+
+### How to Rename a Resource
+
+Renaming requires deleting the old and creating a new resource.
+
+**Step 1:** Update all references to use the new name
+
+```yaml
+# resources/assistants/my-assistant.yml
+model:
+  toolIds:
+    - new-tool-name  # ← Update to new name
+```
+
+**Step 2:** Rename the file
+
+```bash
+mv resources/tools/old-tool-name.yml resources/tools/new-tool-name.yml
+```
+
+**Step 3:** Apply
+
+```bash
+bun run apply:dev
+```
+
+This will:
+1. Delete the old resource (old-tool-name)
+2. Create the new resource (new-tool-name)
+3. Update state file with new mapping
+
+---
+
+### How to Promote Changes Between Environments
+
+**Step 1:** Test in dev first
+
+```bash
+bun run apply:dev
+```
+
+**Step 2:** Verify everything works, then apply to prod
+
+```bash
+bun run apply:prod
+```
+
+Each environment has its own:
+- `.env.{env}` - API token
+- `.vapi-state.{env}.json` - Resource UUID mappings
+
+---
+
+### How to Add Comments to YAML References
+
+You can add inline comments to document references:
+
+```yaml
+model:
+  toolIds:
+    - transfer-call ## Transfers to human support
+    - get-weather   ## Fetches weather data from API
+artifactPlan:
+  structuredOutputIds:
+    - call-summary  ## Generated at end of each call
+```
+
+The apply engine strips everything after `##` when resolving references.
+
+---
+
+## Project Structure
+
+```
+/gitops
+├── apply.ts                    # Main entry point
+├── src/
+│   ├── types.ts                # TypeScript interfaces
+│   ├── config.ts               # Environment & configuration
+│   ├── api.ts                  # Vapi HTTP client
+│   ├── state.ts                # State file management
+│   ├── resources.ts            # Resource loading
+│   ├── resolver.ts             # Reference resolution
+│   ├── apply.ts                # Apply functions
+│   └── delete.ts               # Deletion & orphan checks
+├── resources/
+│   ├── assistants/             # Assistant YAML files
+│   ├── structuredOutputs/      # Structured output YAML files
+│   └── tools/                  # Tool YAML files
+├── .env.dev                    # Dev environment secrets (gitignored)
+├── .env.prod                   # Prod environment secrets (gitignored)
+├── .vapi-state.dev.json        # Dev state file
+└── .vapi-state.prod.json       # Prod state file
+```
+
+---
+
+## Configuration
+
+### Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `VAPI_TOKEN` | ✅ | API authentication token |
+| `VAPI_BASE_URL` | ❌ | API base URL (defaults to `https://api.vapi.ai`) |
+
+### Update Exclusions
+
+Some properties can't be sent during updates. Configure in `src/config.ts`:
+
+```typescript
+export const UPDATE_EXCLUDED_KEYS: Record<ResourceType, string[]> = {
+  tools: ["type"],           // 'type' can't be changed after creation
+  assistants: [],
+  structuredOutputs: ["type"],
+};
+```
+
+---
+
+## State Files
+
+State files track the mapping between resource IDs and Vapi UUIDs:
+
+```json
+{
+  "assistants": {
+    "my-assistant": "uuid-1234-5678"
+  },
+  "structuredOutputs": {
+    "call-summary": "uuid-abcd-efgh"
+  },
+  "tools": {
+    "transfer-call": "uuid-wxyz-1234"
+  }
+}
+```
+
+---
+
+## How the Apply Engine Works
+
+1. Load resource files from `/resources`
+2. Load environment-specific state file
+3. **Delete** orphaned resources (in state but not in filesystem)
+4. For each resource:
+   - If resource ID exists in state → **UPDATE** using stored UUID
+   - If not → **CREATE** new resource, save UUID to state
+5. Resolve cross-references (tool IDs → UUIDs)
+6. Save updated state file
+
+### Processing Order
+
+**Deletions** (reverse dependency order):
+1. Assistants → 2. Structured Outputs → 3. Tools
+
+**Creates/Updates** (dependency order):
+1. Tools → 2. Structured Outputs → 3. Assistants → 4. Link outputs to assistants
+
+---
+
+## API Reference
+
+### Assistants
+See [Vapi Assistants API](https://docs.vapi.ai/api-reference/assistants/create) for all available properties.
+
+### Structured Outputs
+See [Vapi Structured Outputs API](https://docs.vapi.ai/api-reference/analytics/structured-output/create) for all available properties.
+
+### Tools
+See [Vapi Tools API](https://docs.vapi.ai/api-reference/tools/create) for all available properties.
+
+---
+
+## Troubleshooting
+
+### "Reference not found" warnings
+
+The resource you're referencing doesn't exist yet. Make sure:
+1. The referenced file exists in the correct folder
+2. The filename matches exactly (case-sensitive)
+3. You're using the filename without the `.yml` extension
+
+### "Cannot delete resource - still referenced"
+
+Remove the reference from other resources before deleting:
+1. Find which resources reference it (shown in error message)
+2. Edit those files to remove the reference
+3. Apply again
+4. Then delete the resource file
+
+### "property X should not exist" API errors
+
+Some properties can't be updated after creation. Add them to `UPDATE_EXCLUDED_KEYS` in `src/config.ts`.
+
+### Resource not updating
+
+Check the state file has the correct UUID:
+1. Open `.vapi-state.{env}.json`
+2. Find the resource entry
+3. If incorrect, delete the entry and re-run apply

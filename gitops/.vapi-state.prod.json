@@ -1,0 +1,12 @@
+{
+  "assistants": {
+    "inbound-customer-support": "0bbfdf02-c01a-46a9-86a8-0d0eb0b8e14a"
+  },
+  "structuredOutputs": {
+    "customer-sentiment": "549ae835-2155-44ec-a557-664c669372db"
+  },
+  "tools": {
+    "get-user": "745f28e0-e99f-4d2f-aa27-bb661a807b87",
+    "transfer-call": "311b547d-ee68-4372-abbc-e8b1e0ae1958"
+  }
+}

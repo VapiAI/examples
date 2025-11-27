@@ -285,6 +285,56 @@ Each environment has its own:
 
 ---
 
+### How to Add a New Environment
+
+Example: Adding a `staging` environment.
+
+**Step 1:** Add the environment to the valid environments list
+
+Edit `src/types.ts`:
+
+```typescript
+export type Environment = "dev" | "staging" | "prod";
+
+export const VALID_ENVIRONMENTS: readonly Environment[] = ["dev", "staging", "prod"];
+```
+
+**Step 2:** Add a new npm script
+
+Edit `package.json`:
+
+```json
+{
+  "scripts": {
+    "apply:dev": "bun run apply.ts dev",
+    "apply:staging": "bun run apply.ts staging",
+    "apply:prod": "bun run apply.ts prod"
+  }
+}
+```
+
+**Step 3:** Create the environment secrets file
+
+```bash
+echo "VAPI_TOKEN=your-staging-token" > .env.staging
+```
+
+**Step 4:** Initialize the state file (optional - created automatically on first run)
+
+```bash
+echo '{"assistants":{},"structuredOutputs":{},"tools":{}}' > .vapi-state.staging.json
+```
+
+**Step 5:** Apply to the new environment
+
+```bash
+bun run apply:staging
+```
+
+This creates all resources in the staging Vapi account and populates `.vapi-state.staging.json` with the new UUIDs.
+
+---
+
 ### How to Add Comments to YAML References
 
 You can add inline comments to document references:

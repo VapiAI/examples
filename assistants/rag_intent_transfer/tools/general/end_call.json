@@ -1,0 +1,19 @@
+{
+    "type": "endCall",
+    "function": {
+        "name": "end_call_tool",
+        "description": "This end call tool will speak a static message before triggering the tool call.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+    },
+    "messages": [
+        {
+            "type": "request-start",
+            "content": "Thank you for calling, have a nice day.",
+            "blocking": true
+        }
+    ]
+}

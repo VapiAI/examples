@@ -20,7 +20,7 @@ The system consists of three main components:
 - All scheduling operations require proper event type selection based on day, doctor, and consultation type
 - NOT Optimised for multiple booking records (ensure only 1 booking exists for rescheduling or cancellation for smooth operation)
 - Cal.COM bookins WILL fill up after use, sanitize unused bookings / cancel to avoid availability fill up.
-- Transfer calls goes to arbitrary US number (Jonas' from Talk AI)
+- Transfer calls goes to arbitrary US number
 - Insurance collection details not required (added for realism)
 
 ## AI Assistant: Amy
@@ -274,7 +274,7 @@ The system handles various error scenarios:
 
 ## Configuration Files
 
-- `agent/assistant_config.json`: VAPI AI assistant configuration with system prompt
+- `assistant.json`: VAPI AI assistant configuration with system prompt
 - `tools/scheduling/n8n_workflow.json`: n8n workflow definition
 - `tools/scheduling/*.json`: Individual tool definitions for VAPI
 

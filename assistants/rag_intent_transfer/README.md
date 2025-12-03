@@ -4,34 +4,37 @@ This repo is a minimal reference for building a Vapi assistant that routes calle
 
 ## Project Contents
 
-- `assistant_prompt.md` - Base system prompt. It defines Alex (the Customer Handler), outlines conversation style, lists supported intents, and describes the workflow for calling `get_instructions` after the intent is known.
-- `instruction_tool.ts` - A TypeScript handler that returns step-by-step guidance for each intent. Deploy it as an HTTP endpoint (ValTown for rapid prototyping, AWS Lambda/API Gateway for production, or any HTTPS host).
-- `example_assistant_request.json` - Sample payload that shows how to populate variables such as company metadata when creating or updating the assistant through Vapi's API.
+- `assistant.json` - Full assistant configuration including the system prompt. It defines Alex (the Customer Handler), outlines conversation style, lists supported intents, and describes the workflow for calling `get_instructions` after the intent is known.
+- `assistant_request.json` - Sample payload that shows how to populate variables such as company metadata when creating or updating the assistant through Vapi's API.
+- `tools/get_instructions.ts` - A TypeScript handler that returns step-by-step guidance for each intent. Deploy it as an HTTP endpoint (ValTown for rapid prototyping, AWS Lambda/API Gateway for production, or any HTTPS host).
+- `tools/get_instructions.json` - Tool definition for the `get_instructions` API request tool.
+- `tools/general/transfer_call.json` - Tool definition for call transfers.
+- `tools/general/end_call.json` - Tool definition for ending calls.
 
 ## Respond to `assistant_request` Webhooks
 
 Each phone number or assistant in Vapi can point to a **Server URL**. Whenever someone dials that number (or triggers the assistant), Vapi sends a POST request to that URL with the event type `assistant_request`. Your endpoint must reply with the full assistant configuration for that call.
 
-- `example_assistant_request.json` in this repo mirrors the JSON object your endpoint should return. It sets the company profile (Summit Roofing), trade focus (`["Roofing"]`), partner companies (`partnerCompanyList`), and global providers (`globalCompanyList`).
+- `assistant_request.json` in this repo mirrors the JSON object your endpoint should return. It sets the company profile (Summit Roofing), trade focus (`["Roofing"]`), partner companies (`partnerCompanyList`), and global providers (`globalCompanyList`).
 
 ## How the Assistant Works
 
 1. Intent discovery - The prompt compels Alex to greet the caller, ask how it can help, and narrow the request to one of the supported intents (`supported_service_request`, `request_specific_person`, etc.). It limits the assistant to one clarifying question at a time and enforces guardrails (no tool chatter, no filler, safety policies).
-2. RAG-style instruction fetch - As soon as the intent is identified, Alex silently calls the `get_instructions` API tool. That tool posts `{ "intent": "<value>" }` to your hosted copy of `instruction_tool.ts`. The endpoint responds with intent-specific directions that effectively stream fresh policy text into the conversation.
+2. RAG-style instruction fetch - As soon as the intent is identified, Alex silently calls the `get_instructions` API tool. That tool posts `{ "intent": "<value>" }` to your hosted copy of `tools/get_instructions.ts`. The endpoint responds with intent-specific directions that effectively stream fresh policy text into the conversation.
 3. Action execution - The returned instructions tell Alex what to say, what questions to ask, and when to call helper tools such as `transfer_to_live_agent` or `end_call_tool`. Because these steps live outside the static prompt, you can iterate on procedures without redeploying the assistant.
 
 ## Step 1: Publish the Instruction Tool Endpoint
 
-The file `instruction_tool.ts` already exports a handler that maps intents to scripts. Deploy it somewhere Vapi can reach:
+The file `tools/get_instructions.ts` exports a handler that maps intents to scripts. Deploy it somewhere Vapi can reach:
 
 - ValTown (fast dev loop)  
   1. Create a new HTTP Val.  
-  2. Paste the contents of `instruction_tool.ts`.  
+  2. Paste the contents of `tools/get_instructions.ts`.  
   3. Make the Val public or attach an auth token you can send via headers.  
   4. Note the HTTPS URL; this is the endpoint your Vapi tool will call.
 
 - AWS Lambda + API Gateway (production)  
-  1. Bundle `instruction_tool.ts` with a lightweight adapter (for example the `@vercel/node` or `aws-lambda` runtime).  
+  1. Bundle `tools/get_instructions.ts` with a lightweight adapter (for example the `@vercel/node` or `aws-lambda` runtime).  
   2. Deploy the Lambda and create an HTTP API Gateway route (POST `/instructions`).  
   3. Configure any auth and capture the invoke URL plus headers.
 
@@ -62,9 +65,9 @@ Feel free to replace the static switch statement with a true RAG pipeline (vecto
 
 ## Step 3: Build the Assistant in Vapi
 
-1. Create a new Voice Assistant.  
-2. Paste the contents of `assistant_prompt.md` into the System Prompt (or Instructions) field.  
-3. Fill the template variables (company name, DNIS, trades, etc.) either inline or via the API using `example_assistant_request.json` as a reference.  
+1. Create a new Voice Assistant or import the configuration from `assistant.json`.  
+2. The system prompt is already included in `assistant.json`. If creating manually, copy the prompt from the `model.messages` field.  
+3. Fill the template variables (company name, DNIS, trades, etc.) either inline or via the API using `assistant_request.json` as a reference.  
 4. Add the `get_instructions` API request tool you configured in Step 2.  
 5. (Optional) Add any other tools you plan to expose (CRM lookup, appointment booking, etc.).
 
@@ -91,10 +94,10 @@ Regardless of the approach, make sure the tool:
 
 ## Putting It All Together
 
-1. Deploy `instruction_tool.ts` and obtain its HTTPS URL.  
-2. Register the `get_instructions` API tool and point it to that URL.  
-3. Configure transfer tooling (native, API-driven, or workflow).  
-4. Create the assistant with `assistant_prompt.md` and your company metadata.  
+1. Deploy `tools/get_instructions.ts` and obtain its HTTPS URL.  
+2. Register the `get_instructions` API tool (see `tools/get_instructions.json`) and point it to that URL.  
+3. Configure transfer tooling (see `tools/general/transfer_call.json` and `tools/general/end_call.json`).  
+4. Create the assistant using `assistant.json` and your company metadata.  
 5. Test each intent path to confirm Alex identifies the intent, calls the instruction tool, follows the returned script, and transfers or ends the call per the workflow.
 
 With this setup, updates to call handling are as easy as editing the instruction endpoint or swapping in a richer RAG knowledge base, no prompt redeploy required.

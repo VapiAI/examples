@@ -1,0 +1,34 @@
+{
+    "type": "function",
+    "function": {
+        "name": "cancelCalendarVAPIHealth",
+        "description": "Use this tool to cancel an existing appointment of the caller",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "name of the caller.",
+                    "type": "string",
+                    "default": ""
+                },
+                "phone": {
+                    "description": "phone number of the caller.",
+                    "type": "string",
+                    "default": ""
+                }
+            },
+            "required": [
+                "phone"
+            ]
+        }
+    },
+    "messages": [
+        {
+            "type": "request-start",
+            "blocking": false
+        }
+    ],
+    "server": {
+        "url": "CANCEL_TOOL_URL"
+    }
+}

@@ -1,3 +1,7 @@
+/**
+ * Code example for the get_instructions tool.
+ */
+
 const INTENT_SUPPORTED_SERVICE_REQUEST = `
   Option A (you know the caller's name):
   1. Say "I understand. I am going to get you to a specialist to assist you. Can I get the best number to reach you back at?"

@@ -1,0 +1,34 @@
+{
+    "type": "function",
+    "function": {
+        "name": "getCalendarVAPIHealth",
+        "description": "use this tool to retrieve the existing appointment of the caller",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "name of the caller",
+                    "type": "string",
+                    "default": ""
+                },
+                "phone": {
+                    "description": "phone number of the caller.",
+                    "type": "string",
+                    "default": ""
+                }
+            },
+            "required": [
+                "phone"
+            ]
+        }
+    },
+    "messages": [
+        {
+            "type": "request-start",
+            "blocking": false
+        }
+    ],
+    "server": {
+        "url": "GET_CALENDAR_TOOL_URL"
+    }
+}

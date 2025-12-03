@@ -1,0 +1,14 @@
+{
+    "type": "transferCall",
+    "function": {
+        "name": "transfer_call",
+        "description": "Transfer to live agent"
+    },
+    "destinations": [
+        {
+            "type": "number",
+            "number": "+18444398274",
+            "message": "Transferring you now"
+        }
+    ]
+}

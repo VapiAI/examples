@@ -1,0 +1,40 @@
+{
+    "type": "apiRequest",
+    "function": {
+        "name": "api_request_tool",
+        "description": "Use this tool to get instructions on how to resolve the user request"
+    },
+    "messages": [
+        {
+            "type": "request-start",
+            "content": "",
+            "blocking": false
+        }
+    ],
+    "name": "get_instructions",
+    "url": "INSTRUCTIONS_TOOL_URL",
+    "method": "POST",
+    "body": {
+        "type": "object",
+        "required": [
+            "intent"
+        ],
+        "properties": {
+            "intent": {
+                "description": "- supported_service_request: Caller looking for service related to one of the following trades: {{companyTrades}}\n- not_supported_service_request: Caller is looking for service, but it is not related to the company trades: {{companyTrades}}\n- request_specific_person: Caller is looking to speak to someone specific at the company or dispatch\n- looking_for_a_job: Caller looking for a job\n- wrong_number: Caller reached the wrong business or is confused\n- report_driver: Caller wants to report a driver complaint or road incident.  You can help with this.\n- telemarketer: Caller is a telemarketer or trying to sell or advertise services\n- other: Caller is asking questions for a topic not covered by the other intents. (e.g. Appointments, Payments, Update Account, etc)",
+                "type": "string",
+                "enum": [
+                    "supported_service_request",
+                    "not_supported_service_request",
+                    "request_specific_person",
+                    "looking_for_a_job",
+                    "wrong_number",
+                    "report_driver",
+                    "telemarketer",
+                    "other"
+                ],
+                "default": ""
+            }
+        }
+    }
+}

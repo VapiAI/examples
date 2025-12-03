@@ -1,0 +1,34 @@
+{
+    "type": "function",
+    "function": {
+        "name": "rescheduleCalendarVAPIHealth",
+        "description": "This tool reschedules an existing meeting in the calendar.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "start": {
+                    "description": "The start time of the booking in ISO 8601 format in UTC timezone, e.g. ‘2024-08-13T09:00:00Z’.",
+                    "type": "string",
+                    "default": ""
+                },
+                "bookinguid": {
+                    "description": "the unique identifier of the retreived booking from getCalendarVAPIHealth",
+                    "type": "string",
+                    "default": ""
+                }
+            },
+            "required": [
+                "bookinguid"
+            ]
+        }
+    },
+    "messages": [
+        {
+            "type": "request-start",
+            "blocking": false
+        }
+    ],
+    "server": {
+        "url": "RESCHEDULE_TOOL_URL"
+    }
+}

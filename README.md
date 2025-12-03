@@ -56,8 +56,8 @@ Production-ready voice assistants for various industries and use cases.
 
 | Example | Description | Key Features |
 |---------|-------------|--------------|
-| **[Healthcare Booking](agents/vapi_health_complex_booking/)** | AI receptionist for medical clinics with full appointment management | Booking, rescheduling, cancellation, cal.com integration, n8n workflows |
-| **[RAG Intent Router](agents/rag-intent-transfer/)** | Intent-based call routing with retrieval-augmented instructions | Dynamic instructions, multi-intent handling, live agent transfer |
+| **[Healthcare Booking](assistants/vapi_health_complex_booking/)** | AI receptionist for medical clinics with full appointment management | Booking, rescheduling, cancellation, cal.com integration, n8n workflows |
+| **[RAG Intent Router](assistants/rag-intent-transfer/)** | Intent-based call routing with retrieval-augmented instructions | Dynamic instructions, multi-intent handling, live agent transfer |
 
 ---
 
@@ -90,10 +90,10 @@ Each example follows a consistent structure:
 ```
 example-name/
 ├── README.md              # Detailed documentation
-├── agent/
-│   └── assistant_config.json   # Vapi assistant configuration
+├── assistant.json         # Vapi assistant configuration
+├── assistant_request.json # Sample webhook response payload
 ├── tools/                 # Tool definitions (API requests, functions)
-└── example_usage/         # Sample audio, requests, or demos
+└── recordings/            # Sample audio or demos (if applicable)
 ```
 
 ---

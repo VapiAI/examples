@@ -58,6 +58,7 @@ Production-ready voice assistants for various industries and use cases.
 |---------|-------------|--------------|
 | **[Healthcare Scheduling](assistants/healthcare_scheduling/)** | AI receptionist for medical clinics with full appointment management | Booking, rescheduling, cancellation, cal.com integration, n8n workflows |
 | **[Multi-Intent Handler](assistants/multi_intent_handler/)** | Intent-based call routing with retrieval-augmented instructions | Dynamic instructions, multi-intent handling, live agent transfer |
+| **[Voicemail Detection](assistants/voicemail_detection/)** | Outbound calling assistant that detects voicemail systems and handles live contacts appropriately | Voicemail detection, live person handling, tool-based voicemail |
 
 ---
 

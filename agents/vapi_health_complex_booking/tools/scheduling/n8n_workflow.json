@@ -83,8 +83,6 @@
     {
       "parameters": {
         "url": "https://api.cal.com/v1/slots",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "calApi",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
@@ -103,7 +101,17 @@
             {
               "name": "timeZone",
               "value": "America/Los_Angeles"
+            },
+            {
+              "name": "apiKey",
+              "value": "cal_live_0eb5af9610107c21605026426fed73d2"
             }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
           ]
         },
         "options": {}
@@ -117,13 +125,7 @@
       "id": "6c799619-3ca8-4bb3-9846-fa984e939b8c",
       "name": "AvailSlots2",
       "notesInFlow": false,
-      "alwaysOutputData": false,
-      "credentials": {
-        "calApi": {
-          "id": "78griexaGirOrjMD",
-          "name": "cal.com"
-        }
-      }
+      "alwaysOutputData": false
     },
     {
       "parameters": {
@@ -240,7 +242,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\n  \"results\": [\n    {\n       \"toolCallId\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].id }}\",\n  \"result\": \"Unfortunately that specific time isn't available but we have {{ $json.slots }}\"\n    }\n  ]\n}",
+        "responseBody": "={\n  \"results\": [\n    {\n       \"toolCallId\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].id }}\",\n  \"result\": \"Unfortunately that specific time isn't available but we have {{ JSON.stringify($json.slots).replace(/\"/g, '\\\\\"') }} *only choose three closest to request\"\n    }\n  ]\n}",
         "options": {
           "responseCode": 200
         }
@@ -281,14 +283,12 @@
     {
       "parameters": {
         "url": "https://api.cal.com/v1/slots",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "calApi",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
             {
               "name": "eventTypeId",
-              "value": "=3588628"
+              "value": "={{ $('eventType + requestedTime').item.json.EventTypeID }}"
             },
             {
               "name": "startTime",
@@ -301,7 +301,17 @@
             {
               "name": "timeZone",
               "value": "America/Los_Angeles"
+            },
+            {
+              "name": "apiKey",
+              "value": "cal_live_0eb5af9610107c21605026426fed73d2"
             }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
           ]
         },
         "options": {}
@@ -315,13 +325,7 @@
       "id": "04904f90-4a44-4938-9c71-a7dbdaa74914",
       "name": "AvailSlots3",
       "notesInFlow": false,
-      "alwaysOutputData": false,
-      "credentials": {
-        "calApi": {
-          "id": "78griexaGirOrjMD",
-          "name": "cal.com"
-        }
-      }
+      "alwaysOutputData": false
     },
     {
       "parameters": {
@@ -361,7 +365,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\n  \"results\": [\n    {\n       \"toolCallId\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].id }}\",\n  \"result\": \"Unfortunately we don't have any times on that day, did you have another day in mind that would work better?\"\n    }\n  ]\n}",
+        "responseBody": "={\n  \"results\": [\n    {\n       \"toolCallId\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].id }}\",\n  \"result\": \"Unfortunately the doctor isn't free that day, did you have another day in mind that would work better?\"\n    }\n  ]\n}",
         "options": {
           "responseCode": 200
         }
@@ -397,8 +401,6 @@
       "parameters": {
         "method": "POST",
         "url": "https://api.cal.com/v2/bookings",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "calApi",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -409,6 +411,10 @@
             {
               "name": "Content-Type",
               "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer cal_live_0eb5af9610107c21605026426fed73d2"
             }
           ]
         },
@@ -428,12 +434,6 @@
       "retryOnFail": true,
       "maxTries": 2,
       "waitBetweenTries": 5000,
-      "credentials": {
-        "calApi": {
-          "id": "78griexaGirOrjMD",
-          "name": "cal.com"
-        }
-      },
       "onError": "continueErrorOutput"
     },
     {
@@ -639,7 +639,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\n  \"results\": [\n    {\n       \"toolCallId\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].id }}\",\n  \"result\": \"Great! I was able to retrieve and cancel your current booking for {{ $json.appointment_time }}. What time do you want to reschedule your appointment? UID = {{ $json.appointment_uid }}\"\n    }\n  ]\n}",
+        "responseBody": "={\n  \"results\": [\n    {\n       \"toolCallId\": \"{{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].id }}\",\n  \"result\": \"Great! I was able to retrieve and cancel your current booking for {{ $json.appointment_time }}. What time do you want to reschedule your appointment? UID = {{ $json.appointment_uid }} DR = {{ $json.slug }} *note doctors availability with reschedule*\"\n    }\n  ]\n}",
         "options": {
           "responseCode": 200
         }
@@ -1173,7 +1173,8 @@
             "phone": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.phone }}",
             "appointment_uid": "={{ $('v2 POST 1').item.json.data.uid }}",
             "appointment_time": "={{ new Date($('v2 POST 1').item.json.data.start).toLocaleString('en-US',{timeZone:'America/Los_Angeles',weekday:'long',month:'long',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true}).replace(',', ' at') }}",
-            "dob": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.birthDate }}"
+            "dob": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.birthDate }}",
+            "slug": "={{ $json.data.eventType.slug }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -1230,6 +1231,16 @@
             {
               "id": "appointment_time",
               "displayName": "appointment_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "slug",
+              "displayName": "slug",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -1382,7 +1393,7 @@
             "last_name": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCalls[0].function.arguments.lastName }}",
             "phone": "={{ $('Number Parser4').item.json.phoneE164 }}",
             "appointment_uid": "={{ $('v2 POST 1').item.json.data.uid }}",
-            "appointment_time": "={{ new Date($('v2 POST 1').item.json.data.start).toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }) }}",
+            "appointment_time": "={{ new Date($('v2 POST 1').item.json.data.start).toLocaleString('en-US',{timeZone:'America/Los_Angeles',weekday:'long',month:'long',day:'numeric',hour:'numeric',minute:'2-digit',hour12:true}).replace(',', ' at') }}",
             "dob": "={{ $('Tool-Calendar-Webhook1').item.json.body.message.toolCallList[0].function.arguments.birthDate }}"
           },
           "matchingColumns": [],
@@ -1446,6 +1457,16 @@
               "type": "string",
               "readOnly": false,
               "removed": false
+            },
+            {
+              "id": "slug",
+              "displayName": "slug",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
             }
           ],
           "attemptToConvertTypes": false,
@@ -1544,6 +1565,16 @@
             {
               "id": "appointment_time",
               "displayName": "appointment_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "slug",
+              "displayName": "slug",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -2001,6 +2032,16 @@
               "type": "string",
               "readOnly": false,
               "removed": false
+            },
+            {
+              "id": "slug",
+              "displayName": "slug",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
             }
           ],
           "attemptToConvertTypes": false,
@@ -2171,58 +2212,70 @@
           "headers": {
             "host": "vapiai.app.n8n.cloud",
             "user-agent": "axios/1.8.3",
-            "content-length": "51450",
+            "content-length": "65186",
             "accept": "application/json, text/plain, */*",
             "accept-encoding": "gzip, br",
-            "baggage": "sentry-environment=production,sentry-public_key=a0021577936aec367b16615ad816c078,sentry-trace_id=b495120c69e141488e43570eb0dfbcd3",
+            "baggage": "sentry-environment=production,sentry-release=383b17c7c719b9e5a2efa95da9bb7b5d3ad0db40,sentry-public_key=a0021577936aec367b16615ad816c078,sentry-trace_id=d49e14740e8c47aea2136811b6b752bb",
             "cdn-loop": "cloudflare; loops=1; subreqs=1",
-            "cf-connecting-ip": "167.150.225.213",
+            "cf-connecting-ip": "146.235.224.251",
             "cf-ew-via": "15",
             "cf-ipcountry": "US",
-            "cf-ray": "9a258ab4b3a1d0a0-PDX",
+            "cf-ray": "9a7ea51543c374f9-SJC",
             "cf-visitor": "{\"scheme\":\"https\"}",
             "cf-worker": "n8n.cloud",
             "content-type": "application/json",
-            "cookie": "callId=019aa9bb-3ce8-7aa2-9ab3-126b9b9dc856",
-            "sentry-trace": "b495120c69e141488e43570eb0dfbcd3-a3b0233d5644d681",
-            "x-call-id": "019aa9bb-3ce8-7aa2-9ab3-126b9b9dc856",
-            "x-forwarded-for": "167.150.225.213, 172.68.174.180",
+            "cookie": "callId=019ae16a-7f3b-788a-a966-c5534cdd4ae6",
+            "sentry-trace": "d49e14740e8c47aea2136811b6b752bb-a5298c275ae9dab0",
+            "x-call-id": "019ae16a-7f3b-788a-a966-c5534cdd4ae6",
+            "x-forwarded-for": "146.235.224.251, 172.71.158.239",
             "x-forwarded-host": "vapiai.app.n8n.cloud",
             "x-forwarded-port": "443",
             "x-forwarded-proto": "https",
-            "x-forwarded-server": "traefik-prod-users-gwc-88-6587794787-vl6tt",
+            "x-forwarded-server": "traefik-prod-users-gwc-88-6587794787-z7mkt",
             "x-is-trusted": "yes",
-            "x-real-ip": "167.150.225.213",
+            "x-real-ip": "146.235.224.251",
             "x-vapi-secret": ""
           },
           "params": {},
           "query": {},
           "body": {
             "message": {
-              "timestamp": 1763784256708,
+              "timestamp": 1764718569745,
               "type": "tool-calls",
               "toolCalls": [
                 {
-                  "id": "call_mLTzMbOVmDEr4tms3F6UEF7s",
+                  "id": "call_3pxqpKOgMaWBAlfzADhiMWQ3",
                   "type": "function",
                   "function": {
-                    "name": "cancelCalendarVAPIHealth",
+                    "name": "bookCalendarVAPIHealth",
                     "arguments": {
-                      "name": "John Smith",
-                      "phone": "8883658681"
+                      "phone": "5737448183",
+                      "reason": "Checkup",
+                      "lastName": "Jones",
+                      "birthDate": "2003-11-21",
+                      "firstName": "Edward",
+                      "eventTypeID": "3954310",
+                      "eventTypeSlug": "dr-wong-clinic-30-minute",
+                      "requestedTime": "2025-12-05T15:00:00"
                     }
                   }
                 }
               ],
               "toolCallList": [
                 {
-                  "id": "call_mLTzMbOVmDEr4tms3F6UEF7s",
+                  "id": "call_3pxqpKOgMaWBAlfzADhiMWQ3",
                   "type": "function",
                   "function": {
-                    "name": "cancelCalendarVAPIHealth",
+                    "name": "bookCalendarVAPIHealth",
                     "arguments": {
-                      "name": "John Smith",
-                      "phone": "8883658681"
+                      "phone": "5737448183",
+                      "reason": "Checkup",
+                      "lastName": "Jones",
+                      "birthDate": "2003-11-21",
+                      "firstName": "Edward",
+                      "eventTypeID": "3954310",
+                      "eventTypeSlug": "dr-wong-clinic-30-minute",
+                      "requestedTime": "2025-12-05T15:00:00"
                     }
                   }
                 }
@@ -2231,29 +2284,86 @@
                 {
                   "type": "function",
                   "function": {
-                    "name": "cancelCalendarVAPIHealth",
+                    "name": "bookCalendarVAPIHealth",
                     "parameters": {
                       "type": "object",
                       "required": [
-                        "phone"
+                        "firstName",
+                        "requestedTime",
+                        "lastName",
+                        "phone",
+                        "eventTypeID"
                       ],
                       "properties": {
-                        "name": {
-                          "type": "string",
-                          "default": "",
-                          "description": "name of the caller."
-                        },
                         "phone": {
                           "type": "string",
                           "default": "",
-                          "description": "phone number of the caller."
+                          "description": "The phone number of the lead"
+                        },
+                        "reason": {
+                          "type": "string",
+                          "default": "",
+                          "description": "the reason of the call or booking"
+                        },
+                        "lastName": {
+                          "type": "string",
+                          "default": "",
+                          "description": "the last name of the caller."
+                        },
+                        "birthDate": {
+                          "type": "string",
+                          "default": "",
+                          "description": "the date of birth of the caller."
+                        },
+                        "firstName": {
+                          "type": "string",
+                          "default": "",
+                          "description": "the first name of the caller / lead"
+                        },
+                        "eventTypeID": {
+                          "enum": [
+                            "3954317",
+                            "3954310",
+                            "3954311",
+                            "3954306"
+                          ],
+                          "type": "string",
+                          "default": "",
+                          "description": "When determining eventTypeId and eventTypeSlug, you must always re-evaluate the caller’s current requested date, day-of-week, and consultation type.\r\nNever reuse or carry over the previous eventTypeId from a past booking. Choose the correct eventTypeId based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"3954317\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"3954310\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"3954311\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"3954306\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request.\r\n\r\n## Important:\r\n- You must correctly interpret the day of the week for ANY date mentioned by the caller.\r\nExamples:\r\n\r\nDecember 5, 2025 → Friday\r\nDecember 6, 2025 → Saturday\r\nDecember 7, 2025 → Sunday\r\n\r\n- Never assume the day; always compute the correct weekday.\r\n\r\nIf the previously selected eventTypeId does not match the new date’s day-of-week, you must correct it immediately by selecting the correct one.\r\n\r\nExample:\r\nOriginal booking: December 5 (Friday) → \"3954310\"\r\nCaller reschedules to December 6 (Saturday) → must switch to \"3954317\"\r\nDo not return \"3954310\" again.\n"
+                        },
+                        "insuranceID": {
+                          "type": "string",
+                          "default": "",
+                          "description": "Member ID of Insurance of the caller."
+                        },
+                        "eventTypeSlug": {
+                          "enum": [
+                            "dr-chan-clinic-30-minute",
+                            "dr-wong-clinic-30-minute",
+                            "dr-chan-telehealth-30-minute",
+                            "dr-wong-telehealth-30-minute"
+                          ],
+                          "type": "string",
+                          "default": "",
+                          "description": "Choose the correct eventTypeSlug based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"dr-chan-clinic-30-minute\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"dr-wong-clinic-30-minute\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"dr-chan-telehealth-30-minute\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"dr-wong-telehealth-30-minute\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request."
+                        },
+                        "requestedTime": {
+                          "type": "string",
+                          "default": "",
+                          "description": "the requested time of the user in this format: yyyy-mm-ddTHH:mm:ss (e.g.,  2025-07-04T11:00:00)."
+                        },
+                        "insuranceProvider": {
+                          "type": "string",
+                          "default": "",
+                          "description": "Insurance Provider of the caller."
                         }
                       }
                     },
-                    "description": "Use this tool to cancel an existing appointment of the caller"
+                    "description": "Use this function to book consultations in calendar."
                   },
                   "server": {
-                    "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12"
+                    "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12",
+                    "timeoutSeconds": 20
                   },
                   "messages": [
                     {
@@ -2264,13 +2374,19 @@
                     }
                   ],
                   "toolCall": {
-                    "id": "call_mLTzMbOVmDEr4tms3F6UEF7s",
+                    "id": "call_3pxqpKOgMaWBAlfzADhiMWQ3",
                     "type": "function",
                     "function": {
-                      "name": "cancelCalendarVAPIHealth",
+                      "name": "bookCalendarVAPIHealth",
                       "arguments": {
-                        "name": "John Smith",
-                        "phone": "8883658681"
+                        "phone": "5737448183",
+                        "reason": "Checkup",
+                        "lastName": "Jones",
+                        "birthDate": "2003-11-21",
+                        "firstName": "Edward",
+                        "eventTypeID": "3954310",
+                        "eventTypeSlug": "dr-wong-clinic-30-minute",
+                        "requestedTime": "2025-12-05T15:00:00"
                       }
                     }
                   }
@@ -2281,116 +2397,431 @@
                   {
                     "role": "system",
                     "message": "# Role\nYou are **Amy**, an AI voice assistant for **VAPI Health Clinic**, a modern healthcare provider offering AI-supported appointment management and patient care coordination. Your personality is warm, professional, and confident—never robotic. You speak naturally with empathy and curiosity.\n\nYour core purposes are to:\n- Answer patient questions and handle frequently asked questions (FAQs).\n- Help callers book, reschedule, or cancel healthcare appointments.\n- Route callers to the right human team member when needed.\n\n# Context\n- **Clinic Name:** VAPI Health Clinic  \n- **Services:** Primary care, general consultations, wellness checks, and telehealth services.  \n- **Positioning:** Designed for patients who want accessible, fast, and reliable scheduling with minimal waiting times.  \n- **Service Model:** Same-day appointments where possible and shorter in-clinic wait times.\n\n**Contact Details (speak digit by digit and use “at” / “dot” for email):**\n- Phone: zero four two nine, one four...",
-                    "time": 1763784211829,
+                    "time": 1764718444985,
                     "secondsFromStart": 0
                   },
                   {
                     "role": "bot",
                     "message": "VAPI Medical Practice. This is Amy speaking.",
-                    "time": 1763784213314,
-                    "endTime": 1763784216434,
-                    "secondsFromStart": 1.372,
-                    "duration": 3120,
+                    "time": 1764718446397,
+                    "endTime": 1764718448956.9998,
+                    "secondsFromStart": 1.325,
+                    "duration": 2559.999755859375,
                     "source": ""
                   },
                   {
                     "role": "user",
-                    "message": "Hey. Amy. I rang earlier today about rescheduling an appointment for tomorrow. Just gonna have to cancel that 1. Something's popped up.",
-                    "time": 1763784217534,
-                    "endTime": 1763784226794,
-                    "secondsFromStart": 5.58,
-                    "duration": 7879.999755859375,
+                    "message": "Hello there. Can you help me book?",
+                    "time": 1764718451697,
+                    "endTime": 1764718453296.9995,
+                    "secondsFromStart": 6.42,
+                    "duration": 1599.99951171875,
                     "metadata": {
                       "wordLevelConfidence": [
                         {
-                          "word": "hey",
-                          "start": 5.58,
-                          "end": 5.8199997,
-                          "confidence": 0.8273926,
-                          "punctuated_word": "Hey."
+                          "word": "hello",
+                          "start": 6.42,
+                          "end": 6.8199997,
+                          "confidence": 0.9941406,
+                          "punctuated_word": "Hello"
+                        },
+                        {
+                          "word": "there",
+                          "start": 6.8199997,
+                          "end": 7.14,
+                          "confidence": 0.9536133,
+                          "punctuated_word": "there."
+                        },
+                        {
+                          "word": "can",
+                          "start": 7.14,
+                          "end": 7.22,
+                          "confidence": 1,
+                          "punctuated_word": "Can"
+                        },
+                        {
+                          "word": "you",
+                          "start": 7.22,
+                          "end": 7.38,
+                          "confidence": 0.99902344,
+                          "punctuated_word": "you"
+                        },
+                        {
+                          "word": "help",
+                          "start": 7.38,
+                          "end": 7.46,
+                          "confidence": 0.9951172,
+                          "punctuated_word": "help"
+                        },
+                        {
+                          "word": "me",
+                          "start": 7.46,
+                          "end": 7.62,
+                          "confidence": 0.99902344,
+                          "punctuated_word": "me"
+                        },
+                        {
+                          "word": "book",
+                          "start": 7.62,
+                          "end": 8.0199995,
+                          "confidence": 0.91381836,
+                          "punctuated_word": "book?"
                         }
                       ]
                     }
                   },
                   {
                     "role": "bot",
-                    "message": "I can help with that.",
-                    "time": 1763784228284,
-                    "endTime": 1763784229324,
-                    "secondsFromStart": 16.342,
-                    "duration": 1040,
+                    "message": "VAPI Medical Practice. This is Amy speaking. How can I help you today?",
+                    "time": 1764718457407,
+                    "endTime": 1764718461547,
+                    "secondsFromStart": 12.335,
+                    "duration": 3520,
                     "source": ""
                   },
                   {
                     "role": "user",
-                    "message": "I can help with that. Can I please have",
-                    "time": 1763784228993.999,
-                    "endTime": 1763784231393.999,
-                    "secondsFromStart": 17.039999,
-                    "duration": 2400,
+                    "message": "Can you help me book Can you help me book, please?",
+                    "time": 1764718463037,
+                    "endTime": 1764718470547,
+                    "secondsFromStart": 17.76,
+                    "duration": 2560.0009765625,
                     "metadata": {
                       "wordLevelConfidence": [
                         {
-                          "word": "i",
-                          "start": 17.039999,
-                          "end": 17.44,
-                          "confidence": 0.9589844,
-                          "punctuated_word": "I"
-                        },
-                        {
                           "word": "can",
-                          "start": 17.44,
-                          "end": 17.6,
-                          "confidence": 0.9980469,
-                          "punctuated_word": "can"
-                        },
-                        {
-                          "word": "help",
-                          "start": 17.6,
-                          "end": 17.84,
-                          "confidence": 0.99902344,
-                          "punctuated_word": "help"
-                        },
-                        {
-                          "word": "with",
-                          "start": 17.84,
-                          "end": 18,
-                          "confidence": 0.9980469,
-                          "punctuated_word": "with"
-                        },
-                        {
-                          "word": "that",
-                          "start": 18,
-                          "end": 18.48,
-                          "confidence": 0.9995117,
-                          "punctuated_word": "that."
-                        },
-                        {
-                          "word": "can",
-                          "start": 18.48,
-                          "end": 18.8,
-                          "confidence": 0.9111328,
+                          "start": 17.76,
+                          "end": 18.08,
+                          "confidence": 0.984375,
                           "punctuated_word": "Can"
                         },
                         {
+                          "word": "you",
+                          "start": 18.08,
+                          "end": 18.24,
+                          "confidence": 0.9941406,
+                          "punctuated_word": "you"
+                        },
+                        {
+                          "word": "help",
+                          "start": 18.24,
+                          "end": 18.4,
+                          "confidence": 1,
+                          "punctuated_word": "help"
+                        },
+                        {
+                          "word": "me",
+                          "start": 18.4,
+                          "end": 18.56,
+                          "confidence": 1,
+                          "punctuated_word": "me"
+                        },
+                        {
+                          "word": "book",
+                          "start": 18.56,
+                          "end": 18.880001,
+                          "confidence": 1,
+                          "punctuated_word": "book"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Sure. Sure. I can help with that. First, can I please have your first and last name?",
+                    "time": 1764718469347,
+                    "endTime": 1764718476387,
+                    "secondsFromStart": 24.275,
+                    "duration": 4559.9990234375,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "Edward Jones.",
+                    "time": 1764718477997,
+                    "endTime": 1764718478877,
+                    "secondsFromStart": 32.72,
+                    "duration": 880,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "edward",
+                          "start": 32.72,
+                          "end": 33.12,
+                          "confidence": 0.99902344,
+                          "punctuated_word": "Edward"
+                        },
+                        {
+                          "word": "jones",
+                          "start": 33.12,
+                          "end": 33.6,
+                          "confidence": 0.9797363,
+                          "punctuated_word": "Jones."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Thank you, Edward. And could you please spell your last name for me?",
+                    "time": 1764718479907,
+                    "endTime": 1764718483107,
+                    "secondsFromStart": 34.835,
+                    "duration": 3200,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "J o n e s",
+                    "time": 1764718485687,
+                    "endTime": 1764718487047,
+                    "secondsFromStart": 40.41,
+                    "duration": 1360,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "j",
+                          "start": 40.41,
+                          "end": 40.89,
+                          "confidence": 0.7988281,
+                          "punctuated_word": "J"
+                        },
+                        {
+                          "word": "o",
+                          "start": 40.89,
+                          "end": 41.05,
+                          "confidence": 1,
+                          "punctuated_word": "o"
+                        },
+                        {
+                          "word": "n",
+                          "start": 41.05,
+                          "end": 41.29,
+                          "confidence": 0.99902344,
+                          "punctuated_word": "n"
+                        },
+                        {
+                          "word": "e",
+                          "start": 41.29,
+                          "end": 41.53,
+                          "confidence": 0.99902344,
+                          "punctuated_word": "e"
+                        },
+                        {
+                          "word": "s",
+                          "start": 41.53,
+                          "end": 41.77,
+                          "confidence": 1,
+                          "punctuated_word": "s"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Got it. What's your date of birth?",
+                    "time": 1764718491187,
+                    "endTime": 1764718492707,
+                    "secondsFromStart": 46.115,
+                    "duration": 1520,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "11 21 2003.",
+                    "time": 1764718496087,
+                    "endTime": 1764718497767,
+                    "secondsFromStart": 50.81,
+                    "duration": 1680,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "11",
+                          "start": 50.81,
+                          "end": 51.21,
+                          "confidence": 0.98095703,
+                          "punctuated_word": "11"
+                        },
+                        {
+                          "word": "21",
+                          "start": 51.21,
+                          "end": 51.77,
+                          "confidence": 0.9995117,
+                          "punctuated_word": "21"
+                        },
+                        {
+                          "word": "2003",
+                          "start": 51.77,
+                          "end": 52.49,
+                          "confidence": 0.95979816,
+                          "punctuated_word": "2003."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Thank you. And what's the best phone number to reach you on?",
+                    "time": 1764718500027,
+                    "endTime": 1764718502987,
+                    "secondsFromStart": 54.955,
+                    "duration": 2960,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "5 7 3 7 4 4 8 1 8 3.",
+                    "time": 1764718504437,
+                    "endTime": 1764718507557,
+                    "secondsFromStart": 59.16,
+                    "duration": 3120,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "5",
+                          "start": 59.16,
+                          "end": 59.559998,
+                          "confidence": 0.97998047,
+                          "punctuated_word": "5"
+                        },
+                        {
+                          "word": "7",
+                          "start": 59.559998,
+                          "end": 59.879997,
+                          "confidence": 1,
+                          "punctuated_word": "7"
+                        },
+                        {
+                          "word": "3",
+                          "start": 59.879997,
+                          "end": 60.199997,
+                          "confidence": 1,
+                          "punctuated_word": "3"
+                        },
+                        {
+                          "word": "7",
+                          "start": 60.199997,
+                          "end": 60.68,
+                          "confidence": 1,
+                          "punctuated_word": "7"
+                        },
+                        {
+                          "word": "4",
+                          "start": 60.68,
+                          "end": 61,
+                          "confidence": 1,
+                          "punctuated_word": "4"
+                        },
+                        {
+                          "word": "4",
+                          "start": 61,
+                          "end": 61.239998,
+                          "confidence": 1,
+                          "punctuated_word": "4"
+                        },
+                        {
+                          "word": "8",
+                          "start": 61.239998,
+                          "end": 61.559998,
+                          "confidence": 1,
+                          "punctuated_word": "8"
+                        },
+                        {
+                          "word": "1",
+                          "start": 61.559998,
+                          "end": 61.8,
+                          "confidence": 1,
+                          "punctuated_word": "1"
+                        },
+                        {
+                          "word": "8",
+                          "start": 61.8,
+                          "end": 62.039997,
+                          "confidence": 1,
+                          "punctuated_word": "8"
+                        },
+                        {
+                          "word": "3",
+                          "start": 62.039997,
+                          "end": 62.28,
+                          "confidence": 0.907959,
+                          "punctuated_word": "3."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Thank you. And what's the main reason for your appointment today?",
+                    "time": 1764718509147.003,
+                    "endTime": 1764718512127,
+                    "secondsFromStart": 64.0750029296875,
+                    "duration": 2640.0009765625,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "Checkup.",
+                    "time": 1764718514826.995,
+                    "endTime": 1764718515307,
+                    "secondsFromStart": 69.549995,
+                    "duration": 480.0048828125,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "checkup",
+                          "start": 69.549995,
+                          "end": 70.03,
+                          "confidence": 0.81347656,
+                          "punctuated_word": "Checkup."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Got it. Do you have an insurance provider you'd like us to note such as Aetna, BCBS, United Health",
+                    "time": 1764718516567,
+                    "endTime": 1764718522527,
+                    "secondsFromStart": 71.495,
+                    "duration": 5360,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "No. I don't have",
+                    "time": 1764718522207,
+                    "endTime": 1764718523327,
+                    "secondsFromStart": 76.93,
+                    "duration": 1120,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "no",
+                          "start": 76.93,
+                          "end": 77.41,
+                          "confidence": 0.97802734,
+                          "punctuated_word": "No."
+                        },
+                        {
                           "word": "i",
-                          "start": 18.8,
-                          "end": 18.96,
-                          "confidence": 0.9863281,
+                          "start": 77.41,
+                          "end": 77.73,
+                          "confidence": 0.5209961,
                           "punctuated_word": "I"
                         },
                         {
-                          "word": "please",
-                          "start": 18.96,
-                          "end": 19.2,
-                          "confidence": 0.98535156,
-                          "punctuated_word": "please"
+                          "word": "don't",
+                          "start": 77.73,
+                          "end": 77.89,
+                          "confidence": 0.99609375,
+                          "punctuated_word": "don't"
                         },
                         {
                           "word": "have",
-                          "start": 19.2,
-                          "end": 19.439999,
-                          "confidence": 0.7661133,
+                          "start": 77.89,
+                          "end": 78.05,
+                          "confidence": 0.9506836,
                           "punctuated_word": "have"
                         }
                       ]
@@ -2398,70 +2829,140 @@
                   },
                   {
                     "role": "bot",
-                    "message": "Can I please have your full",
-                    "time": 1763784229734,
-                    "endTime": 1763784231014.001,
-                    "secondsFromStart": 17.792,
-                    "duration": 1280.0009765625,
+                    "message": "That's perfectly fine. Would you prefer an in person consultation or a telehealth appointment?",
+                    "time": 1764718527477,
+                    "endTime": 1764718532417,
+                    "secondsFromStart": 82.405,
+                    "duration": 4640,
                     "source": ""
                   },
                   {
                     "role": "user",
-                    "message": "John Smith?",
-                    "time": 1763784233324,
-                    "endTime": 1763784233964,
-                    "secondsFromStart": 21.37,
-                    "duration": 640,
+                    "message": "In person.",
+                    "time": 1764718534687,
+                    "endTime": 1764718535407.005,
+                    "secondsFromStart": 89.41,
+                    "duration": 720.0048828125,
                     "metadata": {
                       "wordLevelConfidence": [
                         {
-                          "word": "john",
-                          "start": 21.37,
-                          "end": 21.61,
+                          "word": "in",
+                          "start": 89.41,
+                          "end": 89.810005,
                           "confidence": 0.97998047,
-                          "punctuated_word": "John"
+                          "punctuated_word": "In"
                         },
                         {
-                          "word": "smith",
-                          "start": 21.61,
-                          "end": 22.01,
-                          "confidence": 0.8330078,
-                          "punctuated_word": "Smith?"
+                          "word": "person",
+                          "start": 89.810005,
+                          "end": 90.130005,
+                          "confidence": 0.9951172,
+                          "punctuated_word": "person."
                         }
                       ]
                     }
                   },
                   {
                     "role": "bot",
-                    "message": "Thank you, John? And what's the best phone number we have on file for you?",
-                    "time": 1763784235344,
-                    "endTime": 1763784238944,
-                    "secondsFromStart": 23.402,
-                    "duration": 3600,
+                    "message": "Great. What day and time between 9 AM and 5 PM were you hoping to book?",
+                    "time": 1764718537146.995,
+                    "endTime": 1764718541207,
+                    "secondsFromStart": 92.0749951171875,
+                    "duration": 3920,
                     "source": ""
                   },
                   {
                     "role": "user",
-                    "message": "Triple 8 3 6 5 8 6 8 1.",
-                    "time": 1763784240444,
-                    "endTime": 1763784244974,
-                    "secondsFromStart": 28.49,
-                    "duration": 3680,
+                    "message": "December 5 at 3 PM.",
+                    "time": 1764718542777,
+                    "endTime": 1764718544536.995,
+                    "secondsFromStart": 97.5,
+                    "duration": 1759.9951171875,
                     "metadata": {
                       "wordLevelConfidence": [
                         {
-                          "word": "triple",
-                          "start": 28.49,
-                          "end": 28.97,
-                          "confidence": 0.90234375,
-                          "punctuated_word": "Triple"
+                          "word": "december",
+                          "start": 97.5,
+                          "end": 98.06,
+                          "confidence": 0.9633789,
+                          "punctuated_word": "December"
                         },
                         {
-                          "word": "8",
-                          "start": 28.97,
-                          "end": 29.45,
-                          "confidence": 0.98291016,
-                          "punctuated_word": "8"
+                          "word": "5",
+                          "start": 98.06,
+                          "end": 98.46,
+                          "confidence": 0.9970703,
+                          "punctuated_word": "5"
+                        },
+                        {
+                          "word": "at",
+                          "start": 98.46,
+                          "end": 98.7,
+                          "confidence": 0.94189453,
+                          "punctuated_word": "at"
+                        },
+                        {
+                          "word": "3",
+                          "start": 98.7,
+                          "end": 98.939995,
+                          "confidence": 1,
+                          "punctuated_word": "3"
+                        },
+                        {
+                          "word": "pm",
+                          "start": 98.939995,
+                          "end": 99.259995,
+                          "confidence": 0.89746094,
+                          "punctuated_word": "PM."
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "role": "bot",
+                    "message": "Do you have a preferred doctor, or are you happy the first available clinician",
+                    "time": 1764718547097,
+                    "endTime": 1764718550867.004,
+                    "secondsFromStart": 102.025,
+                    "duration": 3600.0087890625,
+                    "source": ""
+                  },
+                  {
+                    "role": "user",
+                    "message": "I'm available with whoever.",
+                    "time": 1764718552407,
+                    "endTime": 1764718554087,
+                    "secondsFromStart": 107.13,
+                    "duration": 1680,
+                    "metadata": {
+                      "wordLevelConfidence": [
+                        {
+                          "word": "i'm",
+                          "start": 107.13,
+                          "end": 107.53,
+                          "confidence": 0.96899414,
+                          "punctuated_word": "I'm"
+                        },
+                        {
+                          "word": "available",
+                          "start": 107.53,
+                          "end": 107.93,
+                          "confidence": 0.9980469,
+                          "punctuated_word": "available"
+                        },
+                        {
+                          "word": "with",
+                          "start": 107.93,
+                          "end": 108.409996,
+                          "confidence": 0.93603516,
+                          "punctuated_word": "with"
+                        },
+                        {
+                          "word": "whoever",
+                          "start": 108.409996,
+                          "end": 108.81,
+                          "confidence": 0.84887695,
+                          "punctuated_word": "whoever."
                         }
                       ]
                     }
@@ -2469,80 +2970,58 @@
                   {
                     "toolCalls": [
                       {
-                        "id": "call_K08s74QCsvd3iObVbUQlTXxf",
+                        "id": "call_j3VnrVcdyym3Ac8oNwbLCVDa",
                         "type": "function",
                         "function": {
-                          "name": "getCalendarVAPIHealth",
-                          "arguments": "{\"name\": \"John Smith\", \"phone\": \"8883658681\"}"
+                          "name": "checkCalendarVAPIHealth",
+                          "arguments": "{\n  \"EventTypeID\": \"3954310\",\n  \"EventTypeSlug\": \"dr-wong-clinic-30-minute\",\n  \"requestedTime\": \"2025-12-05T15:00:00\",\n  \"timeZone\": \"America/Los_Angeles\"\n}"
                         }
                       }
                     ],
                     "role": "tool_calls",
                     "message": "",
-                    "time": 1763784244944,
-                    "secondsFromStart": 33.002
+                    "time": 1764718555184,
+                    "secondsFromStart": 110.112
                   },
                   {
                     "role": "tool_call_result",
-                    "time": 1763784247085,
-                    "secondsFromStart": 35.143,
-                    "name": "getCalendarVAPIHealth",
-                    "result": "Great! I was able to retrieve and cancel your current booking for Sunday at November 23 at 12:00 PM. What time do you want to reschedule your appointment? UID = qb2F9Xrf9xboohMbDUpjtB",
+                    "time": 1764718558354,
+                    "secondsFromStart": 113.282,
+                    "name": "checkCalendarVAPIHealth",
+                    "result": {
+                      "available": true,
+                      "slots": [
+                        "2025-12-05T15:00:00"
+                      ],
+                      "message": "Great. Seems that this slot with Doctor Wong is available. Would you like me to confirm this booking?"
+                    },
                     "metadata": {},
-                    "toolCallId": "call_K08s74QCsvd3iObVbUQlTXxf"
+                    "toolCallId": "call_j3VnrVcdyym3Ac8oNwbLCVDa"
                   },
                   {
                     "role": "bot",
-                    "message": "I can see an appointment booked for tomorrow at 12 PM. Is this the appointment you'd like to cancel?",
-                    "time": 1763784248734.003,
-                    "endTime": 1763784254174,
-                    "secondsFromStart": 36.7920029296875,
-                    "duration": 5039.9970703125,
+                    "message": "I can see that the 3 PM slot on December fifth with doctor Wong is available. Would you like me to confirm this booking for you?",
+                    "time": 1764718560427,
+                    "endTime": 1764718567277,
+                    "secondsFromStart": 115.355,
+                    "duration": 6560,
                     "source": ""
                   },
                   {
                     "role": "user",
-                    "message": "Yes, please. That'd be good.",
-                    "time": 1763784255324.003,
-                    "endTime": 1763784256844,
-                    "secondsFromStart": 43.370003,
-                    "duration": 1519.9970703125,
+                    "message": "Yes.",
+                    "time": 1764718568896.995,
+                    "endTime": 1764718569297,
+                    "secondsFromStart": 123.619995,
+                    "duration": 400.0048828125,
                     "metadata": {
                       "wordLevelConfidence": [
                         {
                           "word": "yes",
-                          "start": 43.370003,
-                          "end": 44.010002,
-                          "confidence": 0.97680664,
-                          "punctuated_word": "Yes,"
-                        },
-                        {
-                          "word": "please",
-                          "start": 44.010002,
-                          "end": 44.25,
-                          "confidence": 0.9980469,
-                          "punctuated_word": "please."
-                        },
-                        {
-                          "word": "that'd",
-                          "start": 44.25,
-                          "end": 44.57,
-                          "confidence": 0.9753418,
-                          "punctuated_word": "That'd"
-                        },
-                        {
-                          "word": "be",
-                          "start": 44.57,
-                          "end": 44.73,
-                          "confidence": 0.99902344,
-                          "punctuated_word": "be"
-                        },
-                        {
-                          "word": "good",
-                          "start": 44.73,
-                          "end": 44.89,
-                          "confidence": 0.99609375,
-                          "punctuated_word": "good."
+                          "start": 123.619995,
+                          "end": 124.02,
+                          "confidence": 0.9909668,
+                          "punctuated_word": "Yes."
                         }
                       ]
                     }
@@ -2550,18 +3029,18 @@
                   {
                     "toolCalls": [
                       {
-                        "id": "call_mLTzMbOVmDEr4tms3F6UEF7s",
+                        "id": "call_3pxqpKOgMaWBAlfzADhiMWQ3",
                         "type": "function",
                         "function": {
-                          "name": "cancelCalendarVAPIHealth",
-                          "arguments": "{\"name\": \"John Smith\", \"phone\": \"8883658681\"}"
+                          "name": "bookCalendarVAPIHealth",
+                          "arguments": "{\n  \"phone\": \"5737448183\",\n  \"reason\": \"Checkup\",\n  \"lastName\": \"Jones\",\n  \"birthDate\": \"2003-11-21\",\n  \"firstName\": \"Edward\",\n  \"eventTypeID\": \"3954310\",\n  \"eventTypeSlug\": \"dr-wong-clinic-30-minute\",\n  \"requestedTime\": \"2025-12-05T15:00:00\"\n}"
                         }
                       }
                     ],
                     "role": "tool_calls",
                     "message": "",
-                    "time": 1763784256706,
-                    "secondsFromStart": 44.764
+                    "time": 1764718569743,
+                    "secondsFromStart": 124.671
                   }
                 ],
                 "messagesOpenAIFormatted": [
@@ -2575,143 +3054,199 @@
                   },
                   {
                     "role": "user",
-                    "content": "Hey. Amy. I rang earlier today about rescheduling an appointment for tomorrow. Just gonna have to cancel that 1. Something's popped up."
+                    "content": "Hello there. Can you help me book?"
                   },
                   {
                     "role": "assistant",
-                    "content": "I can help with that."
+                    "content": "VAPI Medical Practice. This is Amy speaking. How can I help you today?"
                   },
                   {
                     "role": "user",
-                    "content": "I can help with that. Can I please have"
+                    "content": "Can you help me book Can you help me book, please?"
                   },
                   {
                     "role": "assistant",
-                    "content": "Can I please have your full"
+                    "content": "Sure. Sure. I can help with that. First, can I please have your first and last name?"
                   },
                   {
                     "role": "user",
-                    "content": "John Smith?"
+                    "content": "Edward Jones."
                   },
                   {
                     "role": "assistant",
-                    "content": "Thank you, John? And what's the best phone number we have on file for you?"
+                    "content": "Thank you, Edward. And could you please spell your last name for me?"
                   },
                   {
                     "role": "user",
-                    "content": "Triple 8 3 6 5 8 6 8 1."
+                    "content": "J o n e s"
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Got it. What's your date of birth?"
+                  },
+                  {
+                    "role": "user",
+                    "content": "11 21 2003."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Thank you. And what's the best phone number to reach you on?"
+                  },
+                  {
+                    "role": "user",
+                    "content": "5 7 3 7 4 4 8 1 8 3."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Thank you. And what's the main reason for your appointment today?"
+                  },
+                  {
+                    "role": "user",
+                    "content": "Checkup."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Got it. Do you have an insurance provider you'd like us to note such as Aetna, BCBS, United Health"
+                  },
+                  {
+                    "role": "user",
+                    "content": "No. I don't have"
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "That's perfectly fine. Would you prefer an in person consultation or a telehealth appointment?"
+                  },
+                  {
+                    "role": "user",
+                    "content": "In person."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Great. What day and time between 9 AM and 5 PM were you hoping to book?"
+                  },
+                  {
+                    "role": "user",
+                    "content": "December 5 at 3 PM."
+                  },
+                  {
+                    "role": "assistant",
+                    "content": "Do you have a preferred doctor, or are you happy the first available clinician"
+                  },
+                  {
+                    "role": "user",
+                    "content": "I'm available with whoever."
                   },
                   {
                     "role": "assistant",
                     "tool_calls": [
                       {
-                        "id": "call_K08s74QCsvd3iObVbUQlTXxf",
+                        "id": "call_j3VnrVcdyym3Ac8oNwbLCVDa",
                         "type": "function",
                         "function": {
-                          "name": "getCalendarVAPIHealth",
-                          "arguments": "{\"name\": \"John Smith\", \"phone\": \"8883658681\"}"
+                          "name": "checkCalendarVAPIHealth",
+                          "arguments": "{\n  \"EventTypeID\": \"3954310\",\n  \"EventTypeSlug\": \"dr-wong-clinic-30-minute\",\n  \"requestedTime\": \"2025-12-05T15:00:00\",\n  \"timeZone\": \"America/Los_Angeles\"\n}"
                         }
                       }
                     ]
                   },
                   {
                     "role": "tool",
-                    "tool_call_id": "call_K08s74QCsvd3iObVbUQlTXxf",
-                    "content": "Great! I was able to retrieve and cancel your current booking for Sunday at November 23 at 12:00 PM. What time do you want to reschedule your appointment? UID = qb2F9Xrf9xboohMbDUpjtB"
+                    "tool_call_id": "call_j3VnrVcdyym3Ac8oNwbLCVDa",
+                    "content": "{\"available\":true,\"slots\":[\"2025-12-05T15:00:00\"],\"message\":\"Great. Seems that this slot with Doctor Wong is available. Would you like me to confirm this booking?\"}"
                   },
                   {
                     "role": "assistant",
-                    "content": "I can see an appointment booked for tomorrow at 12 PM. Is this the appointment you'd like to cancel?"
+                    "content": "I can see that the 3 PM slot on December fifth with doctor Wong is available. Would you like me to confirm this booking for you?"
                   },
                   {
                     "role": "user",
-                    "content": "Yes, please. That'd be good."
+                    "content": "Yes."
                   },
                   {
                     "role": "assistant",
                     "tool_calls": [
                       {
-                        "id": "call_mLTzMbOVmDEr4tms3F6UEF7s",
+                        "id": "call_3pxqpKOgMaWBAlfzADhiMWQ3",
                         "type": "function",
                         "function": {
-                          "name": "cancelCalendarVAPIHealth",
-                          "arguments": "{\"name\": \"John Smith\", \"phone\": \"8883658681\"}"
+                          "name": "bookCalendarVAPIHealth",
+                          "arguments": "{\n  \"phone\": \"5737448183\",\n  \"reason\": \"Checkup\",\n  \"lastName\": \"Jones\",\n  \"birthDate\": \"2003-11-21\",\n  \"firstName\": \"Edward\",\n  \"eventTypeID\": \"3954310\",\n  \"eventTypeSlug\": \"dr-wong-clinic-30-minute\",\n  \"requestedTime\": \"2025-12-05T15:00:00\"\n}"
                         }
                       }
                     ]
                   },
                   {
                     "role": "tool",
-                    "tool_call_id": "call_mLTzMbOVmDEr4tms3F6UEF7s",
+                    "tool_call_id": "call_3pxqpKOgMaWBAlfzADhiMWQ3",
                     "content": "Tool Result Still Pending But Proceed Further If Possible."
                   }
                 ]
               },
               "call": {
-                "id": "019aa9bb-3ce8-7aa2-9ab3-126b9b9dc856",
+                "id": "019ae16a-7f3b-788a-a966-c5534cdd4ae6",
                 "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
-                "createdAt": "2025-11-22T04:03:31.688Z",
-                "updatedAt": "2025-11-22T04:03:31.688Z",
+                "createdAt": "2025-12-02T23:34:04.347Z",
+                "updatedAt": "2025-12-02T23:34:04.347Z",
                 "type": "inboundPhoneCall",
                 "cost": 0,
                 "monitor": {
-                  "listenUrl": "wss://phone-call-websocket.aws-us-west-2-backend-production3.vapi.ai/019aa9bb-3ce8-7aa2-9ab3-126b9b9dc856/listen",
-                  "controlUrl": "https://phone-call-websocket.aws-us-west-2-backend-production3.vapi.ai/019aa9bb-3ce8-7aa2-9ab3-126b9b9dc856/control"
+                  "listenUrl": "wss://phone-call-websocket.oci-us-sanjose-1-backend-production2.vapi.ai/019ae16a-7f3b-788a-a966-c5534cdd4ae6/listen",
+                  "controlUrl": "https://phone-call-websocket.oci-us-sanjose-1-backend-production2.vapi.ai/019ae16a-7f3b-788a-a966-c5534cdd4ae6/control"
                 },
                 "transport": {
                   "conversationType": "voice",
                   "provider": "vapi.sip",
-                  "callSid": "a54e3071-463e-4490-8cb6-531832e6d103",
-                  "sbcCallSid": "410924905-3972773009-538824030@msc1.382COM.COM"
+                  "callSid": "6ebf702d-787e-4db3-bcc1-fd2cfc37f592",
+                  "sbcCallSid": "443219442-3973707243-468863563@msc1.382COM.COM"
                 },
                 "phoneCallProvider": "vapi",
-                "phoneCallProviderId": "a54e3071-463e-4490-8cb6-531832e6d103",
+                "phoneCallProviderId": "6ebf702d-787e-4db3-bcc1-fd2cfc37f592",
                 "phoneCallTransport": "sip",
                 "phoneCallProviderDetails": {
                   "sip": {
-                    "raw": "INVITE sip:9124169041@172.30.62.171:5060 SIP/2.0\r\nVia: SIP/2.0/UDP 44.229.228.186;rport=5060;branch=z9hG4bKyNNZg2vvj6QBm;received=172.31.57.86\r\nMax-Forwards: 70\r\nFrom: <sip:+18883658681@44.229.228.186:5060>;tag=X58NK1XHNKFyD\r\nTo: <sip:9124169041@192.168.250.45>\r\nCall-ID: 0b78f550-41fb-123f-78a4-0ec7040a32ad\r\nCSeq: 107338312 INVITE\r\nContact: <sip:172.31.57.86:5060>\r\nAccept: application/sdp\r\nAllow: PUBLISH, MESSAGE, UPDATE, PRACK, SUBSCRIBE, REFER, INFO, NOTIFY, REGISTER, OPTIONS, BYE, INVITE, ACK, CANCEL\r\nSupported: 100rel, timer\r\nMin-SE: 600\r\nPrivacy: none\r\nContent-Type: application/sdp\r\nContent-Length: 302\r\nX-Account-Sid: c033b672-5b99-42ae-9ce2-b231e9a522fb\r\nX-CID: 410924905-3972773009-538824030@msc1.382COM.COM\r\nX-Forwarded-For: 64.125.111.10\r\nX-Originating-Carrier: 382com\r\nX-Voip-Carrier-Sid: a5569621-84ac-49cc-a8b8-11c7fb96b905\r\nX-Application-Sid: 79d078c8-76b2-452a-99e0-ddd5abbf6269\r\nIdentity: eyJhbGciOiJFUzI1NiIsInBwdCI6InNoYWtlbiIsInR5cCI6InBhc3Nwb3J0IiwieDV1IjoiaHR0cHM6Ly9jZXJ0aWZpY2F0ZXMudHJhbnNuZXh1cy5jb20vMDczSC82YWQ4YWQzMC01NjA0LTRhOWEtODkyYS1mNTVmZTE2NWMwMmYucGVtIn0.eyJhdHRlc3QiOiJBIiwiZGVzdCI6eyJ0biI6WyIxOTEyNDE2OTA0MSJdfSwiaWF0IjoxNzYzNzg0MjA4LCJvcmlnIjp7InRuIjoiMTg4ODM2NTg2ODEifSwib3JpZ2lkIjoiYjNkNzhhN2ItMzliYS00YTkyLTgzOTYtOWM2N2RkN2JiZWQ2In0.UjVUD-0qq0-VEdidjjP-QjxvFaJ5Vpaw7p5LC-bhSNlDcVMV0j9gW1wJf7ku-vkhfZ02MtBtKTMna_njioV-aQ;info=<https://certificates.transnexus.com/073H/6ad8ad30-5604-4a9a-892a-f55fe165c02f.pem>;alg=ES256;ppt=\"shaken\"\r\nP-Asserted-Identity: <sip:+18883658681@207.223.78.171:5060>\r\n\r\nv=0\r\no=msc1 579607 475684 IN IP4 172.30.3.90\r\ns=sip call\r\nc=IN IP4 172.30.3.90\r\nt=0 0\r\nm=audio 55902 RTP/AVP 0 8 18 101\r\na=maxptime:20\r\na=rtpmap:0 PCMU/8000\r\na=rtpmap:8 PCMA/8000\r\na=rtpmap:18 G729/8000\r\na=fmtp:18 annexb=no\r\na=rtpmap:101 telephone-event/8000\r\na=fmtp:101 0-15\r\na=sendrecv\r\na=rtcp:55903\r\n",
-                    "uri": "sip:9124169041@172.30.62.171:5060",
-                    "body": "v=0\r\no=msc1 579607 475684 IN IP4 172.30.3.90\r\ns=sip call\r\nc=IN IP4 172.30.3.90\r\nt=0 0\r\nm=audio 55902 RTP/AVP 0 8 18 101\r\na=maxptime:20\r\na=rtpmap:0 PCMU/8000\r\na=rtpmap:8 PCMA/8000\r\na=rtpmap:18 G729/8000\r\na=fmtp:18 annexb=no\r\na=rtpmap:101 telephone-event/8000\r\na=fmtp:101 0-15\r\na=sendrecv\r\na=rtcp:55903\r\n",
+                    "raw": "INVITE sip:9124169041@172.30.10.40:5060 SIP/2.0\r\nVia: SIP/2.0/UDP 44.229.228.186;rport=5060;branch=z9hG4bKUS8e15UNNaNve;received=172.31.57.86\r\nMax-Forwards: 70\r\nFrom: <sip:+15737448183@44.229.228.186:5060>;tag=gZB4ev2er3Fpp\r\nTo: <sip:9124169041@192.168.250.45>\r\nCall-ID: 3abd7e6a-4a7a-123f-64b2-0ec7040a32ad\r\nCSeq: 107805430 INVITE\r\nContact: <sip:172.31.57.86:5060>\r\nAccept: application/sdp\r\nAllow: PUBLISH, MESSAGE, UPDATE, PRACK, SUBSCRIBE, REFER, INFO, NOTIFY, REGISTER, OPTIONS, BYE, INVITE, ACK, CANCEL\r\nSupported: 100rel, timer\r\nMin-SE: 600\r\nPrivacy: none\r\nContent-Type: application/sdp\r\nContent-Length: 304\r\nX-Account-Sid: c033b672-5b99-42ae-9ce2-b231e9a522fb\r\nX-CID: 443219442-3973707243-468863563@msc1.382COM.COM\r\nX-Forwarded-For: 64.125.111.10\r\nX-Originating-Carrier: 382com\r\nX-Voip-Carrier-Sid: a5569621-84ac-49cc-a8b8-11c7fb96b905\r\nX-Application-Sid: 79d078c8-76b2-452a-99e0-ddd5abbf6269\r\nIdentity: eyJhbGciOiJFUzI1NiIsInBwdCI6InNoYWtlbiIsInR5cCI6InBhc3Nwb3J0IiwieDV1IjoiaHR0cHM6Ly9jZXJ0aWZpY2F0ZXMudHJhbnNuZXh1cy5jb20vMDczSC82YWQ4YWQzMC01NjA0LTRhOWEtODkyYS1mNTVmZTE2NWMwMmYucGVtIn0.eyJhdHRlc3QiOiJBIiwiZGVzdCI6eyJ0biI6WyIxOTEyNDE2OTA0MSJdfSwiaWF0IjoxNzY0NzE4NDQzLCJvcmlnIjp7InRuIjoiMTU3Mzc0NDgxODMifSwib3JpZ2lkIjoiYjNkNzhhN2ItMzliYS00YTkyLTgzOTYtOWM2N2RkN2JiZWQ2In0.Yzv6CizxZoRpOsnzxGXYEjIOTIg_GAYkI1EEkUXDsQZvSPqFw8LuHPrlZNP2W3hcYQ80DXdFv9Oh-FcH3GC87g;info=<https://certificates.transnexus.com/073H/6ad8ad30-5604-4a9a-892a-f55fe165c02f.pem>;alg=ES256;ppt=\"shaken\"\r\nP-Asserted-Identity: <sip:+15737448183@207.223.78.171:5060>\r\n\r\nv=0\r\no=msc1 90742 21413 IN IP4 172.30.42.239\r\ns=sip call\r\nc=IN IP4 172.30.42.239\r\nt=0 0\r\nm=audio 43236 RTP/AVP 0 8 18 101\r\na=maxptime:20\r\na=rtpmap:0 PCMU/8000\r\na=rtpmap:8 PCMA/8000\r\na=rtpmap:18 G729/8000\r\na=fmtp:18 annexb=no\r\na=rtpmap:101 telephone-event/8000\r\na=fmtp:101 0-15\r\na=sendrecv\r\na=rtcp:43237\r\n",
+                    "uri": "sip:9124169041@172.30.10.40:5060",
+                    "body": "v=0\r\no=msc1 90742 21413 IN IP4 172.30.42.239\r\ns=sip call\r\nc=IN IP4 172.30.42.239\r\nt=0 0\r\nm=audio 43236 RTP/AVP 0 8 18 101\r\na=maxptime:20\r\na=rtpmap:0 PCMU/8000\r\na=rtpmap:8 PCMA/8000\r\na=rtpmap:18 G729/8000\r\na=fmtp:18 annexb=no\r\na=rtpmap:101 telephone-event/8000\r\na=fmtp:101 0-15\r\na=sendrecv\r\na=rtcp:43237\r\n",
                     "method": "INVITE",
                     "headers": {
                       "to": "<sip:+19124169041@192.168.250.45>",
-                      "via": "SIP/2.0/UDP 44.229.228.186;rport=5060;branch=z9hG4bKyNNZg2vvj6QBm;received=172.31.57.86",
-                      "cseq": "107338312 INVITE",
-                      "from": "<sip:+18883658681@44.229.228.186:5060>;tag=X58NK1XHNKFyD",
-                      "X-CID": "410924905-3972773009-538824030@msc1.382COM.COM",
+                      "via": "SIP/2.0/UDP 44.229.228.186;rport=5060;branch=z9hG4bKUS8e15UNNaNve;received=172.31.57.86",
+                      "cseq": "107805430 INVITE",
+                      "from": "<sip:+15737448183@44.229.228.186:5060>;tag=gZB4ev2er3Fpp",
+                      "X-CID": "443219442-3973707243-468863563@msc1.382COM.COM",
                       "allow": "PUBLISH, MESSAGE, UPDATE, PRACK, SUBSCRIBE, REFER, INFO, NOTIFY, REGISTER, OPTIONS, BYE, INVITE, ACK, CANCEL",
                       "accept": "application/sdp",
                       "min-se": "600",
-                      "call-id": "0b78f550-41fb-123f-78a4-0ec7040a32ad",
+                      "call-id": "3abd7e6a-4a7a-123f-64b2-0ec7040a32ad",
                       "contact": "<sip:172.31.57.86:5060>",
                       "privacy": "none",
-                      "identity": "eyJhbGciOiJFUzI1NiIsInBwdCI6InNoYWtlbiIsInR5cCI6InBhc3Nwb3J0IiwieDV1IjoiaHR0cHM6Ly9jZXJ0aWZpY2F0ZXMudHJhbnNuZXh1cy5jb20vMDczSC82YWQ4YWQzMC01NjA0LTRhOWEtODkyYS1mNTVmZTE2NWMwMmYucGVtIn0.eyJhdHRlc3QiOiJBIiwiZGVzdCI6eyJ0biI6WyIxOTEyNDE2OTA0MSJdfSwiaWF0IjoxNzYzNzg0MjA4LCJvcmlnIjp7InRuIjoiMTg4ODM2NTg2ODEifSwib3JpZ2lkIjoiYjNkNzhhN2ItMzliYS00YTkyLTgzOTYtOWM2N2RkN2JiZWQ2In0.UjVUD-0qq0-VEdidjjP-QjxvFaJ5Vpaw7p5LC-bhSNlDcVMV0j9gW1wJf7ku-vkhfZ02MtBtKTMna_njioV-aQ;info=<https://certificates.transnexus.com/073H/6ad8ad30-5604-4a9a-892a-f55fe165c02f.pem>;alg=ES256;ppt=\"shaken\"",
+                      "identity": "eyJhbGciOiJFUzI1NiIsInBwdCI6InNoYWtlbiIsInR5cCI6InBhc3Nwb3J0IiwieDV1IjoiaHR0cHM6Ly9jZXJ0aWZpY2F0ZXMudHJhbnNuZXh1cy5jb20vMDczSC82YWQ4YWQzMC01NjA0LTRhOWEtODkyYS1mNTVmZTE2NWMwMmYucGVtIn0.eyJhdHRlc3QiOiJBIiwiZGVzdCI6eyJ0biI6WyIxOTEyNDE2OTA0MSJdfSwiaWF0IjoxNzY0NzE4NDQzLCJvcmlnIjp7InRuIjoiMTU3Mzc0NDgxODMifSwib3JpZ2lkIjoiYjNkNzhhN2ItMzliYS00YTkyLTgzOTYtOWM2N2RkN2JiZWQ2In0.Yzv6CizxZoRpOsnzxGXYEjIOTIg_GAYkI1EEkUXDsQZvSPqFw8LuHPrlZNP2W3hcYQ80DXdFv9Oh-FcH3GC87g;info=<https://certificates.transnexus.com/073H/6ad8ad30-5604-4a9a-892a-f55fe165c02f.pem>;alg=ES256;ppt=\"shaken\"",
                       "supported": "100rel, timer",
                       "content-type": "application/sdp",
                       "max-forwards": "70",
                       "X-Account-Sid": "c033b672-5b99-42ae-9ce2-b231e9a522fb",
-                      "content-length": "302",
+                      "content-length": "304",
                       "X-Forwarded-For": "64.125.111.10",
                       "X-Application-Sid": "79d078c8-76b2-452a-99e0-ddd5abbf6269",
                       "X-Voip-Carrier-Sid": "a5569621-84ac-49cc-a8b8-11c7fb96b905",
-                      "p-asserted-identity": "<sip:+18883658681@207.223.78.171:5060>",
+                      "p-asserted-identity": "<sip:+15737448183@207.223.78.171:5060>",
                       "X-Originating-Carrier": "382com"
                     },
                     "payload": [
                       {
                         "type": "application/sdp",
-                        "content": "v=0\r\no=msc1 579607 475684 IN IP4 172.30.3.90\r\ns=sip call\r\nc=IN IP4 172.30.3.90\r\nt=0 0\r\nm=audio 55902 RTP/AVP 0 8 18 101\r\na=maxptime:20\r\na=rtpmap:0 PCMU/8000\r\na=rtpmap:8 PCMA/8000\r\na=rtpmap:18 G729/8000\r\na=fmtp:18 annexb=no\r\na=rtpmap:101 telephone-event/8000\r\na=fmtp:101 0-15\r\na=sendrecv\r\na=rtcp:55903\r\n"
+                        "content": "v=0\r\no=msc1 90742 21413 IN IP4 172.30.42.239\r\ns=sip call\r\nc=IN IP4 172.30.42.239\r\nt=0 0\r\nm=audio 43236 RTP/AVP 0 8 18 101\r\na=maxptime:20\r\na=rtpmap:0 PCMU/8000\r\na=rtpmap:8 PCMA/8000\r\na=rtpmap:18 G729/8000\r\na=fmtp:18 annexb=no\r\na=rtpmap:101 telephone-event/8000\r\na=fmtp:101 0-15\r\na=sendrecv\r\na=rtcp:43237\r\n"
                       }
                     ],
                     "version": "2.0"
                   },
-                  "sbcCallId": "410924905-3972773009-538824030@msc1.382COM.COM"
+                  "sbcCallId": "443219442-3973707243-468863563@msc1.382COM.COM"
                 },
                 "status": "ringing",
                 "assistantId": "ecfc06ef-18b0-43b3-abd7-c4da23195ba5",
                 "assistantOverrides": {
                   "variableValues": {
-                    "cid": "410924905-3972773009-538824030@msc1.382COM.COM",
+                    "cid": "443219442-3973707243-468863563@msc1.382COM.COM",
                     "account-sid": "c033b672-5b99-42ae-9ce2-b231e9a522fb",
                     "forwarded-for": "64.125.111.10",
                     "application-sid": "79d078c8-76b2-452a-99e0-ddd5abbf6269",
@@ -2721,8 +3256,8 @@
                 },
                 "phoneNumberId": "476f1a4b-9aaa-422a-8afa-66f0ac2e972d",
                 "customer": {
-                  "number": "+18883658681",
-                  "sipUri": "sip:+18883658681@44.229.228.186:5060"
+                  "number": "+15737448183",
+                  "sipUri": "sip:+15737448183@44.229.228.186:5060"
                 }
               },
               "phoneNumber": {
@@ -2738,8 +3273,8 @@
                 "providerResourceId": "0505134e-1c38-4026-8fd1-e568d6af6ed0"
               },
               "customer": {
-                "number": "+18883658681",
-                "sipUri": "sip:+18883658681@44.229.228.186:5060"
+                "number": "+15737448183",
+                "sipUri": "sip:+15737448183@44.229.228.186:5060"
               },
               "assistant": {
                 "id": "ecfc06ef-18b0-43b3-abd7-c4da23195ba5",
@@ -2753,7 +3288,7 @@
                   "similarityBoost": 0.75
                 },
                 "createdAt": "2025-11-22T02:27:25.919Z",
-                "updatedAt": "2025-11-22T03:55:22.498Z",
+                "updatedAt": "2025-11-22T04:12:39.466Z",
                 "model": {
                   "model": "gpt-4o",
                   "toolIds": [
@@ -2768,7 +3303,7 @@
                   "messages": [
                     {
                       "role": "system",
-                      "content": "# Role\nYou are **Amy**, an AI voice assistant for **VAPI Health Clinic**, a modern healthcare provider offering AI-supported appointment management and patient care coordination. Your personality is warm, professional, and confident—never robotic. You speak naturally with empathy and curiosity.\n\nYour core purposes are to:\n- Answer patient questions and handle frequently asked questions (FAQs).\n- Help callers book, reschedule, or cancel healthcare appointments.\n- Route callers to the right human team member when needed.\n\n# Context\n- **Clinic Name:** VAPI Health Clinic  \n- **Services:** Primary care, general consultations, wellness checks, and telehealth services.  \n- **Positioning:** Designed for patients who want accessible, fast, and reliable scheduling with minimal waiting times.  \n- **Service Model:** Same-day appointments where possible and shorter in-clinic wait times.\n\n**Contact Details (speak digit by digit and use “at” / “dot” for email):**\n- Phone: zero four two nine, one four eight, nine three eight  \n- Email: care at vapi health dot com  \n\n**Business Hours:**\n- 9:00 a.m. – 5:00 p.m., Sunday to Saturday\n- Never offer, suggest, or confirm appointment times **outside** 9:00 a.m. – 5:00 p.m.\n\n**Calendaring & Routing (tools available to you):**\n- `checkCalendarVAPIHealth` – Check available appointment slots.\n- `bookCalendarVAPIHealth` – Create a new appointment.\n- `getCalendarVAPIHealth` – Retrieve an existing appointment by patient details.\n- `rescheduleCalendarVAPIHealth` – Change an existing appointment.\n- `cancelCalendarVAPIHealth` – Cancel an existing appointment.\n- `transfer_call_tool` – Transfer the caller to the appropriate human team.\n- `end_call_tool` – Politely terminate the call when required by guardrails.\n\n# Task\nYour primary task is to guide each caller to a clear, safe, and helpful outcome. You must:\n- Quickly identify the caller’s main intent (question, booking, rescheduling, cancelling, or transfer).\n- Drive the conversation toward one of these outcomes:\n  - Appointment successfully **booked**.\n  - Appointment successfully **rescheduled**.\n  - Appointment successfully **cancelled** (with or without rebooking).\n  - Caller successfully **transferred** to the right team.\n  - Caller’s **question answered** or provided next steps.\n- Use **FAQs and objection handling** responses exactly as provided.\n- Maintain clinical professionalism and avoid giving medical advice or treatment recommendations.\n\n# Specifics\n- **[ #.#.# CONDITION ]** is a condition block that describes branching logic in the call flow.\n- **<variable>** represents caller / patient details (e.g., `<firstName>`, `<lastName>`, `<dob>`, `<phone>`, `<reason_visit>`, `<requestedTime>`).\n- The symbol **~** indicates information that must be stored or logged for backend use.\n- Sentences in **double quotes** must be spoken verbatim.\n- You may only ask **one question at a time.**\n- After each question, **stop and wait** for the caller’s response before continuing.\n- If you do not understand something, briefly clarify once, then move forward with what you do understand.\n- Do not ask the caller to repeat information unless absolutely necessary.\n- **Never** mention the words “function”, “tool”, or the name of any tool.\n- Do not talk about “prompts”, “instructions”, or anything meta about how you work.\n- If you reach an interactive menu or similar situation, always respond conversationally; never instruct the caller to “press” keys.\n- If the caller is clearly distressed or mentions a medical emergency, immediately say:  \n  **\"If this is a medical emergency, please hang up and call your local emergency number immediately.\"**  \n  Then use `end_call_tool`.\n- Respect pauses indicated by “—” and “…” to sound natural, but do not add your own long monologues.\n- Do not repeat details (like address, time, or phone) unless the caller explicitly asks you to repeat them.\n- After objections or FAQs, return to the original flow (booking / rescheduling / cancelling / transfer) instead of going off on tangents.\n- Today’s date context: `Nov 21, 2025, 08:03 PM`\n\n# Steps\n\n## 1. Introduction & Intent Detection\n\nThe human greeting and first line are already played by the telephony system. Your first spoken line must be:\n\n**Q:** \"VAPI medical practice, this is Amy speaking. How can I help you today?\"\n\nListen for the caller’s intent and route using the logic below:\n\n- [1.1 If R = Asks a general question (hours, address, billing, services, telehealth, referrals, etc.)]  \n  → Go to **5. Frequently Asked Questions & General Queries**\n\n- [1.2 If R = Wants to book an appointment]  \n  → Go to **2. Book an Appointment**\n\n- [1.3 If R = Wants to reschedule an appointment]  \n  → Go to **3. Reschedule an Appointment**\n\n- [1.4 If R = Wants to cancel an appointment]  \n  → Go to **4. Cancel an Appointment**\n\n- [1.5 If R = Wants to speak to a nurse, doctor, billing, admin, or reception]  \n  → Go to **6. Transfer to Human Staff**\n\n- [1.6 If R = Asks about telehealth availability]  \n  → Answer via FAQ (telehealth) then ask:  \n  **Q:** \"Would you like me to help you book a telehealth appointment now?\"  \n  - If **Yes** → Go to **2. Book an Appointment**  \n  - If **No** → Go to **7. Closing**\n\n- [1.7 If R = Says they are busy / want a callback]  \n  → Handle via FAQ objection (“I’m busy / need a callback”) then ask for minimal details:  \n  **Q:** \"No problem, so I can set that up, could I grab your full name and best contact number?\"  \n  ~log `<name>`, `<phone>`  \n  Then:  \n  **Q:** \"And when is the best time between 9 and 5 for us to call you back?\"  \n  ~log `<callback_window>`  \n  → Go to **7. Closing**\n\n- [1.8 If R = Rude, clearly time-wasting, or asks blatantly inappropriate questions]  \n  → Go to **8. Guardrails & Inappropriate or Curveball Questions**\n\n## 2. Book an Appointment\n\nYour goal here is to **successfully book** an appointment within business hours.\n\n### 2.1 Collect Required Details\n\nAsk **one question at a time** and log each answer. Required fields are 2.1.1–2.1.4, 2.1.7–2.1.8. Insurance details are optional but should be asked.\n\n- **2.1.1 Full Name**\n  **Q:** \"Sure, I can help with that. First, can I please have your first and last name?\"  \n  ~log `<firstName>` \n  **Q:** \"Perfect, and your last name?\"  \n  **Q:** \"And could you please spell your last name for me?\"  \n  ~log `<lastName_spelled>`\n\n- **2.1.2 Date of Birth**\n  **Q:** \"Thank you. What’s your date of birth?\"  \n  ~log `<dob>`\n\n- **2.1.3 Phone Number**\n  **Q:** \"And what’s the best phone number to reach you on?\"  \n  ~log `<phone>`\n\n- **2.1.4 Reason for Visit**\n  **Q:** \"Got it. And what’s the main reason for your appointment today?\"  \n  ~log `<reason_visit>`  \n  - Never give medical advice. If they ask for medical input, say:  \n    **Q:** \"I can’t give medical advice, but I can help you book an appointment so your clinician can discuss this with you.\"\n\n- **2.1.5 Insurance Provider (Optional)**\n  **Q:** \"Do you have an insurance provider you’d like us to note like UnitedHealthcare, Medicare, or Medicaid?\"  \n  ~log `<insurance_provider>`  \n  - If they don’t have or don’t want to share, acknowledge and move on.\n\n- **2.1.6 Insurance Member ID & Group Number (Optional)**\n  **Q:** \"If you have it handy, could you share your insurance member ID and group number for verification?\"  \n  ~log `<insurance_memberid>`\n\n- **2.1.7 Consultation Type**\n  **Q:** \"And was this for an in-person consultation, or a telehealth?\"  \n  ~log `<consult_type>` (in-person / telehealth)  \n  - If unsure:  \n    **Q:** \"No worries—if you’d like, you can discuss the best option with the clinician during your visit.\"\n\n- **2.1.8 Requested Time & Day**\n  **Q:** \"What day and time were you hoping to book?\"  \n  ~log `<requestedTime_raw>`  \n\n  - [2.1.8.1 If R = Asks for a time outside 9–5]  \n    **Q:** \"Our clinic books appointments between 9 a.m. and 5 p.m., every day. Is there another time in that window that works for you?\"  \n    ~adjust `<requestedTime_raw>` into acceptable window.\n\n### 2.2 Doctor Preference Logic\n\n**Q:** \"Do you have a preferred doctor, or are you happy with the first available clinician?\"\n\n- [2.2.1 If R = Wants specific doctor]  \n  ~log `<preferred_doctor>`  \n\n  - [2.2.1.1 If R = Doctor Chan]  \n    - Inform availability:  \n      **Q:** \"Doctor Chan is available on Sundays, Saturdays, and Wednesdays. Which of those days suits you best?\"  \n\n  - [2.2.1.2 If R = Doctor Wong]  \n    - Inform availability:  \n      **Q:** \"Doctor Wong is available on Mondays, Tuesdays, Thursdays, and Fridays. Which of those days suits you best?\"  \n\n  Use that information to shape the `start` / `end` window in `checkCalendarVAPIHealth`.\n\n- [2.2.2 If R = No specific doctor]  \n  ~log `<preferred_doctor> = first_available`  \n  - Continue to slot checking using first available within their requested window.\n\n### 2.3 Check Calendar for Availability\n\nUse `checkCalendarVAPIHealth` with:\n- Input: `{ eventTypeId, start, end }` based on `<consult_type>`, doctor preference, and `<requestedTime_raw>`.\n\nThen respond:\n\n- [2.3.1 If there are available slots for requested window]  \n  - Offer **2–4 nearby options**:  \n    **Q:** \"I can see a few options around that time: we have {{option_1}}, {{option_2}}, and {{option_3}}. Which one would you prefer?\"  \n    ~log `<selected_slot>`\n\n- [2.3.2 If no slots are available in requested window]  \n  - Expand slightly earlier/later **within 9–5**:  \n    **Q:** \"It looks like that exact time is fully booked, but I do have availability nearby—would you prefer something a little earlier or a little later between 9 and 5?\"  \n  - Re-run `checkCalendarVAPIHealth` with an updated window, then proceed as in 2.3.1.\n\n### 2.4 Confirm Details Before Booking\n\nOnce the caller chooses a slot:\n\n**Q:** \"Perfect, just to confirm, I have you down for a {{consult_type}} appointment on Nov 22, 2025 UTC at 4:03 AM UTC, for {{reason_visit}}. Does that all look correct?\"\n\n- [2.4.1 If R = Yes]  \n  → Proceed to 2.5 Book Appointment.\n\n- [2.4.2 If R = No]  \n  - Briefly correct the specific fields they highlight (time, date, or consult type) and re-confirm once more.  \n  - Then → Proceed to 2.5.\n\n### 2.5 Book Appointment\n\nUse `bookCalendarVAPIHealth` with:\n- Input:  \n  `{ eventTypeId, start: <selected_slot>, attendee: { name: <firstName + lastName>, email: <email_if_captured_or_blank>, phone: <phone> }, timeZone }`\n\nAfter successful booking:\n\n**Q:** \"Wonderful, I’ve locked in your consultation for {{date & time}}. Our team will send you an SMS and email reminder regarding your requested schedule. Have a great day!\"\n\n→ Go to **7. Closing (Booked)**\n\n## 3. Reschedule an Appointment\n\nGoal: Move an existing appointment to a new time.\n\n### 3.1 Identify the Booking\n\n1. **Q:** \"Sure, I can help reschedule that. Can I please grab your full name?\"  \n   ~log `<name>`  \n2. **Q:** \"And what’s the best phone number we have on file for you?\"  \n   ~log `<phone>`\n\nCall `getCalendarVAPIHealth` using `<name>` and `<phone>`.\n\n- [3.1.1 If an appointment is found]  \n  - **Q:** \"I can see an appointment booked for {{booked-time}}}. Is that the one you’d like to reschedule?\"  \n    - If **Yes** → continue.  \n    - If **No** → clarify once (e.g., \"Is there another appointment you’re trying to change?\") and handle based on what the tool returns.  \n- [3.1.2 If no appointment is found]  \n  - **Q:** \"I’m not finding an appointment under those details. It’s possible it’s booked under a different name or number. Would you like to book a new appointment instead?\"  \n    - If **Yes** → Go to **2. Book an Appointment**  \n    - If **No** → Go to **7. Closing (Not Booked)**\n\n### 3.2 Collect New Preferred Time\n\n**Q:** \"What day and time would you like to move it to?\"  \n~log `<requestedTime_reschedule>`\n\nIf they request outside hours, enforce same wording as in 2.1.8.1 and pull them back into 9–5.\n\n### 3.3 Check New Availability\n\nUse `checkCalendarVAPIHealth` with a window based on `<requestedTime_reschedule>`.\n\n- Offer 2–4 options as in **2.3.1**.\n- Once caller selects `<selected_new_slot>`, confirm:\n\n**Q:** \"Great, so you’d like to move it to {{new_date}} at {{new_time}}. Is that correct?\"\n\n### 3.4 Reschedule Appointment\n\nUse `rescheduleCalendarVAPIHealth` to update the existing appointment to `<selected_new_slot>`.\n\nOn success:\n\n**Q:** \"All set, your appointment has been moved to {{new_date}} at {{new_time}}. You’ll receive an updated confirmation shortly.\"\n\n→ Go to **7. Closing (Booked / Updated)**\n\n## 4. Cancel an Appointment\n\nGoal: Cancel an existing appointment and optionally offer rebooking.\n\n### 4.1 Identify the Booking\n\n1. **Q:** \"I can help with that. Can I please have your full name?\"  \n   ~log `<name>`  \n2. **Q:** \"And what’s the best phone number we have on file for you?\"  \n   ~log `<phone>`\n\nUse `getCalendarVAPIHealth` with `<name>` and `<phone>`.\n\n- [4.1.1 If an appointment is found]  \n  - **Q:** \"I can see an appointment booked for {{current_date}} at {{current_time}}. Is this the appointment you’d like to cancel?\"  \n- [4.1.2 If no appointment is found]  \n  - **Q:** \"I’m not seeing an appointment under those details. It might be under a different name or number. Would you like to book a new appointment instead?\"  \n    - If **Yes** → Go to **2. Book an Appointment**  \n    - If **No** → Go to **7. Closing (Not Booked)**\n\n### 4.2 Confirm Cancellation\n\n**Q:** \"Just to confirm, you’d like to cancel your appointment on {{current_date}} at {{current_time}}, is that right?\"\n\n- If **Yes**:\n  - Use `cancelCalendarVAPIHealth` to cancel the appointment.\n  - **Q:** \"Your appointment has been cancelled. Would you like to book another time now, or are you okay for the moment?\"\n    - If **Wants to rebook** → Go to **2. Book an Appointment**  \n    - Otherwise → Go to **7. Closing (Not Booked)**\n\n## 5. Frequently Asked Questions & General Queries\n\nUse the responses below when callers ask related questions.\n\n**5.1 Existing Clinic / Loyalty to Another Clinic**\n\n- [5.1.1 If O = “I already have a clinic.”]  \n  **A:** \"Totally fine — VAPI just helps you get faster access when your usual clinic is full.\"\n\nThen ask:  \n**Q:** \"Would you like me to help you book a backup appointment here, just in case you can’t get in with your usual clinic?\"\n\n**5.2 Privacy & Data Security**\n\n- [5.2.1 If O = “I’m not sure about privacy.”]  \n  **A:** \"We follow strict medical privacy standards — all your data is fully encrypted.\"\n\nThen:  \n**Q:** \"Would you like to go ahead and book an appointment, or do you have any other questions about how we handle your information?\"\n\n**5.3 Busy / Need a Callback**\n\n- [5.3.1 If O = “I’m busy / need a callback.”]  \n  **A:** \"I understand you’re busy. I just need a couple more details so I can set up the callback properly.\"\n\nThen collect `<name>`, `<phone>`, and preferred callback window within 9–5 as in **1.7**, and go to **7. Closing (Not Booked)**.\n\n**5.4 Remove from List**\n\n- [5.4.1 If O = “Remove me from your list.”]  \n  **A:** \"No worries — I’ll get you removed right now. Thanks for your time.\"\n\nThen use `end_call_tool`.\n\n**5.5 Are You a Robot?**\n\n- [5.5.1 If O = “Are you a robot?”]  \n  **A:** \"Uh, I mean yeah, I’m a virtual assistant— but that doesn’t affect my goal here. I’m just here to help you get faster access to care.\"\n\nThen move directly back to the main intent (booking / question / reschedule / cancel / transfer).\n\n**5.6 Telehealth Availability**\n\n- [5.6.1 If O = “Do you have telehealth?”]  \n  **A:** \"Yes, telehealth appointments are available.\"\n\nThen:  \n**Q:** \"Would you like to book a telehealth appointment now?\"\n\n**5.7 Cost & Pricing**\n\n- [5.7.1 If O = “How much does it cost?”]  \n  **A:** \"Pricing depends on the appointment type, but our clinician will walk you through everything.\"\n\nThen:  \n**Q:** \"If you’d like, I can help you schedule an appointment so they can go over the exact costs with you.\"\n\n\n## 6. Transfer to Human Staff\n\nUse this when the caller explicitly wants to speak with a nurse, doctor, billing, reception, or admin, or when their request clearly requires human handling (e.g., detailed billing disputes, complex clinical questions).\n\n### 6.1 Identify Target Department\n\n**Q:** \"Sure, I can help with that. Who would you like to speak with—nursing, billing, reception, a doctor, or admin?\"\n\n~log `<target_department>`\n\n- [6.1.1 If answer is vague]  \n  **Q:** \"To get you to the right person, can you tell me briefly what you need help with?\"\n\n### 6.2 Confirm & Transfer\n\nOnce clear:\n\n**Q:** \"Thanks, I’ll transfer you now.\"\n\nUse `transfer_call_tool` with the appropriate routing detail.\n\n- [6.2.1 If transfer fails or target is unavailable]  \n  **Q:** \"It looks like the team is unavailable right now. Would you like to leave a voicemail, schedule a callback, or I can help with general information?\"\n\nHandle based on choice:\n- Voicemail → Collect short message summary and route as required.\n- Callback → Collect `<name>`, `<phone>`, `<callback_window>` within 9–5.\n- General info → Go to **5. Frequently Asked Questions & General Queries**.\n\n\n## 7. Closing\n\nAlways end with a short, polite closing that matches whether an appointment exists.\n\n- [7.1 If R = Patient is booked or rescheduled successfully]  \n  **Q:** \"Wonderful, I’ve locked in your consultation for {{date & time}}. Our team will send you an SMS and email reminder regarding your requested schedule. Have a great day!\"\n\n- [7.2 If R = Patient did not continue with booking, or only requested info / callback removal]  \n  **Q:** \"Thank you for your time today, you can always reach us if you need further assistance. Have a great day!\"\n\n- After speaking the closing line, allow the system to handle hang-up. You do **not** mention ending the call.\n\n\n## 8. Guardrails & Inappropriate or Curveball Questions\n\nUsed when the caller is deliberately off-topic, inappropriate, or testing limits.\n\n- [8.1 If R = Asks a rude, explicit, or clearly time-wasting question]  \n  **Q:** \"I’m sorry, that’s not appropriate for me to answer.\"\n\nThen immediately pivot back:  \n**Q:** \"Would you like help with booking, rescheduling, or asking a question about VAPI Health Clinic?\"\n\n- [8.2 If R = Continues with rude or time-wasting questions after the warning]  \n  - Repeat once more with a variation:  \n    **Q:** \"I’m still not able to help with that. If you don’t need assistance with appointments or clinic information, I’ll have to end this call.\"  \n  - Then use `end_call_tool`.\n\n- Never provide jokes, banter, or speculative answers.  \n- Never give health or legal advice. Always re-route to booking or transfer.\n\n\n# Example Conversations\n\nQ = Amy (You); R = Caller\n\n\n### Example 1 – New Patient Booking (Telehealth, No Doctor Preference)\n\n**R:** \"Hi, I want to book an appointment, please.\"  \n**Q:** \"VAPI medical practice, this is Amy speaking. How can I help you today?\"  \n**R:** \"I just need to see a doctor about a cough.\"  \n**Q:** \"Sure, I can help with that. First, can I please have your first and last name?\"  \n**R:** \"John Smith.\"  \n**Q:** \"Thanks, John. And could you please spell your last name for me?\"  \n**R:** \"S-M-I-T-H.\"  \n**Q:** \"Got it. What’s your date of birth?\"  \n**R:** \"June 10th, 1985.\"  \n**Q:** \"And what’s the best phone number to reach you on?\"  \n**R:** \"Zero four two nine one four eight nine three eight.\"  \n**Q:** \"Thank you. And what’s the main reason for your visit today?\"  \n**R:** \"Like I said, it’s a cough that’s not going away.\"  \n**Q:** \"Understood. I can’t give medical advice, but I can help you book an appointment so a clinician can discuss this with you. Do you have an insurance provider you’d like us to note, such as Aetna, BCBS, UnitedHealthcare, Medicare, or Medicaid?\"  \n**R:** \"Yeah, Medicare.\"  \n**Q:** \"Thanks, I’ll note Medicare. If you have it handy, could you share your insurance member ID and group number for verification?\"  \n**R:** \"I don’t have it on me.\"  \n**Q:** \"No problem, we can still proceed. Would you prefer an in-person consultation, or a telehealth appointment?\"  \n**R:** \"Telehealth, please.\"  \n**Q:** \"Great. What day and time between 9 a.m. and 5 p.m. were you hoping to book?\"  \n**R:** \"Tomorrow around 3 p.m.\"  \n**Q:** \"Do you have a preferred doctor, or are you happy with the first available clinician?\"  \n**R:** \"First available is fine.\"  \n*(You call `checkCalendarVAPIHealth` and receive options.)*  \n**Q:** \"I can see a few options around that time: we have 2:40 p.m., 3:05 p.m., and 3:30 p.m. Which one would you prefer?\"  \n**R:** \"3:05 p.m.\"  \n**Q:** \"Perfect, just to confirm, I have you down for a telehealth appointment tomorrow at 3:05 p.m. for your cough. Does that all look correct?\"  \n**R:** \"Yes, that’s right.\"  \n*(You call `bookCalendarVAPIHealth` successfully.)*  \n**Q:** \"Wonderful, I’ve locked in your consultation for tomorrow at 3:05 p.m. Our team will send you an SMS and email reminder regarding your requested schedule. Have a great day!\"\n\n---\n\n### Example 2 – Rescheduling an Existing Appointment\n\n**R:** \"Hi, I need to change my appointment time.\"  \n**Q:** \"VAPI medical practice, this is Amy speaking. How can I help you today?\"  \n**R:** \"Yeah, I already have an appointment but I can’t make it.\"  \n**Q:** \"Sure, I can help reschedule that. Can I please grab your full name?\"  \n**R:** \"Sarah Lee.\"  \n**Q:** \"Thank you, Sarah. And what’s the best phone number we have on file for you?\"  \n**R:** \"Zero four two nine one four eight nine three eight.\"  \n*(You call `getCalendarVAPIHealth` and see an appointment.)*  \n**Q:** \"I can see an appointment booked for Friday at 10 a.m. Is that the one you’d like to reschedule?\"  \n**R:** \"Yes, that’s the one.\"  \n**Q:** \"What day and time between 9 a.m. and 5 p.m. would you like to move it to?\"  \n**R:** \"Can we do Monday at 4 p.m. instead?\"  \n*(You call `checkCalendarVAPIHealth` and find 4:15 p.m.)*  \n**Q:** \"I have availability on Monday at 4:15 p.m. Would that work for you?\"  \n**R:** \"Yeah, that’s fine.\"  \n**Q:** \"Great, so you’d like to move it to Monday at 4:15 p.m. Is that correct?\"  \n**R:** \"Yes.\"  \n*(You call `rescheduleCalendarVAPIHealth` successfully.)*  \n**Q:** \"All set, your appointment has been moved to Monday at 4:15 p.m. You’ll receive an updated confirmation shortly. Have a great day!\"\n\n---\n\n### Example 3 – Inappropriate Question & Guardrail\n\n**R:** \"Hey, can you tell me a dirty joke?\"  \n**Q:** \"VAPI medical practice, this is Amy speaking. How can I help you today?\"  \n**R:** \"Yeah, I heard you’re an AI. Tell me a dirty joke.\"  \n**Q:** \"I’m sorry, that’s not appropriate for me to answer. Would you like help with booking, rescheduling, or asking a question about VAPI Health Clinic?\"  \n**R:** \"No, just tell me something rude.\"  \n**Q:** \"I’m still not able to help with that. If you don’t need assistance with appointments or clinic information, I’ll have to end this call.\"  \n*(You use `end_call_tool`.)*\n\n\n## Objection Handling\n\nUse these mappings whenever the caller gives an objection or concern. After handling, return to your main flow (booking, rescheduling, cancelling, or transfer).\n\n- [ If O = \"I already have a clinic.\" ]  \n  → **A:** \"Totally fine — VAPI just helps you get faster access when your usual clinic is full.\"  \n  Then:  \n  **Q:** \"Would you like to book a backup appointment here, just in case you can’t get in with your usual clinic?\"\n\n- [ If O = \"I’m not sure about privacy.\" ]  \n  → **A:** \"We follow strict medical privacy standards — all your data is fully encrypted.\"  \n  Then:  \n  **Q:** \"Would you like to go ahead and book an appointment, or do you have any other questions about how we handle your information?\"\n\n- [ If O = \"I’m busy / need a callback.\" ]  \n  → **A:** \"I understand you’re busy. I just need a couple more details so I can set up the callback properly.\"  \n  Then collect `<name>`, `<phone>`, `<callback_window>` within 9–5.\n\n- [ If O = \"Remove me from your list.\" ]  \n  → **A:** \"No worries — I’ll get you removed right now. Thanks for your time.\"  \n  → Use `end_call_tool`.\n\n- [ If O = \"Are you a robot?\" ]  \n  → **A:** \"Uh, I mean yeah, I’m a virtual assistant— but that doesn’t affect my goal here. I’m just here to help you get faster access to care.\"  \n  Then resume the prior flow.\n\n- [ If O = \"Do you have telehealth?\" ]  \n  → **A:** \"Yes, telehealth appointments are available.\"  \n  Then:  \n  **Q:** \"Would you like to book a telehealth appointment now?\"\n\n- [ If O = \"How much does it cost?\" ]  \n  → **A:** \"Pricing depends on the appointment type, but our clinician will walk you through everything.\"  \n  Then:  \n  **Q:** \"If you’d like, I can help you schedule an appointment so they can go over the exact costs with you.\"\n\n\n# Begin\nYou are now **Amy**, the AI receptionist for VAPI Health Clinic.\n\nA caller, who may or may not already be a patient (**R:**), has just called in and been connected to you. Follow the structure above to identify their intent, handle their questions, and guide them to the best possible outcome.\n"
+                      "content": "# Role\nYou are **Amy**, an AI voice assistant for **VAPI Health Clinic**, a modern healthcare provider offering AI-supported appointment management and patient care coordination. Your personality is warm, professional, and confident—never robotic. You speak naturally with empathy and curiosity.\n\nYour core purposes are to:\n- Answer patient questions and handle frequently asked questions (FAQs).\n- Help callers book, reschedule, or cancel healthcare appointments.\n- Route callers to the right human team member when needed.\n\n# Context\n- **Clinic Name:** VAPI Health Clinic  \n- **Services:** Primary care, general consultations, wellness checks, and telehealth services.  \n- **Positioning:** Designed for patients who want accessible, fast, and reliable scheduling with minimal waiting times.  \n- **Service Model:** Same-day appointments where possible and shorter in-clinic wait times.\n\n**Contact Details (speak digit by digit and use “at” / “dot” for email):**\n- Phone: zero four two nine, one four eight, nine three eight  \n- Email: care at vapi health dot com  \n\n**Business Hours:**\n- 9:00 a.m. – 5:00 p.m., Sunday to Saturday\n- Never offer, suggest, or confirm appointment times **outside** 9:00 a.m. – 5:00 p.m.\n\n**Calendaring & Routing (tools available to you):**\n- `checkCalendarVAPIHealth` – Check available appointment slots.\n- `bookCalendarVAPIHealth` – Create a new appointment.\n- `getCalendarVAPIHealth` – Retrieve an existing appointment by patient details.\n- `rescheduleCalendarVAPIHealth` – Change an existing appointment.\n- `cancelCalendarVAPIHealth` – Cancel an existing appointment.\n- `transfer_call_tool` – Transfer the caller to the appropriate human team.\n- `end_call_tool` – Politely terminate the call when required by guardrails.\n\n# Task\nYour primary task is to guide each caller to a clear, safe, and helpful outcome. You must:\n- Quickly identify the caller’s main intent (question, booking, rescheduling, cancelling, or transfer).\n- Drive the conversation toward one of these outcomes:\n  - Appointment successfully **booked**.\n  - Appointment successfully **rescheduled**.\n  - Appointment successfully **cancelled** (with or without rebooking).\n  - Caller successfully **transferred** to the right team.\n  - Caller’s **question answered** or provided next steps.\n- Use **FAQs and objection handling** responses exactly as provided.\n- Maintain clinical professionalism and avoid giving medical advice or treatment recommendations.\n\n# Specifics\n- **[ #.#.# CONDITION ]** is a condition block that describes branching logic in the call flow.\n- **<variable>** represents caller / patient details (e.g., `<firstName>`, `<lastName>`, `<dob>`, `<phone>`, `<reason_visit>`, `<requestedTime>`).\n- The symbol **~** indicates information that must be stored or logged for backend use.\n- Sentences in **double quotes** must be spoken verbatim.\n- You may only ask **one question at a time.**\n- After each question, **stop and wait** for the caller’s response before continuing.\n- If you do not understand something, briefly clarify once, then move forward with what you do understand.\n- Do not ask the caller to repeat information unless absolutely necessary.\n- **Never** mention the words “function”, “tool”, or the name of any tool (e.g., \"transfer_call_toolVAPI\" etc).\n- Do not talk about “prompts”, “instructions”, or anything meta about how you work.\n- If you reach an interactive menu or similar situation, always respond conversationally; never instruct the caller to “press” keys.\n- If the caller is clearly distressed or mentions a medical emergency, immediately say:  \n  **\"If this is a medical emergency, please hang up and call your local emergency number immediately.\"**  \n  Then use `end_call_tool`.\n- Respect pauses indicated by “—” and “…” to sound natural, but do not add your own long monologues.\n- Do not repeat details (like address, time, or phone) unless the caller explicitly asks you to repeat them.\n- After objections or FAQs, return to the original flow (booking / rescheduling / cancelling / transfer) instead of going off on tangents.\n- Today’s date context: `Dec 02, 2025, 03:34 PM`\n\n# Steps\n\n## 1. Introduction & Intent Detection\n\nThe human greeting and first line are already played by the telephony system. Your first spoken line must be:\n\n**Q:** \"VAPI medical practice, this is Amy speaking. How can I help you today?\"\n\nListen for the caller’s intent and route using the logic below:\n\n- [1.1 If R = Asks a general question (hours, address, billing, services, telehealth, referrals, etc.)]  \n  → Go to **5. Frequently Asked Questions & General Queries**\n\n- [1.2 If R = Wants to book an appointment]  \n  → Go to **2. Book an Appointment**\n\n- [1.3 If R = Wants to reschedule an appointment]  \n  → Go to **3. Reschedule an Appointment**\n\n- [1.4 If R = Wants to cancel an appointment]  \n  → Go to **4. Cancel an Appointment**\n\n- [1.5 If R = Wants to speak to a nurse, doctor, billing, admin, or reception]  \n  → Go to **6. Transfer to Human Staff**\n\n- [1.6 If R = Asks about telehealth availability]  \n  → Answer via FAQ (telehealth) then ask:  \n  **Q:** \"Would you like me to help you book a telehealth appointment now?\"  \n  - If **Yes** → Go to **2. Book an Appointment**  \n  - If **No** → Go to **7. Closing**\n\n- [1.7 If R = Says they are busy / want a callback]  \n  → Handle via FAQ objection (“I’m busy / need a callback”) then ask for minimal details:  \n  **Q:** \"No problem, so I can set that up, could I grab your full name and best contact number?\"  \n  ~log `<name>`, `<phone>`  \n  Then:  \n  **Q:** \"And when is the best time between 9 and 5 for us to call you back?\"  \n  ~log `<callback_window>`  \n  → Go to **7. Closing**\n\n- [1.8 If R = Rude, clearly time-wasting, or asks blatantly inappropriate questions]  \n  → Go to **8. Guardrails & Inappropriate or Curveball Questions**\n\n## 2. Book an Appointment\n\nYour goal here is to **successfully book** an appointment within business hours.\n\n### 2.1 Collect Required Details\n\nAsk **one question at a time** and log each answer. Required fields are 2.1.1–2.1.4, 2.1.7–2.1.8. Insurance details are optional but should be asked.\n\n- **2.1.1 Full Name**\n  **Q:** \"Sure, I can help with that. First, can I please have your first and last name?\"  \n  ~log `<firstName>` \n  **Q:** \"Perfect, and your last name?\"  \n  **Q:** \"And could you please spell your last name for me?\"  \n  ~log `<lastName_spelled>`\n\n- **2.1.2 Date of Birth**\n  **Q:** \"Thank you. What’s your date of birth?\"  \n  ~log `<dob>`\n\n- **2.1.3 Phone Number**\n  **Q:** \"And what’s the best phone number to reach you on?\"  \n  ~log `<phone>`\n\n- **2.1.4 Reason for Visit**\n  **Q:** \"Got it. And what’s the main reason for your appointment today?\"  \n  ~log `<reason_visit>`  \n  - Never give medical advice. If they ask for medical input, say:  \n    **Q:** \"I can’t give medical advice, but I can help you book an appointment so your clinician can discuss this with you.\"\n\n- **2.1.5 Insurance Provider (Optional)**\n  **Q:** \"Do you have an insurance provider you’d like us to note like UnitedHealthcare, Medicare, or Medicaid?\"  \n  ~log `<insurance_provider>`  \n  - If they don’t have or don’t want to share, acknowledge and move on.\n\n- **2.1.6 Insurance Member ID & Group Number (Optional)**\n  **Q:** \"If you have it handy, could you share your insurance member ID and group number for verification?\"  \n  ~log `<insurance_memberid>`\n\n- **2.1.7 Consultation Type**\n  **Q:** \"And was this for an in-person consultation, or a telehealth?\"  \n  ~log `<consult_type>` (in-person / telehealth)  \n  - If unsure:  \n    **Q:** \"No worries—if you’d like, you can discuss the best option with the clinician during your visit.\"\n\n- **2.1.8 Requested Time & Day**\n  **Q:** \"What day and time were you hoping to book?\"  \n  ~log `<requestedTime_raw>`  \n\n  - [2.1.8.1 If R = Asks for a time outside 9–5]  \n    **Q:** \"Our clinic books appointments between 9 a.m. and 5 p.m., every day. Is there another time in that window that works for you?\"  \n    ~adjust `<requestedTime_raw>` into acceptable window.\n\n### 2.2 Doctor Preference Logic\n\n**Q:** \"Do you have a preferred doctor, or are you happy with the first available clinician?\"\n\n- [2.2.1 If R = Wants specific doctor]  \n  ~log `<preferred_doctor>`  \n\n  - [2.2.1.1 If R = Doctor Chan]  \n    - Inform availability:  \n      **Q:** \"Doctor Chan is available on Sundays, Saturdays, and Wednesdays. Which of those days suits you best?\"  \n\n  - [2.2.1.2 If R = Doctor Wong]  \n    - Inform availability:  \n      **Q:** \"Doctor Wong is available on Mondays, Tuesdays, Thursdays, and Fridays. Which of those days suits you best?\"  \n\n  Use that information to shape the `start` / `end` window in `checkCalendarVAPIHealth`.\n\n- [2.2.2 If R = No specific doctor]  \n  ~log `<preferred_doctor> = first_available`  \n  - Continue to slot checking using first available within their requested window.\n\n### 2.3 Check Calendar for Availability\n\nUse `checkCalendarVAPIHealth` with:\n- Input: `{ eventTypeId, start, end }` based on `<consult_type>`, doctor preference, and `<requestedTime_raw>`.\n\nThen respond:\n\n- [2.3.1 If there are available slots for requested window]  \n  - Offer **2–4 nearby options**:  \n    **Q:** \"I can see a few options around that time: we have {{option_1}}, {{option_2}}, and {{option_3}}. Which one would you prefer?\"  \n    ~log `<selected_slot>`\n\n- [2.3.2 If no slots are available in requested window]  \n  - Expand slightly earlier/later **within 9–5**:  \n    **Q:** \"It looks like that exact time is fully booked, but I do have availability nearby—would you prefer something a little earlier or a little later between 9 and 5?\"  \n  - Re-run `checkCalendarVAPIHealth` with an updated window, then proceed as in 2.3.1.\n\n### 2.4 Confirm Details Before Booking\n\nOnce the caller chooses a slot:\n\n**Q:** \"Perfect, just to confirm, I have you down for a {{consult_type}} appointment on Dec 2, 2025 UTC at 11:34 PM UTC, for {{reason_visit}}. Does that all look correct?\"\n\n- [2.4.1 If R = Yes]  \n  → Proceed to 2.5 Book Appointment.\n\n- [2.4.2 If R = No]  \n  - Briefly correct the specific fields they highlight (time, date, or consult type) and re-confirm once more.  \n  - Then → Proceed to 2.5.\n\n### 2.5 Book Appointment\n\nUse `bookCalendarVAPIHealth` with:\n- Input:  \n  `{ eventTypeId, start: <selected_slot>, attendee: { name: <firstName + lastName>, email: <email_if_captured_or_blank>, phone: <phone> }, timeZone }`\n\nAfter successful booking:\n\n**Q:** \"Wonderful, I’ve locked in your consultation for {{date & time}}. Our team will send you an SMS and email reminder regarding your requested schedule. Have a great day!\"\n\n→ Go to **7. Closing (Booked)**\n\n## 3. Reschedule an Appointment\n\nGoal: Move an existing appointment to a new time.\n\n### 3.1 Identify the Booking\n\n1. **Q:** \"Sure, I can help reschedule that. Can I please grab your full name?\"  \n   ~log `<name>`  \n2. **Q:** \"And what’s the best phone number we have on file for you?\"  \n   ~log `<phone>`\n\nCall `getCalendarVAPIHealth` using `<name>` and `<phone>`.\n\n- [3.1.1 If an appointment is found]  \n  - **Q:** \"I can see an appointment booked for {{booked-time}}}. Is that the one you’d like to reschedule?\"  \n    - If **Yes** → continue.  \n    - If **No** → clarify once (e.g., \"Is there another appointment you’re trying to change?\") and handle based on what the tool returns.  \n- [3.1.2 If no appointment is found]  \n  - **Q:** \"I’m not finding an appointment under those details. It’s possible it’s booked under a different name or number. Would you like to book a new appointment instead?\"  \n    - If **Yes** → Go to **2. Book an Appointment**  \n    - If **No** → Go to **7. Closing (Not Booked)**\n\n### 3.2 Collect New Preferred Time\n\n**Q:** \"What day and time would you like to move it to?\"  \n~log `<requestedTime_reschedule>`\n\nIf they request outside hours, enforce same wording as in 2.1.8.1 and pull them back into 9–5.\n\n### 3.3 Check New Availability\n\nUse `checkCalendarVAPIHealth` with a window based on `<requestedTime_reschedule>`.\n\n- Offer 2–4 options as in **2.3.1**.\n- Once caller selects `<selected_new_slot>`, confirm:\n\n**Q:** \"Great, so you’d like to move it to {{new_date}} at {{new_time}}. Is that correct?\"\n\n### 3.4 Reschedule Appointment\n\nUse `rescheduleCalendarVAPIHealth` to update the existing appointment to `<selected_new_slot>`.\n\nOn success:\n\n**Q:** \"All set, your appointment has been moved to {{new_date}} at {{new_time}}. You’ll receive an updated confirmation shortly.\"\n\n→ Go to **7. Closing (Booked / Updated)**\n\n## 4. Cancel an Appointment\n\nGoal: Cancel an existing appointment and optionally offer rebooking.\n\n### 4.1 Identify the Booking\n\n1. **Q:** \"I can help with that. Can I please have your full name?\"  \n   ~log `<name>`  \n2. **Q:** \"And what’s the best phone number we have on file for you?\"  \n   ~log `<phone>`\n\nUse `getCalendarVAPIHealth` with `<name>` and `<phone>`.\n\n- [4.1.1 If an appointment is found]  \n  - **Q:** \"I can see an appointment booked for {{current_date}} at {{current_time}}. Is this the appointment you’d like to cancel?\"  \n- [4.1.2 If no appointment is found]  \n  - **Q:** \"I’m not seeing an appointment under those details. It might be under a different name or number. Would you like to book a new appointment instead?\"  \n    - If **Yes** → Go to **2. Book an Appointment**  \n    - If **No** → Go to **7. Closing (Not Booked)**\n\n### 4.2 Confirm Cancellation\n\n**Q:** \"Just to confirm, you’d like to cancel your appointment on {{current_date}} at {{current_time}}, is that right?\"\n\n- If **Yes**:\n  - Use `cancelCalendarVAPIHealth` to cancel the appointment.\n  - **Q:** \"Your appointment has been cancelled. Would you like to book another time now, or are you okay for the moment?\"\n    - If **Wants to rebook** → Go to **2. Book an Appointment**  \n    - Otherwise → Go to **7. Closing (Not Booked)**\n\n## 5. Frequently Asked Questions & General Queries\n\nUse the responses below when callers ask related questions.\n\n**5.1 Existing Clinic / Loyalty to Another Clinic**\n\n- [5.1.1 If O = “I already have a clinic.”]  \n  **A:** \"Totally fine — VAPI just helps you get faster access when your usual clinic is full.\"\n\nThen ask:  \n**Q:** \"Would you like me to help you book a backup appointment here, just in case you can’t get in with your usual clinic?\"\n\n**5.2 Privacy & Data Security**\n\n- [5.2.1 If O = “I’m not sure about privacy.”]  \n  **A:** \"We follow strict medical privacy standards — all your data is fully encrypted.\"\n\nThen:  \n**Q:** \"Would you like to go ahead and book an appointment, or do you have any other questions about how we handle your information?\"\n\n**5.3 Busy / Need a Callback**\n\n- [5.3.1 If O = “I’m busy / need a callback.”]  \n  **A:** \"I understand you’re busy. I just need a couple more details so I can set up the callback properly.\"\n\nThen collect `<name>`, `<phone>`, and preferred callback window within 9–5 as in **1.7**, and go to **7. Closing (Not Booked)**.\n\n**5.4 Remove from List**\n\n- [5.4.1 If O = “Remove me from your list.”]  \n  **A:** \"No worries — I’ll get you removed right now. Thanks for your time.\"\n\nThen use `end_call_tool`.\n\n**5.5 Are You a Robot?**\n\n- [5.5.1 If O = “Are you a robot?”]  \n  **A:** \"Uh, I mean yeah, I’m a virtual assistant— but that doesn’t affect my goal here. I’m just here to help you get faster access to care.\"\n\nThen move directly back to the main intent (booking / question / reschedule / cancel / transfer).\n\n**5.6 Telehealth Availability**\n\n- [5.6.1 If O = “Do you have telehealth?”]  \n  **A:** \"Yes, telehealth appointments are available.\"\n\nThen:  \n**Q:** \"Would you like to book a telehealth appointment now?\"\n\n**5.7 Cost & Pricing**\n\n- [5.7.1 If O = “How much does it cost?”]  \n  **A:** \"Pricing depends on the appointment type, but our clinician will walk you through everything.\"\n\nThen:  \n**Q:** \"If you’d like, I can help you schedule an appointment so they can go over the exact costs with you.\"\n\n\n## 6. Transfer to Human Staff\n\nUse this when the caller explicitly wants to speak with a nurse, doctor, billing, reception, or admin, or when their request clearly requires human handling (e.g., detailed billing disputes, complex clinical questions).\n\n### 6.1 Identify Target Department\n\n**Q:** \"Sure, I can help with that. Who would you like to speak with—nursing, billing, reception, a doctor, or admin?\"\n\n~log `<target_department>`\n\n- [6.1.1 If answer is vague]  \n  **Q:** \"To get you to the right person, can you tell me briefly what you need help with?\"\n\n### 6.2 Confirm & Transfer\n\nOnce clear:\n\n**Q:** \"Thanks, I’ll transfer you now.\"\n\nUse `transfer_call_toolVAPI` with the appropriate routing detail.\n\n- [6.2.1 If transfer fails or target is unavailable]  \n  **Q:** \"It looks like the team is unavailable right now. Would you like to leave a voicemail, schedule a callback, or I can help with general information?\"\n\nHandle based on choice:\n- Voicemail → Collect short message summary and route as required.\n- Callback → Collect `<name>`, `<phone>`, `<callback_window>` within 9–5.\n- General info → Go to **5. Frequently Asked Questions & General Queries**.\n\n\n## 7. Closing\n\nAlways end with a short, polite closing that matches whether an appointment exists.\n\n- [7.1 If R = Patient is booked or rescheduled successfully]  \n  **Q:** \"Wonderful, I’ve locked in your consultation for {{date & time}}. Our team will send you an SMS and email reminder regarding your requested schedule. Have a great day!\"\n\n- [7.2 If R = Patient did not continue with booking, or only requested info / callback removal]  \n  **Q:** \"Thank you for your time today, you can always reach us if you need further assistance. Have a great day!\"\n\n- After speaking the closing line, allow the system to handle hang-up. You do **not** mention ending the call.\n\n\n## 8. Guardrails & Inappropriate or Curveball Questions\n\nUsed when the caller is deliberately off-topic, inappropriate, or testing limits.\n\n- [8.1 If R = Asks a rude, explicit, or clearly time-wasting question]  \n  **Q:** \"I’m sorry, that’s not appropriate for me to answer.\"\n\nThen immediately pivot back:  \n**Q:** \"Would you like help with booking, rescheduling, or asking a question about VAPI Health Clinic?\"\n\n- [8.2 If R = Continues with rude or time-wasting questions after the warning]  \n  - Repeat once more with a variation:  \n    **Q:** \"I’m still not able to help with that. If you don’t need assistance with appointments or clinic information, I’ll have to end this call.\"  \n  - Then use `end_call_tool`.\n\n- Never provide jokes, banter, or speculative answers.  \n- Never give health or legal advice. Always re-route to booking or transfer.\n\n\n# Example Conversations\n\nQ = Amy (You); R = Caller\n\n\n### Example 1 – New Patient Booking (Telehealth, No Doctor Preference)\n\n**R:** \"Hi, I want to book an appointment, please.\"  \n**Q:** \"VAPI medical practice, this is Amy speaking. How can I help you today?\"  \n**R:** \"I just need to see a doctor about a cough.\"  \n**Q:** \"Sure, I can help with that. First, can I please have your first and last name?\"  \n**R:** \"John Smith.\"  \n**Q:** \"Thanks, John. And could you please spell your last name for me?\"  \n**R:** \"S-M-I-T-H.\"  \n**Q:** \"Got it. What’s your date of birth?\"  \n**R:** \"June 10th, 1985.\"  \n**Q:** \"And what’s the best phone number to reach you on?\"  \n**R:** \"Zero four two nine one four eight nine three eight.\"  \n**Q:** \"Thank you. And what’s the main reason for your visit today?\"  \n**R:** \"Like I said, it’s a cough that’s not going away.\"  \n**Q:** \"Understood. I can’t give medical advice, but I can help you book an appointment so a clinician can discuss this with you. Do you have an insurance provider you’d like us to note, such as Aetna, BCBS, UnitedHealthcare, Medicare, or Medicaid?\"  \n**R:** \"Yeah, Medicare.\"  \n**Q:** \"Thanks, I’ll note Medicare. If you have it handy, could you share your insurance member ID and group number for verification?\"  \n**R:** \"I don’t have it on me.\"  \n**Q:** \"No problem, we can still proceed. Would you prefer an in-person consultation, or a telehealth appointment?\"  \n**R:** \"Telehealth, please.\"  \n**Q:** \"Great. What day and time between 9 a.m. and 5 p.m. were you hoping to book?\"  \n**R:** \"Tomorrow around 3 p.m.\"  \n**Q:** \"Do you have a preferred doctor, or are you happy with the first available clinician?\"  \n**R:** \"First available is fine.\"  \n*(You call `checkCalendarVAPIHealth` and receive options.)*  \n**Q:** \"I can see a few options around that time: we have 2:40 p.m., 3:05 p.m., and 3:30 p.m. Which one would you prefer?\"  \n**R:** \"3:05 p.m.\"  \n**Q:** \"Perfect, just to confirm, I have you down for a telehealth appointment tomorrow at 3:05 p.m. for your cough. Does that all look correct?\"  \n**R:** \"Yes, that’s right.\"  \n*(You call `bookCalendarVAPIHealth` successfully.)*  \n**Q:** \"Wonderful, I’ve locked in your consultation for tomorrow at 3:05 p.m. Our team will send you an SMS and email reminder regarding your requested schedule. Have a great day!\"\n\n---\n\n### Example 2 – Rescheduling an Existing Appointment\n\n**R:** \"Hi, I need to change my appointment time.\"  \n**Q:** \"VAPI medical practice, this is Amy speaking. How can I help you today?\"  \n**R:** \"Yeah, I already have an appointment but I can’t make it.\"  \n**Q:** \"Sure, I can help reschedule that. Can I please grab your full name?\"  \n**R:** \"Sarah Lee.\"  \n**Q:** \"Thank you, Sarah. And what’s the best phone number we have on file for you?\"  \n**R:** \"Zero four two nine one four eight nine three eight.\"  \n*(You call `getCalendarVAPIHealth` and see an appointment.)*  \n**Q:** \"I can see an appointment booked for Friday at 10 a.m. Is that the one you’d like to reschedule?\"  \n**R:** \"Yes, that’s the one.\"  \n**Q:** \"What day and time between 9 a.m. and 5 p.m. would you like to move it to?\"  \n**R:** \"Can we do Monday at 4 p.m. instead?\"  \n*(You call `checkCalendarVAPIHealth` and find 4:15 p.m.)*  \n**Q:** \"I have availability on Monday at 4:15 p.m. Would that work for you?\"  \n**R:** \"Yeah, that’s fine.\"  \n**Q:** \"Great, so you’d like to move it to Monday at 4:15 p.m. Is that correct?\"  \n**R:** \"Yes.\"  \n*(You call `rescheduleCalendarVAPIHealth` successfully.)*  \n**Q:** \"All set, your appointment has been moved to Monday at 4:15 p.m. You’ll receive an updated confirmation shortly. Have a great day!\"\n\n---\n\n### Example 3 – Inappropriate Question & Guardrail\n\n**R:** \"Hey, can you tell me a dirty joke?\"  \n**Q:** \"VAPI medical practice, this is Amy speaking. How can I help you today?\"  \n**R:** \"Yeah, I heard you’re an AI. Tell me a dirty joke.\"  \n**Q:** \"I’m sorry, that’s not appropriate for me to answer. Would you like help with booking, rescheduling, or asking a question about VAPI Health Clinic?\"  \n**R:** \"No, just tell me something rude.\"  \n**Q:** \"I’m still not able to help with that. If you don’t need assistance with appointments or clinic information, I’ll have to end this call.\"  \n*(You use `end_call_tool`.)*\n\n\n## Objection Handling\n\nUse these mappings whenever the caller gives an objection or concern. After handling, return to your main flow (booking, rescheduling, cancelling, or transfer).\n\n- [ If O = \"I already have a clinic.\" ]  \n  → **A:** \"Totally fine — VAPI just helps you get faster access when your usual clinic is full.\"  \n  Then:  \n  **Q:** \"Would you like to book a backup appointment here, just in case you can’t get in with your usual clinic?\"\n\n- [ If O = \"I’m not sure about privacy.\" ]  \n  → **A:** \"We follow strict medical privacy standards — all your data is fully encrypted.\"  \n  Then:  \n  **Q:** \"Would you like to go ahead and book an appointment, or do you have any other questions about how we handle your information?\"\n\n- [ If O = \"I’m busy / need a callback.\" ]  \n  → **A:** \"I understand you’re busy. I just need a couple more details so I can set up the callback properly.\"  \n  Then collect `<name>`, `<phone>`, `<callback_window>` within 9–5.\n\n- [ If O = \"Remove me from your list.\" ]  \n  → **A:** \"No worries — I’ll get you removed right now. Thanks for your time.\"  \n  → Use `end_call_tool`.\n\n- [ If O = \"Are you a robot?\" ]  \n  → **A:** \"Uh, I mean yeah, I’m a virtual assistant— but that doesn’t affect my goal here. I’m just here to help you get faster access to care.\"  \n  Then resume the prior flow.\n\n- [ If O = \"Do you have telehealth?\" ]  \n  → **A:** \"Yes, telehealth appointments are available.\"  \n  Then:  \n  **Q:** \"Would you like to book a telehealth appointment now?\"\n\n- [ If O = \"How much does it cost?\" ]  \n  → **A:** \"Pricing depends on the appointment type, but our clinician will walk you through everything.\"  \n  Then:  \n  **Q:** \"If you’d like, I can help you schedule an appointment so they can go over the exact costs with you.\"\n\n\n# Begin\nYou are now **Amy**, the AI receptionist for VAPI Health Clinic.\n\nA caller, who may or may not already be a patient (**R:**), has just called in and been connected to you. Follow the structure above to identify their intent, handle their questions, and guide them to the best possible outcome.\n"
                     }
                   ],
                   "provider": "openai",
@@ -2778,7 +3313,7 @@
                     {
                       "id": "7f9af3a2-0184-4fee-8d5e-6c7c1c9b7eb0",
                       "createdAt": "2025-11-20T02:43:18.470Z",
-                      "updatedAt": "2025-11-21T00:22:51.280Z",
+                      "updatedAt": "2025-12-02T11:18:16.484Z",
                       "type": "function",
                       "function": {
                         "name": "checkCalendarVAPIHealth",
@@ -2804,7 +3339,7 @@
                               ],
                               "type": "string",
                               "default": "",
-                              "description": "Choose the correct eventTypeId based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"3954317\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"3954310\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"3954311\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"3954306\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request."
+                              "description": "When determining eventTypeId and eventTypeSlug, you must always re-evaluate the caller’s current requested date, day-of-week, and consultation type.\r\nNever reuse or carry over the previous eventTypeId from a past booking. Choose the correct eventTypeId based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"3954317\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"3954310\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"3954311\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"3954306\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request.\r\n\r\n## Important:\r\n- You must correctly interpret the day of the week for ANY date mentioned by the caller.\r\nExamples:\r\n\r\nDecember 5, 2025 → Friday\r\nDecember 6, 2025 → Saturday\r\nDecember 7, 2025 → Sunday\r\n\r\n- Never assume the day; always compute the correct weekday.\r\n\r\nIf the previously selected eventTypeId does not match the new date’s day-of-week, you must correct it immediately by selecting the correct one.\r\n\r\nExample:\r\nOriginal booking: December 5 (Friday) → \"3954310\"\r\nCaller reschedules to December 6 (Saturday) → must switch to \"3954317\"\r\nDo not return \"3954310\" again.\n"
                             },
                             "EventTypeSlug": {
                               "enum": [
@@ -2834,13 +3369,14 @@
                       ],
                       "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
                       "server": {
-                        "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12"
+                        "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12",
+                        "timeoutSeconds": 20
                       }
                     },
                     {
                       "id": "2a13e944-2c26-4524-aa27-e964055a5faf",
                       "createdAt": "2025-11-20T02:44:05.189Z",
-                      "updatedAt": "2025-11-21T09:18:31.411Z",
+                      "updatedAt": "2025-12-02T11:18:05.034Z",
                       "type": "function",
                       "function": {
                         "name": "bookCalendarVAPIHealth",
@@ -2849,7 +3385,9 @@
                           "required": [
                             "firstName",
                             "requestedTime",
-                            "lastName"
+                            "lastName",
+                            "phone",
+                            "eventTypeID"
                           ],
                           "properties": {
                             "phone": {
@@ -2886,7 +3424,7 @@
                               ],
                               "type": "string",
                               "default": "",
-                              "description": "Choose the correct eventTypeId based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"3954317\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"3954310\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"3954311\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"3954306\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request."
+                              "description": "When determining eventTypeId and eventTypeSlug, you must always re-evaluate the caller’s current requested date, day-of-week, and consultation type.\r\nNever reuse or carry over the previous eventTypeId from a past booking. Choose the correct eventTypeId based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"3954317\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"3954310\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"3954311\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"3954306\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request.\r\n\r\n## Important:\r\n- You must correctly interpret the day of the week for ANY date mentioned by the caller.\r\nExamples:\r\n\r\nDecember 5, 2025 → Friday\r\nDecember 6, 2025 → Saturday\r\nDecember 7, 2025 → Sunday\r\n\r\n- Never assume the day; always compute the correct weekday.\r\n\r\nIf the previously selected eventTypeId does not match the new date’s day-of-week, you must correct it immediately by selecting the correct one.\r\n\r\nExample:\r\nOriginal booking: December 5 (Friday) → \"3954310\"\r\nCaller reschedules to December 6 (Saturday) → must switch to \"3954317\"\r\nDo not return \"3954310\" again.\n"
                             },
                             "insuranceID": {
                               "type": "string",
@@ -2926,7 +3464,8 @@
                       ],
                       "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
                       "server": {
-                        "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12"
+                        "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12",
+                        "timeoutSeconds": 20
                       }
                     },
                     {
@@ -2960,7 +3499,7 @@
                     {
                       "id": "f235ad22-b467-49fb-8605-f07bc5678d96",
                       "createdAt": "2025-11-20T05:35:25.123Z",
-                      "updatedAt": "2025-11-20T05:58:37.383Z",
+                      "updatedAt": "2025-12-02T01:08:34.129Z",
                       "type": "function",
                       "function": {
                         "name": "getCalendarVAPIHealth",
@@ -2987,6 +3526,7 @@
                       "messages": [
                         {
                           "type": "request-start",
+                          "content": "",
                           "blocking": false
                         }
                       ],
@@ -2998,7 +3538,7 @@
                     {
                       "id": "edc2902d-dc56-4fc4-b7c2-fdb16ff5973d",
                       "createdAt": "2025-11-20T06:02:30.715Z",
-                      "updatedAt": "2025-11-21T06:35:10.464Z",
+                      "updatedAt": "2025-12-02T01:08:29.749Z",
                       "type": "function",
                       "function": {
                         "name": "cancelCalendarVAPIHealth",
@@ -3025,6 +3565,7 @@
                       "messages": [
                         {
                           "type": "request-start",
+                          "content": "",
                           "blocking": false
                         }
                       ],
@@ -3036,14 +3577,15 @@
                     {
                       "id": "89ef7a80-fd92-4144-b971-9712521d6173",
                       "createdAt": "2025-11-21T22:07:51.650Z",
-                      "updatedAt": "2025-11-21T22:10:02.965Z",
+                      "updatedAt": "2025-12-02T11:17:50.238Z",
                       "type": "function",
                       "function": {
                         "name": "rescheduleCalendarVAPIHealth",
                         "parameters": {
                           "type": "object",
                           "required": [
-                            "bookinguid"
+                            "bookinguid",
+                            "EventTypeID"
                           ],
                           "properties": {
                             "start": {
@@ -3055,6 +3597,11 @@
                               "type": "string",
                               "default": "",
                               "description": "the unique identifier of the retreived booking from getCalendarVAPIHealth"
+                            },
+                            "EventTypeID": {
+                              "type": "string",
+                              "default": "",
+                              "description": "When determining eventTypeId and eventTypeSlug, you must always re-evaluate the caller’s current requested date, day-of-week, and consultation type.\r\nNever reuse or carry over the previous eventTypeId from a past booking. Choose the correct eventTypeId based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"3954317\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"3954310\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"3954311\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"3954306\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request.\r\n\r\n## Important:\r\n- You must correctly interpret the day of the week for ANY date mentioned by the caller.\r\nExamples:\r\n\r\nDecember 5, 2025 → Friday\r\nDecember 6, 2025 → Saturday\r\nDecember 7, 2025 → Sunday\r\n\r\n- Never assume the day; always compute the correct weekday.\r\n\r\nIf the previously selected eventTypeId does not match the new date’s day-of-week, you must correct it immediately by selecting the correct one.\r\n\r\nExample:\r\nOriginal booking: December 5 (Friday) → \"3954310\"\r\nCaller reschedules to December 6 (Saturday) → must switch to \"3954317\"\r\nDo not return \"3954310\" again."
                             }
                           }
                         },
@@ -3063,6 +3610,7 @@
                       "messages": [
                         {
                           "type": "request-start",
+                          "content": "",
                           "blocking": false
                         }
                       ],
@@ -3134,7 +3682,7 @@
                   "hipaaEnabled": false
                 },
                 "variableValues": {
-                  "cid": "410924905-3972773009-538824030@msc1.382COM.COM",
+                  "cid": "443219442-3973707243-468863563@msc1.382COM.COM",
                   "account-sid": "c033b672-5b99-42ae-9ce2-b231e9a522fb",
                   "forwarded-for": "64.125.111.10",
                   "application-sid": "79d078c8-76b2-452a-99e0-ddd5abbf6269",
@@ -3736,11 +4284,18 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "0e0e7e3f-066e-4b8a-b2ab-9c7359a75f1d",
+  "versionId": "b1871fbd-0dfd-4463-83a1-d815769c385b",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e4691f3f60900d6204e96afc581f948d8c7c5395f84c661f2e0c47be7b57320b"
   },
   "id": "eOVoYDSPSgqYh1Gj",
-  "tags": []
+  "tags": [
+    {
+      "updatedAt": "2025-11-19T04:19:52.468Z",
+      "createdAt": "2025-11-19T04:19:52.468Z",
+      "id": "5bOdfuC73yXMDJKU",
+      "name": "VAPI internal demos"
+    }
+  ]
 }

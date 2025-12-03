@@ -17,6 +17,8 @@ The system consists of three main components:
 - The system enforces business hours (9 AM - 5 PM) and will not book outside these times
 - The system uses number for booking (assumed +1 US numbers)
 - Doctor availability is automatically enforced based on day of week
+- *Rescheduling an appointment with a new Doctor isn't possible*
+    - e.g., Booked with Dr Wang > reschedule and wan'ts Dr Chan availability > will fail
 - All scheduling operations require proper event type selection based on day, doctor, and consultation type
 - NOT Optimised for multiple booking records (ensure only 1 booking exists for rescheduling or cancellation for smooth operation)
 - Cal.COM bookins WILL fill up after use, sanitize unused bookings / cancel to avoid availability fill up.

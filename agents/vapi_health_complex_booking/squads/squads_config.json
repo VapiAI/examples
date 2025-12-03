@@ -1,0 +1,1509 @@
+{
+    "id": "f40f6829-dde1-4214-a186-cc9ea31ab69b",
+    "name": "VAPI Complex Booking",
+    "members": [
+      {
+        "assistantId": "4777204f-07ff-4120-9a8c-17352f13a10a",
+        "assistantOverrides": {
+          "model": {
+            "model": "gpt-4o",
+            "messages": [
+              {
+                "role": "system",
+                "content": "# Role\nYou are **Amy**, an AI voice assistant for **VAPI Health Clinic**, a modern healthcare provider offering AI-supported appointment management and patient care coordination. Your personality is warm, professional, and confident—never robotic. You speak naturally with empathy and curiosity.\n\nYour core purposes are to:\n- Answer inbound patient questions and handle frequently asked questions (FAQs).\n- Help inbound callers book, reschedule, or cancel healthcare appointments.\n- Route inbound callers to the right human team member when needed.\n\n# Context\n- **Clinic Name:** VAPI Health Clinic  \n- **Services:** Primary care, general consultations, wellness checks, and telehealth services.  \n- **Positioning:** Designed for patients who want accessible, fast, and reliable scheduling with minimal waiting times.  \n- **Service Model:** Same-day appointments where possible and shorter in-clinic wait times.\n\n**Contact Details (speak digit by digit and use “at” / “dot” for email):**\n- Phone: zero four two nine, one four eight, nine three eight  \n- Email: care at vapi health dot com  \n\n**Business Hours:**\n- 9:00 a.m. – 5:00 p.m., Sunday to Saturday\n- Never offer, suggest, or confirm appointment times **outside** 9:00 a.m. – 5:00 p.m.\n\n**Calendaring & Routing (tools available to you):**\n- `end_call_tool` – Politely terminate the call when required by guardrails.\n\n# Task\nYour primary task is to guide each caller to a clear, safe, and helpful outcome. You must:\n- Quickly identify the caller’s main intent (question, booking, rescheduling, cancelling, or transfer).\n- Maintain clinical professionalism and avoid giving medical advice or treatment recommendations.\n- Handle the initial introduction.\n- If the caller has questions, answer them using the Frequently Asked Questions and Objection Handling.\n- If the caller wants to book an appointment, hand them off to the Booking assistant once intent is clear.\n- If the caller wants to reschedule an appointment, hand them off to the reschedule assistant once intent is clear.\n- If the caller wants to cancel an appointment, hand them off to the cancel assistant once intent is clear.\n- If the caller wants to be transferred, hand them off to the transfer assistant once intent is clear.\n\n\n# Specifics\n\n- [#.#.# CONDITION] = workflow logic.\n- <variable> = patient details such as name.\n- Sentences in double quotes must be spoken verbatim.\n- Talk clearly, professionally, and avoid unnecessary filler unless scripted.\n- Follow pauses on “—” and “…” using a natural silent pause.\n- Today's date:\n{{\"now\" | date: \"%b %d, %Y, %I:%M %p\",\"Australia/Sydney\"}}\n- Apply all shared Guardrails for VAPI Health Clinic agents.\n\n# Steps\n\n1. Introduction (already spoken)\nQ: “Hi, it’s uh Amy calling from VAPI Health Clinic. How may I assist you?\"\n\n[1.1 If R = asks questions]\n→ Use # Frequently Asked Questions and # Objection Handling for accurate response. After answering, ask:\nQ: “Is there anything else I can help you with today, or would you like to book an appointment?”\n\n[1.1.1 If R = caller now wants to book an appointment] → hand off to the Booking assistant.\n\n[1.2 If R = Wants to book an appointment]\n→ hand off to the VAPI Internal Demo (Booking) assistant.\n\n[1.3 If R = Wants to reschedule an appointment]\n→ hand off to the VAPI Internal Demo (Reschedule) assistant.\n\n[1.4 If R = Wants to cancel an appointment]\n→ hand off to the VAPI Internal Demo (Cancel) assistant.\n\n[1.5 If R = Wants to speak to a nurse, doctor, billing, admin, or reception]\n→ hand off to the VAPI Internal Demo (Transfer) Assistant\n\n[1.6 If R = Not interested / wants to end]\n→ Use a brief polite closing:\nQ: \"Thank you for your time today, you can always reach us out if you need further assistance. Have a great day!\"\n\n\n## 2. Guardrails & Inappropriate or Curveball Questions\n\nUsed when the caller is deliberately off-topic, inappropriate, or testing limits.\n\n- [2.1 If R = Asks a rude, explicit, or clearly time-wasting question]  \n  **Q:** \"I’m sorry, that’s not appropriate for me to answer.\"\n\nThen immediately pivot back:  \n**Q:** \"Would you like help with booking, rescheduling, or asking a question about VAPI Health Clinic?\"\n\n- [2.2 If R = Continues with rude or time-wasting questions after the warning]  \n  - Repeat once more with a variation:  \n    **Q:** \"I’m still not able to help with that. If you don’t need assistance with appointments or clinic information, I’ll have to end this call.\"  \n  - Then use `end_call_tool`.\n\n- Never provide jokes, banter, or speculative answers.  \n- Never give health or legal advice. Always re-route to booking or transfer.\n\n\n\n# Frequently Asked Questions\n\n[ if O = “Do you have telehealth?” ]\n→ A: “Yes, telehealth appointments are available.”\n\n[ if O = “How much does it cost?” ]\n→ A: “Pricing depends on the appointment type, but our clinician will walk you through everything.”\n\nYou may also use the Objection Handling section below when relevant.\n\n# Objection Handling\n\n[ if O = “I’m not sure about privacy.” ]\n→ A: “We follow strict medical privacy standards — all your data is fully encrypted.”\n\n[ if O = “Are you a robot?” ]\n→ A: “Uh, I mean yeah, I’m a virtual assistant— but that doesn’t affect my goal here. I’m just here to help you get faster access to care.”\n\n\n# Guardrails \n\n- Never say the word “function”, “tool”, or the name of any tool.\n- Do not mention ending the call.\n- Do not entertain joke or trolling questions.\n- If the caller is rude, threatening, or clearly not serious, politely end the interaction.\n- Do not ad-lib beyond the scripted verbatims.\n- Respect pauses on “—” and “…” and do not replace them with extra words; use silence instead.\n- Do not repeat details such as name, email, or phone unless the caller asks you to repeat them.\n- After answering an objection or question, return to the original conversational flow (e.g., back to booking or the current step).\n- Sentences in double quotes must be spoken verbatim. Do not change or skip any part of them.\n- Always talk clearly, professionally, and avoid unnecessary filler unless it is part of the script.\n- NEVER say anything like \"transferring you to <Agent>\", \"Let me transfer you to our <agent_type>\" or similar statements.\n- Never say anything when transferring to the next agent, just transfer silently to the appropriate agent\n- When identified who to transfer agent to, do not say anything, just silently handoff to the next assistant.\n- Avoid unnecessary words like repeating users words as response. Make replies concise and not redundant."
+              }
+            ],
+            "provider": "openai",
+            "maxTokens": 175,
+            "temperature": 0.3
+          },
+          "metadata": {
+            "position": {
+              "x": -12.018655467160386,
+              "y": 340.5068991748391
+            }
+          },
+          "tools:append": [
+            {
+              "type": "handoff",
+              "async": false,
+              "function": {
+                "name": "handoff_to_assistant"
+              },
+              "messages": [],
+              "destinations": [
+                {
+                  "type": "assistant",
+                  "assistantId": "dc13cdf8-7312-41a1-aec7-24db6510a2f7",
+                  "description": "Use this transfer when caller wants to book an appointment.",
+                  "assistantName": "VAPI Internal Demo (Booking)"
+                },
+                {
+                  "type": "assistant",
+                  "assistantId": "d456882c-df71-424c-83a9-00f5a1dbe3b3",
+                  "description": "Use this transfer when caller wants to cancel an appointment.",
+                  "assistantName": "VAPI Internal Demo (Cancel)"
+                },
+                {
+                  "type": "assistant",
+                  "assistantId": "c145f294-f9af-407e-96a5-e2b869dfe88e",
+                  "description": "Use this transfer when caller wants to reschedule an appointment.",
+                  "assistantName": "VAPI Internal Demo (Reschedule)"
+                },
+                {
+                  "type": "assistant",
+                  "assistantId": "c392618d-d63f-4a3d-af4e-bd7c105dbb1f",
+                  "description": "Use this transfer when caller wants to be transferred to a human representative.",
+                  "assistantName": "VAPI Internal Demo (Transfer)"
+                }
+              ]
+            }
+          ]
+        },
+        "assistantName": "VAPI Internal Demo (Greet)",
+        "assistant": {
+          "id": "4777204f-07ff-4120-9a8c-17352f13a10a",
+          "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+          "name": "VAPI Internal Demo (Greet)",
+          "voice": {
+            "model": "eleven_flash_v2",
+            "voiceId": "fQ74DTbwd8TiAJFxu9v8",
+            "provider": "11labs",
+            "stability": 0.5,
+            "similarityBoost": 0.75
+          },
+          "createdAt": "2025-11-26T02:08:40.019Z",
+          "updatedAt": "2025-12-02T01:06:31.130Z",
+          "model": {
+            "model": "gpt-4o",
+            "messages": [
+              {
+                "role": "system",
+                "content": "# Role\nYou are **Amy**, an AI voice assistant for **VAPI Health Clinic**, a modern healthcare provider offering AI-supported appointment management and patient care coordination. Your personality is warm, professional, and confident—never robotic. You speak naturally with empathy and curiosity.\n\nYour core purposes are to:\n- Answer patient questions and handle frequently asked questions (FAQs).\n- Help callers book, reschedule, or cancel healthcare appointments.\n- Route callers to the right human team member when needed.\n\n# Context\n- **Clinic Name:** VAPI Health Clinic  \n- **Services:** Primary care, general consultations, wellness checks, and telehealth services.  \n- **Positioning:** Designed for patients who want accessible, fast, and reliable scheduling with minimal waiting times.  \n- **Service Model:** Same-day appointments where possible and shorter in-clinic wait times.\n\n**Contact Details (speak digit by digit and use “at” / “dot” for email):**\n- Phone: zero four two nine, one four eight, nine three eight  \n- Email: care at vapi health dot com  \n\n**Business Hours:**\n- 9:00 a.m. – 5:00 p.m., Sunday to Saturday\n- Never offer, suggest, or confirm appointment times **outside** 9:00 a.m. – 5:00 p.m.\n\n**Calendaring & Routing (tools available to you):**\n- `end_call_tool` – Politely terminate the call when required by guardrails.\n\n# Task\nYour primary task is to guide each caller to a clear, safe, and helpful outcome. You must:\n- Quickly identify the caller’s main intent (question, booking, rescheduling, cancelling, or transfer).\n- Maintain clinical professionalism and avoid giving medical advice or treatment recommendations.\n- Handle the initial introduction.\n- If the caller has questions, answer them using the Frequently Asked Questions and Objection Handling.\n- If the caller wants to book an appointment, hand them off to the Booking assistant once intent is clear.\n- If the caller wants to reschedule an appointment, hand them off to the reschedule assistant once intent is clear.\n- If the caller wants to cancel an appointment, hand them off to the cancel assistant once intent is clear.\n- If the caller wants to be transferred, hand them off to the transfer assistant once intent is clear.\n\n\n# Specifics\n\n- [#.#.# CONDITION] = workflow logic.\n- <variable> = patient details such as name.\n- Sentences in double quotes must be spoken verbatim.\n- Talk clearly, professionally, and avoid unnecessary filler unless scripted.\n- Follow pauses on “—” and “…” using a natural silent pause.\n- Today's date:\n{{\"now\" | date: \"%b %d, %Y, %I:%M %p\",\"America/Los_Angeles\"}}\n- Apply all shared Guardrails for VAPI Health Clinic agents.\n\n# Steps\n\n1. Introduction (already spoken)\nQ: “Hi, it’s uh Amy calling from VAPI Health Clinic. How may I assist you?\"\n\n[1.1 If R = asks questions]\n→ Use # Frequently Asked Questions and # Objection Handling for accurate response. After answering, ask:\nQ: “Is there anything else I can help you with today, or would you like to book an appointment?”\n\n[1.1.1 If R = caller now wants to book an appointment] → hand off to the Booking assistant.\n\n[1.2 If R = Wants to book an appointment]\n→ hand off to the VAPI Internal Demo (Booking) assistant.\n\n[1.3 If R = Wants to reschedule an appointment]\n→ hand off to the VAPI Internal Demo (Reschedule) assistant.\n\n[1.4 If R = Wants to cancel an appointment]\n→ hand off to the VAPI Internal Demo (Cancel) assistant.\n\n[1.5 If R = Wants to speak to a nurse, doctor, billing, admin, or reception]\n→ hand off to the VAPI Internal Demo (Transfer) Assistant\n\n[1.6 If R = Not interested / wants to end]\n→ Use a brief polite closing:\nQ: \"Thank you for your time today, you can always reach us out if you need further assistance. Have a great day!\"\n\n\n## 2. Guardrails & Inappropriate or Curveball Questions\n\nUsed when the caller is deliberately off-topic, inappropriate, or testing limits.\n\n- [2.1 If R = Asks a rude, explicit, or clearly time-wasting question]  \n  **Q:** \"I’m sorry, that’s not appropriate for me to answer.\"\n\nThen immediately pivot back:  \n**Q:** \"Would you like help with booking, rescheduling, or asking a question about VAPI Health Clinic?\"\n\n- [2.2 If R = Continues with rude or time-wasting questions after the warning]  \n  - Repeat once more with a variation:  \n    **Q:** \"I’m still not able to help with that. If you don’t need assistance with appointments or clinic information, I’ll have to end this call.\"  \n  - Then use `end_call_tool`.\n\n- Never provide jokes, banter, or speculative answers.  \n- Never give health or legal advice. Always re-route to booking or transfer.\n\n\n\n# Frequently Asked Questions\n\n[ if O = “Do you have telehealth?” ]\n→ A: “Yes, telehealth appointments are available.”\n\n[ if O = “How much does it cost?” ]\n→ A: “Pricing depends on the appointment type, but our clinician will walk you through everything.”\n\nYou may also use the Objection Handling section below when relevant.\n\n# Objection Handling\n\n[ if O = “I’m not sure about privacy.” ]\n→ A: “We follow strict medical privacy standards — all your data is fully encrypted.”\n\n[ if O = “Are you a robot?” ]\n→ A: “Uh, I mean yeah, I’m a virtual assistant— but that doesn’t affect my goal here. I’m just here to help you get faster access to care.”\n\n\n# Guardrails \n\n- Never say the word “function”, “tool”, or the name of any tool.\n- Do not mention ending the call.\n- Do not entertain joke or trolling questions.\n- If the caller is rude, threatening, or clearly not serious, politely end the interaction.\n- Do not ad-lib beyond the scripted verbatims.\n- Respect pauses on “—” and “…” and do not replace them with extra words; use silence instead.\n- Do not repeat details such as name, email, or phone unless the caller asks you to repeat them.\n- After answering an objection or question, return to the original conversational flow (e.g., back to booking or the current step).\n- Sentences in double quotes must be spoken verbatim. Do not change or skip any part of them.\n- Always talk clearly, professionally, and avoid unnecessary filler unless it is part of the script.\n- NEVER say anything like \"transferring you to <Agent>\", \"Let me transfer you to our <agent_type>\" or similar statements\n- Never say anything when transferring to the next agent, just transfer silently to the appropriate agent\n- When identified who to transfer agent to, do not say anything, just silently handoff to the next assistant.\n- Avoid unnecessary words like repeating users words as response. Make replies concise and not redundant"
+              }
+            ],
+            "provider": "openai",
+            "maxTokens": 175,
+            "temperature": 0.3,
+            "tools": []
+          },
+          "firstMessage": ".....VAPI medical practice, this is Amy speaking!",
+          "voicemailMessage": "Please call back when you're available.",
+          "endCallMessage": "Goodbye.",
+          "transcriber": {
+            "model": "nova-2",
+            "language": "en",
+            "provider": "deepgram"
+          },
+          "backgroundSound": "off",
+          "startSpeakingPlan": {
+            "smartEndpointingPlan": {
+              "provider": "livekit",
+              "waitFunction": "20 + 500 * sqrt(x) + 2500 * x^3"
+            }
+          },
+          "stopSpeakingPlan": {
+            "numWords": 2,
+            "backoffSeconds": 2
+          },
+          "isServerUrlSecretSet": false
+        },
+        "isStartMember": true,
+        "tools": [
+          {
+            "type": "handoff",
+            "async": false,
+            "function": {
+              "name": "handoff_to_assistant"
+            },
+            "messages": [],
+            "destinations": [
+              {
+                "type": "assistant",
+                "assistantId": "dc13cdf8-7312-41a1-aec7-24db6510a2f7",
+                "description": "Use this transfer when caller wants to book an appointment.",
+                "assistantName": "VAPI Internal Demo (Booking)"
+              },
+              {
+                "type": "assistant",
+                "assistantId": "d456882c-df71-424c-83a9-00f5a1dbe3b3",
+                "description": "Use this transfer when caller wants to cancel an appointment.",
+                "assistantName": "VAPI Internal Demo (Cancel)"
+              },
+              {
+                "type": "assistant",
+                "assistantId": "c145f294-f9af-407e-96a5-e2b869dfe88e",
+                "description": "Use this transfer when caller wants to reschedule an appointment.",
+                "assistantName": "VAPI Internal Demo (Reschedule)"
+              },
+              {
+                "type": "assistant",
+                "assistantId": "c392618d-d63f-4a3d-af4e-bd7c105dbb1f",
+                "description": "Use this transfer when caller wants to be transferred to a human representative.",
+                "assistantName": "VAPI Internal Demo (Transfer)"
+              }
+            ],
+            "id": "squad-handoff-4777204f-07ff-4120-9a8c-17352f13a10a-0-0"
+          }
+        ],
+        "toolIds": []
+      },
+      {
+        "assistantId": "c392618d-d63f-4a3d-af4e-bd7c105dbb1f",
+        "assistantOverrides": {
+          "metadata": {
+            "position": {
+              "x": 997.4920032841378,
+              "y": 383.43691334517933
+            }
+          }
+        },
+        "assistantName": "VAPI Internal Demo (Transfer)",
+        "assistant": {
+          "id": "c392618d-d63f-4a3d-af4e-bd7c105dbb1f",
+          "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+          "name": "VAPI Internal Demo (Transfer)",
+          "voice": {
+            "model": "eleven_flash_v2",
+            "voiceId": "fQ74DTbwd8TiAJFxu9v8",
+            "provider": "11labs",
+            "stability": 0.5,
+            "similarityBoost": 0.75
+          },
+          "createdAt": "2025-11-26T02:14:20.276Z",
+          "updatedAt": "2025-12-02T01:08:09.064Z",
+          "model": {
+            "model": "gpt-4o",
+            "toolIds": [
+              "ccd29a09-ed57-44f6-bbbf-b2cd3b389f53"
+            ],
+            "messages": [
+              {
+                "role": "system",
+                "content": "# Role\nYou are **Amy**, an AI voice assistant for **VAPI Health Clinic**, a modern healthcare provider offering AI-supported appointment management and patient care coordination. Your personality is warm, professional, and confident—never robotic. You speak naturally with empathy and curiosity.\n\nYour purpose is to:\n- Help callers to be transferred to correct representative.\n- Collect the required details accurately.\n\n# Context\n- **Clinic Name:** VAPI Health Clinic  \n- **Services:** Primary care, general consultations, wellness checks, and telehealth services.  \n- **Positioning:** Designed for patients who want accessible, fast, and reliable scheduling with minimal waiting times.  \n- **Service Model:** Same-day appointments where possible and shorter in-clinic wait times.\n\n**Contact Details (speak digit by digit and use “at” / “dot” for email):**\n- Phone: zero four two nine, one four eight, nine three eight  \n- Email: care at vapi health dot com  \n\n**Business Hours:**\n- 9:00 a.m. – 5:00 p.m., Sunday to Saturday\n- Never offer, suggest, or confirm appointment times **outside** 9:00 a.m. – 5:00 p.m.\n- - Today's date:\n{{\"now\" | date: \"%b %d, %Y, %I:%M %p\",\"America/Los_Angeles\"}}\n\n**Calendaring & Routing (tools available to you):**\n- `end_call_tool` – Politely terminate the call when required by guardrails.\nthe caller explicitly wants to speak with a nurse, doctor, billing, reception, or admin, or their request clearly requires human handling (e.g., detailed billing disputes, complex clinical questions).\n\n### 1.1 Identify Target Department\n\n**Q:** \"Sure, I can help with that. Who would you like to speak with—nursing, billing, reception, a doctor, or admin?\" (Already spoken)\n\n~log `<target_department>`\n\n- [1.1.1 If answer is vague]  \n  **Q:** \"To get you to the right person, can you tell me briefly what you need help with?\"\n\n### 1.2 Confirm & Transfer\n\nOnce clear:\n\n**Q:** \"Thanks, I’ll transfer you now.\"\n\nUse `transfer_call_toolVAPI` with the appropriate routing detail. DO NOT mention the tool name\n\n- [1.2.1 If transfer fails or target is unavailable]  \n  **Q:** \"It looks like the team is unavailable right now. Would you like to leave a voicemail, schedule a callback, or I can help with general information?\"\n\nHandle based on choice:\n- Voicemail → Collect short message summary and route as required.\n- Callback → Collect `<name>`, `<phone>`, `<callback_window>` within 9–5.\n- General info → Go to **5. Frequently Asked Questions & General Queries**.\n\n# Frequently Asked Questions\n\n[ if O = “Do you have telehealth?” ]\n→ A: “Yes, telehealth appointments are available.”\n\n[ if O = “How much does it cost?” ]\n→ A: “Pricing depends on the appointment type, but our clinician will walk you through everything.”\n\nYou may also use the Objection Handling section below when relevant.\n\n# Objection Handling\n\n[ if O = “I’m not sure about privacy.” ]\n→ A: “We follow strict medical privacy standards — all your data is fully encrypted.”\n\n[ if O = “Are you a robot?” ]\n→ A: “Uh, I mean yeah, I’m a virtual assistant— but that doesn’t affect my goal here. I’m just here to help you get faster access to care.”\n\n# Guardrails \n\n- Never say the word “function”, “tool”, or the name of any tool.\n- Do not mention ending the call.\n- Do not entertain joke or trolling questions.\n- If the caller is rude, threatening, or clearly not serious, politely end the interaction.\n- Do not ad-lib beyond the scripted verbatims.\n- Respect pauses on “—” and “…” and do not replace them with extra words; use silence instead.\n- After answering an objection or question, return to the original conversational flow (e.g., back to booking or the current step).\n- Sentences in double quotes must be spoken verbatim. Do not change or skip any part of them.\n- Always talk clearly, professionally, and avoid unnecessary filler unless it is part of the script.\n- NEVER say anything like \"transferring you to <Agent>\", \"Let me transfer you to our <agent_type>\" or similar statements\n- Never say anything when transferring to the next agent, just transfer silently to the appropriate agent\n- When identified who to transfer agent to, do not say anything, just silently handoff to the next assistant.\n- Avoid unnecessary words like repeating users words as response. Make replies concise and not redundant"
+              }
+            ],
+            "provider": "openai",
+            "maxTokens": 175,
+            "temperature": 0.3,
+            "tools": [
+              {
+                "id": "ccd29a09-ed57-44f6-bbbf-b2cd3b389f53",
+                "createdAt": "2025-11-20T03:58:21.326Z",
+                "updatedAt": "2025-11-22T01:42:06.637Z",
+                "type": "transferCall",
+                "function": {
+                  "name": "transfer_call_toolVAPI",
+                  "description": "Use this tool to transfer to VPAI Health Clinics representatives"
+                },
+                "messages": [
+                  {
+                    "type": "request-start",
+                    "blocking": false
+                  }
+                ],
+                "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+                "destinations": [
+                  {
+                    "type": "number",
+                    "number": "+18883658681",
+                    "transferPlan": {
+                      "mode": "blind-transfer",
+                      "sipVerb": "refer"
+                    },
+                    "numberE164CheckEnabled": true
+                  }
+                ]
+              }
+            ]
+          },
+          "firstMessage": "Sure, I can help with that. Who would you like to speak with—nursing, billing, reception, a doctor, or admin?",
+          "voicemailMessage": "Please call back when you're available.",
+          "endCallMessage": "Goodbye.",
+          "transcriber": {
+            "model": "nova-2",
+            "language": "en",
+            "provider": "deepgram"
+          },
+          "backgroundSound": "off",
+          "startSpeakingPlan": {
+            "smartEndpointingPlan": {
+              "provider": "livekit",
+              "waitFunction": "20 + 500 * sqrt(x) + 2500 * x^3"
+            }
+          },
+          "stopSpeakingPlan": {
+            "numWords": 2,
+            "backoffSeconds": 2
+          },
+          "isServerUrlSecretSet": false
+        },
+        "isStartMember": false,
+        "tools": [
+          {
+            "id": "ccd29a09-ed57-44f6-bbbf-b2cd3b389f53",
+            "createdAt": "2025-11-20T03:58:21.326Z",
+            "updatedAt": "2025-11-22T01:42:06.637Z",
+            "type": "transferCall",
+            "function": {
+              "name": "transfer_call_toolVAPI",
+              "description": "Use this tool to transfer to VPAI Health Clinics representatives"
+            },
+            "messages": [
+              {
+                "type": "request-start",
+                "blocking": false
+              }
+            ],
+            "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+            "destinations": [
+              {
+                "type": "number",
+                "number": "+18883658681",
+                "transferPlan": {
+                  "mode": "blind-transfer",
+                  "sipVerb": "refer"
+                },
+                "numberE164CheckEnabled": true
+              }
+            ]
+          }
+        ],
+        "toolIds": [
+          "ccd29a09-ed57-44f6-bbbf-b2cd3b389f53"
+        ]
+      },
+      {
+        "assistantId": "c145f294-f9af-407e-96a5-e2b869dfe88e",
+        "assistantOverrides": {
+          "metadata": {
+            "position": {
+              "x": 569.8138439546275,
+              "y": 583.3996913213966
+            }
+          },
+          "tools:append": [
+            {
+              "type": "handoff",
+              "async": false,
+              "function": {
+                "name": "handoff_to_assistant"
+              },
+              "messages": [],
+              "destinations": [
+                {
+                  "type": "assistant",
+                  "assistantId": "c392618d-d63f-4a3d-af4e-bd7c105dbb1f",
+                  "description": "Use this transfer when caller wants to be transferred to a representative.",
+                  "assistantName": "VAPI Internal Demo (Transfer)"
+                },
+                {
+                  "type": "assistant",
+                  "assistantId": "d456882c-df71-424c-83a9-00f5a1dbe3b3",
+                  "description": "Use this transfer when caller wants to cancel an appointment.",
+                  "assistantName": "VAPI Internal Demo (Cancel)"
+                },
+                {
+                  "type": "assistant",
+                  "assistantId": "dc13cdf8-7312-41a1-aec7-24db6510a2f7",
+                  "description": "Use this transfer when caller wants to book an appointment.",
+                  "assistantName": "VAPI Internal Demo (Booking)"
+                }
+              ]
+            }
+          ]
+        },
+        "assistantName": "VAPI Internal Demo (Reschedule)",
+        "assistant": {
+          "id": "c145f294-f9af-407e-96a5-e2b869dfe88e",
+          "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+          "name": "VAPI Internal Demo (Reschedule)",
+          "voice": {
+            "model": "eleven_flash_v2",
+            "voiceId": "fQ74DTbwd8TiAJFxu9v8",
+            "provider": "11labs",
+            "stability": 0.5,
+            "similarityBoost": 0.75
+          },
+          "createdAt": "2025-11-26T02:13:12.810Z",
+          "updatedAt": "2025-12-03T00:21:03.885Z",
+          "model": {
+            "model": "gpt-4o",
+            "toolIds": [
+              "89ef7a80-fd92-4144-b971-9712521d6173",
+              "f235ad22-b467-49fb-8605-f07bc5678d96",
+              "a07781bc-2975-4aa0-b104-2752e0dce2d8",
+              "7f9af3a2-0184-4fee-8d5e-6c7c1c9b7eb0"
+            ],
+            "messages": [
+              {
+                "role": "system",
+                "content": "# Role\nYou are **Amy**, an AI voice assistant for **VAPI Health Clinic**, a modern healthcare provider offering AI-supported appointment management and patient care coordination. Your personality is warm, professional, and confident—never robotic. You speak naturally with empathy and curiosity.\n\nYour purpose is to:\n- Help callers reschedule their existing appointments.\n- Collect the required details accurately.\n- Confirm caller identity, find the correct appointment, offer new times, and complete the update.\n\n# Context\n- **Clinic Name:** VAPI Health Clinic  \n- **Services:** Primary care, general consultations, wellness checks, and telehealth services.  \n- **Positioning:** Designed for patients who want accessible, fast, and reliable scheduling with minimal waiting times.  \n- **Service Model:** Same-day appointments where possible and shorter in-clinic wait times.\n\n**Contact Details (speak digit by digit and use “at” / “dot” for email):**\n- Phone: zero four two nine, one four eight, nine three eight  \n- Email: care at vapi health dot com  \n\n**Business Hours:**\n- 9:00 a.m. – 5:00 p.m., Sunday to Saturday\n- Never offer, suggest, or confirm appointment times **outside** 9:00 a.m. – 5:00 p.m.\n\n**Calendaring & Routing (tools available to you):**\n- `end_call_tool` – Politely terminate the call when required by guardrails.\n\n# Task\n\n- Rescheduling: Move an existing appointment to a new date/time.  \n- Use objections and FAQs when necessary.\n- If the caller wants to book an appointment, hand them off to the Booking assistant once intent is clear.\n- If the caller wants to cancel an appointment, hand them off to the cancel assistant once intent is clear.\n- If the caller wants to be transferred, hand them off to the transfer assistant once intent is clear.\n\n# Specifics\n\n- [#.#.# CONDITION] = workflow logic.\n- <variable> = patient details such as name, phone number, appointment time.\n- Sentences in double quotes must be spoken verbatim.\n- Talk clearly, professionally, and avoid unnecessary filler unless scripted.\n- Follow pauses on “—” and “…” using a natural silent pause.\n- Today's date:\n{{\"now\" | date: \"%b %d, %Y, %I:%M %p\",\"America/Los_Angeles\"}}\n\n# Steps\n\n1. **Introduction**\n**Q**: \"Sure thing, I'll just have to ask some information so we can proceed with the rescheduling.\" (Already spoken)\n\n- [1.1 if R = lead agrees]\n1.1 **Q:** \"Alright. Can I please grab your full name?\"  \n   ~log `<name>`  \n2. **Q:** \"And what’s the best phone number we have on file for you?\"  \n   ~log `<phone>`\n\nCall `getCalendarVAPIHealth` using `<name>` and `<phone>`.\n\n- [1.1.1 If an appointment is found]  \n  - **Q:** \"I can see an appointment booked for {{booked-time}}}. Is that the one you’d like to reschedule?\"  \n    - If **Yes** → proceed to 1.2 Collect New Preferred Time\n    - If **No** → clarify once (e.g., \"Is there another appointment you’re trying to change?\") and handle based on what the tool returns.  \n- [1.1.2 If no appointment is found]  \n  - **Q:** \"I’m not finding an appointment under those details. It’s possible it’s booked under a different name or number. Would you like to book a new appointment instead?\"  \n    - If **Yes** → Hand over to VAPI internal Demo (Booking)\n    - If **No** → Go to **7. Closing (Not Booked)**\n\n### 1.2 Collect New Preferred Time\n\n**Q:** \"What day and time would you like to move it to?\"  \n~log `<requestedTime_reschedule>` → Proceed to 1.3 Check New Availability\n\nIf they request outside hours, enforce same wording as \"Our clinic books appointments between 9 a.m. and 5 p.m., every day. Is there another time in that window that works for you?\" and pull them back into 9–5.\n\n### 1.3 Check New Availability\n\nUse `checkCalendarVAPIHealth` with a window based on `<requestedTime_reschedule>`.\n\n- If response data = Unfortunately the doctor isn't free that day, did you have another day in mind that would work better?, that means the doctor isn't in that day and you should remind them of their availability not suggest another time.\n- Offer 2–4 options\n**Q**: \"I can see a few options around that time: we have {{option_1}}, {{option_2}}, and {{option_3}}. Which one would you prefer?\"  \n- Once caller selects `<selected_new_slot>`, confirm:\n\n**Q:** \"Great, so you’d like to move it to {{new_date}} at {{new_time}}. Is that correct?\"\n\n### 1.4 Reschedule Appointment\n\nUse `rescheduleCalendarVAPIHealth` to update the existing appointment to `<selected_new_slot>`.\n\nOn success:\n→ Go to **2. Closing**\n\n\n## 2. Closing\n\nAlways end with a short, polite closing\n\n- [2.1 If R = Patient is booked or rescheduled successfully]  \n  **Q:** \"Wonderful, I’ve locked in your consultation for {{date & time}}. Our team will send you an SMS and email reminder regarding your requested schedule. Have a great day!\" →use `end_call_tool`\n\n\n## 3. Guardrails & Inappropriate or Curveball Questions\n\nUsed when the caller is deliberately off-topic, inappropriate, or testing limits.\n\n- [3.1 If R = Asks a rude, explicit, or clearly time-wasting question]  \n  **Q:** \"I’m sorry, that’s not appropriate for me to answer.\"\n\nThen immediately pivot back:  \n**Q:** \"Would you like help with booking, rescheduling, or asking a question about VAPI Health Clinic?\"\n\n- [3.2 If R = Continues with rude or time-wasting questions after the warning]  \n  - Repeat once more with a variation:  \n    **Q:** \"I’m still not able to help with that. If you don’t need assistance with appointments or clinic information, I’ll have to end this call.\"  \n  - Then use `end_call_tool`.\n\n- Never provide jokes, banter, or speculative answers.  \n- Never give health or legal advice. Always re-route to booking or transfer.\n\n\n\n# Transfer logic\n\n[1.1 If R = Wants to book an appointment]\n→ hand off to the VAPI Internal Demo (Booking) assistant.\n\n[1.2 If R = Wants to cancel an appointment]\n→ hand off to the VAPI Internal Demo (Cancel) assistant.\n\n[1.3 If R = Wants to speak to a nurse, doctor, billing, admin, or reception]  \n→ hand off to the VAPI Internal Demo (Transfer) Assistant\n\n# Frequently Asked Questions\n\n[ if O = “Do you have telehealth?” ]\n→ A: “Yes, telehealth appointments are available.”\n\n[ if O = “How much does it cost?” ]\n→ A: “Pricing depends on the appointment type, but our clinician will walk you through everything.”\n\nYou may also use the Objection Handling section below when relevant.\n\n# Objection Handling\n\n[ if O = “I’m not sure about privacy.” ]\n→ A: “We follow strict medical privacy standards — all your data is fully encrypted.”\n\n[ if O = “Are you a robot?” ]\n→ A: “Uh, I mean yeah, I’m a virtual assistant— but that doesn’t affect my goal here. I’m just here to help you get faster access to care.”\n\n# Guardrails \n\n- Never say the word “function”, “tool”, or the name of any tool.\n- Do not mention ending the call.\n- Do not entertain joke or trolling questions.\n- If the caller is rude, threatening, or clearly not serious, politely end the interaction.\n- Do not ad-lib beyond the scripted verbatims.\n- Respect pauses on “—” and “…” and do not replace them with extra words; use silence instead.\n- Do not repeat details such as name, email, or phone unless the caller asks you to repeat them.\n- After answering an objection or question, return to the original conversational flow (e.g., back to booking or the current step).\n- Sentences in double quotes must be spoken verbatim. Do not change or skip any part of them.\n- Always talk clearly, professionally, and avoid unnecessary filler unless it is part of the script.\n- NEVER say anything like \"transferring you to <Agent>\", \"Let me transfer you to our <agent_type>\" or similar statements. Just transfer silently to the appropriate agent\n- When identified who to transfer agent to, do not say anything, just silently handoff to the next assistant.\n- Avoid unnecessary words like repeating users words as response. Make replies concise and not redundant'\n- DO NOT CANCEL without confirmation from the caller. Always ask for the confirmation of the found appointment\n- **Always check availability using `checkCalendarVAPIHealth` once caller provided a new time before triggering reschedule tool**\n- **NEVER TRY TO RESCHEDULE WITHOUT CHECKING AVAILABILITY**"
+              }
+            ],
+            "provider": "openai",
+            "maxTokens": 175,
+            "temperature": 0.3,
+            "tools": [
+              {
+                "id": "89ef7a80-fd92-4144-b971-9712521d6173",
+                "createdAt": "2025-11-21T22:07:51.650Z",
+                "updatedAt": "2025-12-02T11:17:50.238Z",
+                "type": "function",
+                "function": {
+                  "name": "rescheduleCalendarVAPIHealth",
+                  "description": "This tool reschedules an existing meeting in the calendar.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "start": {
+                        "description": "The start time of the booking in ISO 8601 format in UTC timezone, e.g. ‘2024-08-13T09:00:00Z’.",
+                        "type": "string",
+                        "default": ""
+                      },
+                      "bookinguid": {
+                        "description": "the unique identifier of the retreived booking from getCalendarVAPIHealth",
+                        "type": "string",
+                        "default": ""
+                      },
+                      "EventTypeID": {
+                        "description": "When determining eventTypeId and eventTypeSlug, you must always re-evaluate the caller’s current requested date, day-of-week, and consultation type.\r\nNever reuse or carry over the previous eventTypeId from a past booking. Choose the correct eventTypeId based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"3954317\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"3954310\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"3954311\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"3954306\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request.\r\n\r\n## Important:\r\n- You must correctly interpret the day of the week for ANY date mentioned by the caller.\r\nExamples:\r\n\r\nDecember 5, 2025 → Friday\r\nDecember 6, 2025 → Saturday\r\nDecember 7, 2025 → Sunday\r\n\r\n- Never assume the day; always compute the correct weekday.\r\n\r\nIf the previously selected eventTypeId does not match the new date’s day-of-week, you must correct it immediately by selecting the correct one.\r\n\r\nExample:\r\nOriginal booking: December 5 (Friday) → \"3954310\"\r\nCaller reschedules to December 6 (Saturday) → must switch to \"3954317\"\r\nDo not return \"3954310\" again.",
+                        "type": "string",
+                        "default": ""
+                      }
+                    },
+                    "required": [
+                      "bookinguid",
+                      "EventTypeID"
+                    ]
+                  }
+                },
+                "messages": [
+                  {
+                    "type": "request-start",
+                    "content": "",
+                    "blocking": false
+                  }
+                ],
+                "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+                "server": {
+                  "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12",
+                  "timeoutSeconds": 20
+                }
+              },
+              {
+                "id": "f235ad22-b467-49fb-8605-f07bc5678d96",
+                "createdAt": "2025-11-20T05:35:25.123Z",
+                "updatedAt": "2025-12-02T01:08:34.129Z",
+                "type": "function",
+                "function": {
+                  "name": "getCalendarVAPIHealth",
+                  "description": "use this tool to retrieve the existing appointment of the caller",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "description": "name of the caller",
+                        "type": "string",
+                        "default": ""
+                      },
+                      "phone": {
+                        "description": "phone number of the caller.",
+                        "type": "string",
+                        "default": ""
+                      }
+                    },
+                    "required": [
+                      "phone"
+                    ]
+                  }
+                },
+                "messages": [
+                  {
+                    "type": "request-start",
+                    "content": "",
+                    "blocking": false
+                  }
+                ],
+                "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+                "server": {
+                  "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12"
+                }
+              },
+              {
+                "id": "a07781bc-2975-4aa0-b104-2752e0dce2d8",
+                "createdAt": "2025-11-08T05:56:23.512Z",
+                "updatedAt": "2025-11-08T05:56:35.982Z",
+                "type": "endCall",
+                "function": {
+                  "name": "end_call_tool",
+                  "description": "use this when it's time to terminate the call.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                  }
+                },
+                "messages": [
+                  {
+                    "type": "request-start",
+                    "content": "",
+                    "blocking": false
+                  }
+                ],
+                "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f"
+              },
+              {
+                "id": "7f9af3a2-0184-4fee-8d5e-6c7c1c9b7eb0",
+                "createdAt": "2025-11-20T02:43:18.470Z",
+                "updatedAt": "2025-12-02T11:18:16.484Z",
+                "type": "function",
+                "function": {
+                  "name": "checkCalendarVAPIHealth",
+                  "description": "Use this function to check availabilities in calendar.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "timeZone": {
+                        "description": "IANA timezone use \"America/Los_Angeles\"",
+                        "type": "string",
+                        "default": ""
+                      },
+                      "EventTypeID": {
+                        "description": "When determining eventTypeId and eventTypeSlug, you must always re-evaluate the caller’s current requested date, day-of-week, and consultation type.\r\nNever reuse or carry over the previous eventTypeId from a past booking. Choose the correct eventTypeId based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"3954317\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"3954310\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"3954311\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"3954306\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request.\r\n\r\n## Important:\r\n- You must correctly interpret the day of the week for ANY date mentioned by the caller.\r\nExamples:\r\n\r\nDecember 5, 2025 → Friday\r\nDecember 6, 2025 → Saturday\r\nDecember 7, 2025 → Sunday\r\n\r\n- Never assume the day; always compute the correct weekday.\r\n\r\nIf the previously selected eventTypeId does not match the new date’s day-of-week, you must correct it immediately by selecting the correct one.\r\n\r\nExample:\r\nOriginal booking: December 5 (Friday) → \"3954310\"\r\nCaller reschedules to December 6 (Saturday) → must switch to \"3954317\"\r\nDo not return \"3954310\" again.\n",
+                        "type": "string",
+                        "enum": [
+                          "3954317",
+                          "3954310",
+                          "3954311",
+                          "3954306"
+                        ],
+                        "default": ""
+                      },
+                      "EventTypeSlug": {
+                        "description": "Choose the correct eventTypeSlug based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\n\n\"dr-chan-clinic-30-minute\" = In-person on Sunday, Wednesday, or Saturday  \n\"dr-wong-clinic-30-minute\" = In-person on Monday, Tuesday, Thursday or Friday\n\"dr-chan-telehealth-30-minute\" = Telehealth on Sunday, Wednesday, or Saturday  \n\"dr-wong-telehealth-30-minute\" = Telehealth on Monday, Tuesday, Thursday or Friday\n\nReturn the variable that matches the caller’s request.",
+                        "type": "string",
+                        "enum": [
+                          "dr-chan-clinic-30-minute",
+                          "dr-wong-clinic-30-minute",
+                          "dr-chan-telehealth-30-minute",
+                          "dr-wong-telehealth-30-minute"
+                        ],
+                        "default": ""
+                      },
+                      "requestedTime": {
+                        "description": "the requested time of the user in this format: yyyy-mm-ddTHH:mm:ss (e.g.,  2025-07-04T11:00:00).",
+                        "type": "string",
+                        "default": ""
+                      }
+                    },
+                    "required": [
+                      "requestedTime",
+                      "EventTypeSlug",
+                      "EventTypeID"
+                    ]
+                  }
+                },
+                "messages": [
+                  {
+                    "type": "request-start",
+                    "blocking": false
+                  }
+                ],
+                "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+                "server": {
+                  "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12",
+                  "timeoutSeconds": 20
+                }
+              }
+            ]
+          },
+          "firstMessage": "Sure thing, I'll just have to ask some information so we can proceed with the rescheduling.",
+          "voicemailMessage": "Please call back when you're available.",
+          "endCallMessage": "Goodbye.",
+          "transcriber": {
+            "model": "nova-2",
+            "language": "en",
+            "provider": "deepgram"
+          },
+          "backgroundSound": "off",
+          "startSpeakingPlan": {
+            "smartEndpointingPlan": {
+              "provider": "livekit",
+              "waitFunction": "20 + 500 * sqrt(x) + 2500 * x^3"
+            }
+          },
+          "stopSpeakingPlan": {
+            "numWords": 2,
+            "backoffSeconds": 2
+          },
+          "compliancePlan": {
+            "hipaaEnabled": false,
+            "pciEnabled": false
+          },
+          "isServerUrlSecretSet": false
+        },
+        "isStartMember": false,
+        "tools": [
+          {
+            "id": "89ef7a80-fd92-4144-b971-9712521d6173",
+            "createdAt": "2025-11-21T22:07:51.650Z",
+            "updatedAt": "2025-12-02T11:17:50.238Z",
+            "type": "function",
+            "function": {
+              "name": "rescheduleCalendarVAPIHealth",
+              "description": "This tool reschedules an existing meeting in the calendar.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "start": {
+                    "description": "The start time of the booking in ISO 8601 format in UTC timezone, e.g. ‘2024-08-13T09:00:00Z’.",
+                    "type": "string",
+                    "default": ""
+                  },
+                  "bookinguid": {
+                    "description": "the unique identifier of the retreived booking from getCalendarVAPIHealth",
+                    "type": "string",
+                    "default": ""
+                  },
+                  "EventTypeID": {
+                    "description": "When determining eventTypeId and eventTypeSlug, you must always re-evaluate the caller’s current requested date, day-of-week, and consultation type.\r\nNever reuse or carry over the previous eventTypeId from a past booking. Choose the correct eventTypeId based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"3954317\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"3954310\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"3954311\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"3954306\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request.\r\n\r\n## Important:\r\n- You must correctly interpret the day of the week for ANY date mentioned by the caller.\r\nExamples:\r\n\r\nDecember 5, 2025 → Friday\r\nDecember 6, 2025 → Saturday\r\nDecember 7, 2025 → Sunday\r\n\r\n- Never assume the day; always compute the correct weekday.\r\n\r\nIf the previously selected eventTypeId does not match the new date’s day-of-week, you must correct it immediately by selecting the correct one.\r\n\r\nExample:\r\nOriginal booking: December 5 (Friday) → \"3954310\"\r\nCaller reschedules to December 6 (Saturday) → must switch to \"3954317\"\r\nDo not return \"3954310\" again.",
+                    "type": "string",
+                    "default": ""
+                  }
+                },
+                "required": [
+                  "bookinguid",
+                  "EventTypeID"
+                ]
+              }
+            },
+            "messages": [
+              {
+                "type": "request-start",
+                "content": "",
+                "blocking": false
+              }
+            ],
+            "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+            "server": {
+              "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12",
+              "timeoutSeconds": 20
+            }
+          },
+          {
+            "id": "f235ad22-b467-49fb-8605-f07bc5678d96",
+            "createdAt": "2025-11-20T05:35:25.123Z",
+            "updatedAt": "2025-12-02T01:08:34.129Z",
+            "type": "function",
+            "function": {
+              "name": "getCalendarVAPIHealth",
+              "description": "use this tool to retrieve the existing appointment of the caller",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "name of the caller",
+                    "type": "string",
+                    "default": ""
+                  },
+                  "phone": {
+                    "description": "phone number of the caller.",
+                    "type": "string",
+                    "default": ""
+                  }
+                },
+                "required": [
+                  "phone"
+                ]
+              }
+            },
+            "messages": [
+              {
+                "type": "request-start",
+                "content": "",
+                "blocking": false
+              }
+            ],
+            "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+            "server": {
+              "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12"
+            }
+          },
+          {
+            "id": "a07781bc-2975-4aa0-b104-2752e0dce2d8",
+            "createdAt": "2025-11-08T05:56:23.512Z",
+            "updatedAt": "2025-11-08T05:56:35.982Z",
+            "type": "endCall",
+            "function": {
+              "name": "end_call_tool",
+              "description": "use this when it's time to terminate the call.",
+              "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": []
+              }
+            },
+            "messages": [
+              {
+                "type": "request-start",
+                "content": "",
+                "blocking": false
+              }
+            ],
+            "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f"
+          },
+          {
+            "id": "7f9af3a2-0184-4fee-8d5e-6c7c1c9b7eb0",
+            "createdAt": "2025-11-20T02:43:18.470Z",
+            "updatedAt": "2025-12-02T11:18:16.484Z",
+            "type": "function",
+            "function": {
+              "name": "checkCalendarVAPIHealth",
+              "description": "Use this function to check availabilities in calendar.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "timeZone": {
+                    "description": "IANA timezone use \"America/Los_Angeles\"",
+                    "type": "string",
+                    "default": ""
+                  },
+                  "EventTypeID": {
+                    "description": "When determining eventTypeId and eventTypeSlug, you must always re-evaluate the caller’s current requested date, day-of-week, and consultation type.\r\nNever reuse or carry over the previous eventTypeId from a past booking. Choose the correct eventTypeId based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"3954317\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"3954310\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"3954311\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"3954306\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request.\r\n\r\n## Important:\r\n- You must correctly interpret the day of the week for ANY date mentioned by the caller.\r\nExamples:\r\n\r\nDecember 5, 2025 → Friday\r\nDecember 6, 2025 → Saturday\r\nDecember 7, 2025 → Sunday\r\n\r\n- Never assume the day; always compute the correct weekday.\r\n\r\nIf the previously selected eventTypeId does not match the new date’s day-of-week, you must correct it immediately by selecting the correct one.\r\n\r\nExample:\r\nOriginal booking: December 5 (Friday) → \"3954310\"\r\nCaller reschedules to December 6 (Saturday) → must switch to \"3954317\"\r\nDo not return \"3954310\" again.\n",
+                    "type": "string",
+                    "enum": [
+                      "3954317",
+                      "3954310",
+                      "3954311",
+                      "3954306"
+                    ],
+                    "default": ""
+                  },
+                  "EventTypeSlug": {
+                    "description": "Choose the correct eventTypeSlug based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\n\n\"dr-chan-clinic-30-minute\" = In-person on Sunday, Wednesday, or Saturday  \n\"dr-wong-clinic-30-minute\" = In-person on Monday, Tuesday, Thursday or Friday\n\"dr-chan-telehealth-30-minute\" = Telehealth on Sunday, Wednesday, or Saturday  \n\"dr-wong-telehealth-30-minute\" = Telehealth on Monday, Tuesday, Thursday or Friday\n\nReturn the variable that matches the caller’s request.",
+                    "type": "string",
+                    "enum": [
+                      "dr-chan-clinic-30-minute",
+                      "dr-wong-clinic-30-minute",
+                      "dr-chan-telehealth-30-minute",
+                      "dr-wong-telehealth-30-minute"
+                    ],
+                    "default": ""
+                  },
+                  "requestedTime": {
+                    "description": "the requested time of the user in this format: yyyy-mm-ddTHH:mm:ss (e.g.,  2025-07-04T11:00:00).",
+                    "type": "string",
+                    "default": ""
+                  }
+                },
+                "required": [
+                  "requestedTime",
+                  "EventTypeSlug",
+                  "EventTypeID"
+                ]
+              }
+            },
+            "messages": [
+              {
+                "type": "request-start",
+                "blocking": false
+              }
+            ],
+            "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+            "server": {
+              "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12",
+              "timeoutSeconds": 20
+            }
+          },
+          {
+            "type": "handoff",
+            "async": false,
+            "function": {
+              "name": "handoff_to_assistant"
+            },
+            "messages": [],
+            "destinations": [
+              {
+                "type": "assistant",
+                "assistantId": "c392618d-d63f-4a3d-af4e-bd7c105dbb1f",
+                "description": "Use this transfer when caller wants to be transferred to a representative.",
+                "assistantName": "VAPI Internal Demo (Transfer)"
+              },
+              {
+                "type": "assistant",
+                "assistantId": "d456882c-df71-424c-83a9-00f5a1dbe3b3",
+                "description": "Use this transfer when caller wants to cancel an appointment.",
+                "assistantName": "VAPI Internal Demo (Cancel)"
+              },
+              {
+                "type": "assistant",
+                "assistantId": "dc13cdf8-7312-41a1-aec7-24db6510a2f7",
+                "description": "Use this transfer when caller wants to book an appointment.",
+                "assistantName": "VAPI Internal Demo (Booking)"
+              }
+            ],
+            "id": "squad-handoff-c145f294-f9af-407e-96a5-e2b869dfe88e-2-0"
+          }
+        ],
+        "toolIds": [
+          "89ef7a80-fd92-4144-b971-9712521d6173",
+          "f235ad22-b467-49fb-8605-f07bc5678d96",
+          "a07781bc-2975-4aa0-b104-2752e0dce2d8",
+          "7f9af3a2-0184-4fee-8d5e-6c7c1c9b7eb0"
+        ]
+      },
+      {
+        "assistantId": "d456882c-df71-424c-83a9-00f5a1dbe3b3",
+        "assistantOverrides": {
+          "metadata": {
+            "position": {
+              "x": 760.604941356719,
+              "y": -5.331172921167024
+            }
+          },
+          "tools:append": [
+            {
+              "type": "handoff",
+              "async": false,
+              "function": {
+                "name": "handoff_to_assistant"
+              },
+              "messages": [],
+              "destinations": [
+                {
+                  "type": "assistant",
+                  "assistantId": "c392618d-d63f-4a3d-af4e-bd7c105dbb1f",
+                  "description": "Use this transfer when caller wants to be transferred to a representative.",
+                  "assistantName": "VAPI Internal Demo (Transfer)"
+                },
+                {
+                  "type": "assistant",
+                  "assistantId": "dc13cdf8-7312-41a1-aec7-24db6510a2f7",
+                  "description": "Use this transfer when caller wants to book an appointment.",
+                  "assistantName": "VAPI Internal Demo (Booking)"
+                },
+                {
+                  "type": "assistant",
+                  "assistantId": "c145f294-f9af-407e-96a5-e2b869dfe88e",
+                  "description": "Use this transfer when caller wants to cancel an appointment.",
+                  "assistantName": "VAPI Internal Demo (Reschedule)"
+                }
+              ]
+            }
+          ]
+        },
+        "assistantName": "VAPI Internal Demo (Cancel)",
+        "assistant": {
+          "id": "d456882c-df71-424c-83a9-00f5a1dbe3b3",
+          "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+          "name": "VAPI Internal Demo (Cancel)",
+          "voice": {
+            "model": "eleven_flash_v2",
+            "voiceId": "fQ74DTbwd8TiAJFxu9v8",
+            "provider": "11labs",
+            "stability": 0.5,
+            "similarityBoost": 0.75
+          },
+          "createdAt": "2025-11-26T02:10:12.110Z",
+          "updatedAt": "2025-12-02T01:07:29.643Z",
+          "model": {
+            "model": "gpt-4o",
+            "toolIds": [
+              "f235ad22-b467-49fb-8605-f07bc5678d96",
+              "edc2902d-dc56-4fc4-b7c2-fdb16ff5973d"
+            ],
+            "messages": [
+              {
+                "role": "system",
+                "content": "# Role\nYou are **Amy**, an AI voice assistant for **VAPI Health Clinic**, a modern healthcare provider offering AI-supported appointment management and patient care coordination. Your personality is warm, professional, and confident—never robotic. You speak naturally with empathy and curiosity.\n\nYour purpose is to:\n- Help callers cancel their healthcare appointments.\n- Collect the required details accurately.\n- Confirm the cancellation clearly and close the call politely.\n\n\n# Context\n- **Clinic Name:** VAPI Health Clinic  \n- **Services:** Primary care, general consultations, wellness checks, and telehealth services.  \n- **Positioning:** Designed for patients who want accessible, fast, and reliable scheduling with minimal waiting times.  \n- **Service Model:** Same-day appointments where possible and shorter in-clinic wait times.\n\n**Contact Details (speak digit by digit and use “at” / “dot” for email):**\n- Phone: zero four two nine, one four eight, nine three eight  \n- Email: care at vapi health dot com  \n\n**Business Hours:**\n- 9:00 a.m. – 5:00 p.m., Sunday to Saturday\n- Never offer, suggest, or confirm appointment times **outside** 9:00 a.m. – 5:00 p.m.\n\n**Calendaring & Routing (tools available to you):**\n- `end_call_tool` – Politely terminate the call when required by guardrails.\n\n# Task\n\n- Cancellation: Cancel a scheduled appointment for the patient.\n- Use objections and FAQs when necessary.\n- If the caller wants to book an appointment, hand them off to the Booking assistant once intent is clear.\n- If the caller wants to reschedule an appointment, hand them off to the reschedule assistant once intent is clear.\n- If the caller wants to be transferred, hand them off to the transfer assistant once intent is clear.\n\n# Specifics\n\n- [#.#.# CONDITION] = workflow logic.\n- <variable> = patient details such as name, phone number, appointment time.\n- Sentences in double quotes must be spoken verbatim.\n- Talk clearly, professionally, and avoid unnecessary filler unless scripted.\n- Follow pauses on “—” and “…” using a natural silent pause.\n- Today's date:\n{{\"now\" | date: \"%b %d, %Y, %I:%M %p\",\"America/Los_Angeles\"}}\n\n# Steps\n\n1. Cancel an Appointment\n\nGoal: Cancel an existing appointment and optionally offer rebooking.\n\n### 1.1 Identify the Booking\n\n1. **Q:** \"I can help with that. Can I please have your full name?\"  \n   ~log `<name>`  \n2. **Q:** \"And what’s the best phone number we have on file for you?\"  \n   ~log `<phone>`\n\nUse `getCalendarVAPIHealth` with `<name>` and `<phone>`.\n\n- [1.1.1 If an appointment is found]  \n  - **Q:** \"I can see an appointment booked for {{current_date}} at {{current_time}}. Is this the appointment you’d like to cancel?\"  \n    - If **Yes** → Go to 1.2 Confirm Cancellation\n    - If **No** → Go to **2. Closing (Not Booked)**\n- [1.1.2 If no appointment is found]  \n  - **Q:** \"I’m not seeing an appointment under those details. It might be under a different name or number. Would you like to book a new appointment instead?\"  \n    - If **Yes** → hand off to the VAPI Internal Demo (Booking) assistant.\n    - If **No** → Go to **2. Closing (Not Booked)**\n\n### 1.2 Confirm Cancellation\n\n**Q:** \"Just to confirm, you’d like to cancel your appointment on {{current_date}} at {{current_time}}, is that right?\"\n\n- If **Yes**:\n  - Use `cancelCalendarVAPIHealth` to cancel the appointment.\n  - **Q:** \"Your appointment has been cancelled. Would you like to book another time now, or are you okay for the moment?\"\n    - If **Wants to rebook** → hand off to the VAPI Internal Demo (Booking) assistant.\n    - Otherwise → Go to **2. Closing**\n\n## 2. Closing\n**Q:** \"Thank you reaching us, you can always contact us if you need further assistance. Have a great day!\"\n\n→use `end_call_tool`. You do **not** mention ending the call.\n\n## 3. Guardrails & Inappropriate or Curveball Questions\n\nUsed when the caller is deliberately off-topic, inappropriate, or testing limits.\n\n- [3.1 If R = Asks a rude, explicit, or clearly time-wasting question]  \n  **Q:** \"I’m sorry, that’s not appropriate for me to answer.\"\n\nThen immediately pivot back:  \n**Q:** \"Would you like help with booking, rescheduling, or asking a question about VAPI Health Clinic?\"\n\n- [3.2 If R = Continues with rude or time-wasting questions after the warning]  \n  - Repeat once more with a variation:  \n    **Q:** \"I’m still not able to help with that. If you don’t need assistance with appointments or clinic information, I’ll have to end this call.\"  \n  - Then use `end_call_tool`.\n\n- Never provide jokes, banter, or speculative answers.  \n- Never give health or legal advice. Always re-route to booking or transfer.\n\n# Transfer logic\n\n\n[1.1 If R = Wants to book an appointment]\n→ hand off to the VAPI Internal Demo (Booking) assistant.\n\n[1.2 If R = Wants to reschedule an appointment]\n→ hand off to the VAPI Internal Demo (Reschedule) assistant.\n\n[1.3 If R = Wants to cancel an appointment]\n→ hand off to the VAPI Internal Demo (Cancel) assistant.\n\n[1.4 If R = Wants to speak to a nurse, doctor, billing, admin, or reception]  \n→ hand off to the VAPI Internal Demo (Transfer) Assistant\n\n# Frequently Asked Questions\n\n[ if O = “Do you have telehealth?” ]\n→ A: “Yes, telehealth appointments are available.”\n\n[ if O = “How much does it cost?” ]\n→ A: “Pricing depends on the appointment type, but our clinician will walk you through everything.”\n\nYou may also use the Objection Handling section below when relevant.\n\n# Objection Handling\n\n[ if O = “I’m not sure about privacy.” ]\n→ A: “We follow strict medical privacy standards — all your data is fully encrypted.”\n\n[ if O = “Are you a robot?” ]\n→ A: “Uh, I mean yeah, I’m a virtual assistant— but that doesn’t affect my goal here. I’m just here to help you get faster access to care.”\n\n\n# Guardrails \n\n- Never say the word “function”, “tool”, or the name of any tool.\n- Do not mention ending the call.\n- Do not entertain joke or trolling questions.\n- If the caller is rude, threatening, or clearly not serious, politely end the interaction.\n- Do not ad-lib beyond the scripted verbatims.\n- Respect pauses on “—” and “…” and do not replace them with extra words; use silence instead.\n- Do not repeat details such as name, email, or phone unless the caller asks you to repeat them.\n- After answering an objection or question, return to the original conversational flow (e.g., back to booking or the current step).\n- Sentences in double quotes must be spoken verbatim. Do not change or skip any part of them.\n- Always talk clearly, professionally, and avoid unnecessary filler unless it is part of the script.\n- NEVER say anything like \"transferring you to <Agent>\", \"Let me transfer you to our <agent_type>\" or similar statements. Just transfer silently to the appropriate agent\n- When identified who to transfer agent to, do not say anything, just silently handoff to the next assistant.\n- Avoid unnecessary words like repeating users words as response. Make replies concise and not redundant'\n- DO NOT CANCEL without confirmation from the caller. Always ask for the confirmation of the found appointment"
+              }
+            ],
+            "provider": "openai",
+            "maxTokens": 175,
+            "temperature": 0.3,
+            "tools": [
+              {
+                "id": "f235ad22-b467-49fb-8605-f07bc5678d96",
+                "createdAt": "2025-11-20T05:35:25.123Z",
+                "updatedAt": "2025-12-02T01:08:34.129Z",
+                "type": "function",
+                "function": {
+                  "name": "getCalendarVAPIHealth",
+                  "description": "use this tool to retrieve the existing appointment of the caller",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "description": "name of the caller",
+                        "type": "string",
+                        "default": ""
+                      },
+                      "phone": {
+                        "description": "phone number of the caller.",
+                        "type": "string",
+                        "default": ""
+                      }
+                    },
+                    "required": [
+                      "phone"
+                    ]
+                  }
+                },
+                "messages": [
+                  {
+                    "type": "request-start",
+                    "content": "",
+                    "blocking": false
+                  }
+                ],
+                "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+                "server": {
+                  "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12"
+                }
+              },
+              {
+                "id": "edc2902d-dc56-4fc4-b7c2-fdb16ff5973d",
+                "createdAt": "2025-11-20T06:02:30.715Z",
+                "updatedAt": "2025-12-02T01:08:29.749Z",
+                "type": "function",
+                "function": {
+                  "name": "cancelCalendarVAPIHealth",
+                  "description": "Use this tool to cancel an existing appointment of the caller",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "description": "name of the caller.",
+                        "type": "string",
+                        "default": ""
+                      },
+                      "phone": {
+                        "description": "phone number of the caller.",
+                        "type": "string",
+                        "default": ""
+                      }
+                    },
+                    "required": [
+                      "phone"
+                    ]
+                  }
+                },
+                "messages": [
+                  {
+                    "type": "request-start",
+                    "content": "",
+                    "blocking": false
+                  }
+                ],
+                "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+                "server": {
+                  "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12"
+                }
+              }
+            ]
+          },
+          "firstMessage": "Absolutely, I would just need a couple of information so we can proceed with the cancellation.",
+          "voicemailMessage": "Please call back when you're available.",
+          "endCallMessage": "Goodbye.",
+          "transcriber": {
+            "model": "nova-2",
+            "language": "en",
+            "provider": "deepgram"
+          },
+          "backgroundSound": "off",
+          "startSpeakingPlan": {
+            "smartEndpointingPlan": {
+              "provider": "livekit",
+              "waitFunction": "20 + 500 * sqrt(x) + 2500 * x^3"
+            }
+          },
+          "stopSpeakingPlan": {
+            "numWords": 2,
+            "backoffSeconds": 2
+          },
+          "isServerUrlSecretSet": false
+        },
+        "isStartMember": false,
+        "tools": [
+          {
+            "id": "f235ad22-b467-49fb-8605-f07bc5678d96",
+            "createdAt": "2025-11-20T05:35:25.123Z",
+            "updatedAt": "2025-12-02T01:08:34.129Z",
+            "type": "function",
+            "function": {
+              "name": "getCalendarVAPIHealth",
+              "description": "use this tool to retrieve the existing appointment of the caller",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "name of the caller",
+                    "type": "string",
+                    "default": ""
+                  },
+                  "phone": {
+                    "description": "phone number of the caller.",
+                    "type": "string",
+                    "default": ""
+                  }
+                },
+                "required": [
+                  "phone"
+                ]
+              }
+            },
+            "messages": [
+              {
+                "type": "request-start",
+                "content": "",
+                "blocking": false
+              }
+            ],
+            "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+            "server": {
+              "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12"
+            }
+          },
+          {
+            "id": "edc2902d-dc56-4fc4-b7c2-fdb16ff5973d",
+            "createdAt": "2025-11-20T06:02:30.715Z",
+            "updatedAt": "2025-12-02T01:08:29.749Z",
+            "type": "function",
+            "function": {
+              "name": "cancelCalendarVAPIHealth",
+              "description": "Use this tool to cancel an existing appointment of the caller",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "name of the caller.",
+                    "type": "string",
+                    "default": ""
+                  },
+                  "phone": {
+                    "description": "phone number of the caller.",
+                    "type": "string",
+                    "default": ""
+                  }
+                },
+                "required": [
+                  "phone"
+                ]
+              }
+            },
+            "messages": [
+              {
+                "type": "request-start",
+                "content": "",
+                "blocking": false
+              }
+            ],
+            "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+            "server": {
+              "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12"
+            }
+          },
+          {
+            "type": "handoff",
+            "async": false,
+            "function": {
+              "name": "handoff_to_assistant"
+            },
+            "messages": [],
+            "destinations": [
+              {
+                "type": "assistant",
+                "assistantId": "c392618d-d63f-4a3d-af4e-bd7c105dbb1f",
+                "description": "Use this transfer when caller wants to be transferred to a representative.",
+                "assistantName": "VAPI Internal Demo (Transfer)"
+              },
+              {
+                "type": "assistant",
+                "assistantId": "dc13cdf8-7312-41a1-aec7-24db6510a2f7",
+                "description": "Use this transfer when caller wants to book an appointment.",
+                "assistantName": "VAPI Internal Demo (Booking)"
+              },
+              {
+                "type": "assistant",
+                "assistantId": "c145f294-f9af-407e-96a5-e2b869dfe88e",
+                "description": "Use this transfer when caller wants to cancel an appointment.",
+                "assistantName": "VAPI Internal Demo (Reschedule)"
+              }
+            ],
+            "id": "squad-handoff-d456882c-df71-424c-83a9-00f5a1dbe3b3-3-0"
+          }
+        ],
+        "toolIds": [
+          "f235ad22-b467-49fb-8605-f07bc5678d96",
+          "edc2902d-dc56-4fc4-b7c2-fdb16ff5973d"
+        ]
+      },
+      {
+        "assistantId": "dc13cdf8-7312-41a1-aec7-24db6510a2f7",
+        "assistantOverrides": {
+          "metadata": {
+            "position": {
+              "x": 234.95879633310375,
+              "y": -23.24442159780898
+            }
+          },
+          "tools:append": [
+            {
+              "type": "handoff",
+              "async": false,
+              "function": {
+                "name": "handoff_to_assistant"
+              },
+              "messages": [],
+              "destinations": [
+                {
+                  "type": "assistant",
+                  "assistantId": "c392618d-d63f-4a3d-af4e-bd7c105dbb1f",
+                  "description": "Use this transfer when caller wants to be transferred to representative.",
+                  "assistantName": "VAPI Internal Demo (Transfer)"
+                },
+                {
+                  "type": "assistant",
+                  "assistantId": "d456882c-df71-424c-83a9-00f5a1dbe3b3",
+                  "description": "Use this transfer when caller wants to cancel an appointment.",
+                  "assistantName": "VAPI Internal Demo (Cancel)"
+                },
+                {
+                  "type": "assistant",
+                  "assistantId": "c145f294-f9af-407e-96a5-e2b869dfe88e",
+                  "description": "Use this transfer when caller wants to reschedule an appointment.",
+                  "assistantName": "VAPI Internal Demo (Reschedule)"
+                }
+              ]
+            }
+          ]
+        },
+        "assistantName": "VAPI Internal Demo (Booking)",
+        "assistant": {
+          "id": "dc13cdf8-7312-41a1-aec7-24db6510a2f7",
+          "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+          "name": "VAPI Internal Demo (Booking)",
+          "voice": {
+            "model": "eleven_flash_v2",
+            "voiceId": "fQ74DTbwd8TiAJFxu9v8",
+            "provider": "11labs",
+            "stability": 0.5,
+            "similarityBoost": 0.75
+          },
+          "createdAt": "2025-11-26T02:09:35.048Z",
+          "updatedAt": "2025-12-02T01:36:34.657Z",
+          "model": {
+            "model": "gpt-4o",
+            "toolIds": [
+              "7f9af3a2-0184-4fee-8d5e-6c7c1c9b7eb0",
+              "2a13e944-2c26-4524-aa27-e964055a5faf"
+            ],
+            "messages": [
+              {
+                "role": "system",
+                "content": "# Role\nYou are **Amy**, an AI voice assistant for **VAPI Health Clinic**, a modern healthcare provider offering AI-supported appointment management and patient care coordination. Your personality is warm, professional, and confident—never robotic. You speak naturally with empathy and curiosity.\n\nYour purpose is to:\n- Help callers book healthcare appointments.\n- Collect the required details accurately.\n- Confirm the booking clearly and close the call politely.\n\n# Context\n- **Clinic Name:** VAPI Health Clinic  \n- **Services:** Primary care, general consultations, wellness checks, and telehealth services.  \n- **Positioning:** Designed for patients who want accessible, fast, and reliable scheduling with minimal waiting times.  \n- **Service Model:** Same-day appointments where possible and shorter in-clinic wait times.\n\n**Contact Details (speak digit by digit and use “at” / “dot” for email):**\n- Phone: zero four two nine, one four eight, nine three eight  \n- Email: care at vapi health dot com  \n\n**Business Hours:**\n- 9:00 a.m. – 5:00 p.m., Sunday to Saturday\n- Never offer, suggest, or confirm appointment times **outside** 9:00 a.m. – 5:00 p.m.\n\n**Calendaring & Routing (tools available to you):**\n- `end_call_tool` – Politely terminate the call when required by guardrails.\n\n# Task\n\nBooking: Schedule an Appointment for the patient using the clinic calendar tools.\nUse Objection Handling and FAQ responses when needed.\n- If the caller wants to reschedule an appointment, hand them off to the reschedule assistant once intent is clear.\n- If the caller wants to cancel an appointment, hand them off to the cancel assistant once intent is clear.\n- If the caller wants to be transferred, hand them off to the transfer assistant once intent is clear.\n\n# Specifics\n\n- [#.#.# CONDITION] = workflow logic.\n- <variable> = patient details such as name, phone number, appointment time.\n- Sentences in double quotes must be spoken verbatim.\n- Talk clearly, professionally, and avoid unnecessary filler unless scripted.\n- Follow pauses on “—” and “…” using a natural silent pause.\n- Today's date:\n{{\"now\" | date: \"%b %d, %Y, %I:%M %p\",\"America/Los_Angeles\"}}\n\n\n# Steps\n\n## 1. Book an Appointment\n\nYour goal here is to **successfully book** an appointment within business hours.\n\n### 1.1 Collect Required Details\n\nAsk **one question at a time** and log each answer. Required fields are 1.1.1–1.1.4, 1.1.7–1.1.8. Insurance details are optional but should be asked.\n\n- **1.1.1 Full Name**\n  **Q:** \"Sure, I can help with that. First, can I please have your first and last name?\"  \n  ~log `<firstName>` \n  **Q:** \"Perfect, and your last name?\"  \n  **Q:** \"And could you please spell your last name for me?\"  \n  ~log `<lastName_spelled>`\n\n- **1.1.2 Date of Birth**\n  **Q:** \"Thank you. What’s your date of birth?\"  \n  ~log `<dob>`\n\n- **1.1.3 Phone Number**\n  **Q:** \"And what’s the best phone number to reach you on?\"  \n  ~log `<phone>`\n\n- **1.1.4 Reason for Visit**\n  **Q:** \"Got it. And what’s the main reason for your appointment today?\"  \n  ~log `<reason_visit>`  \n  - Never give medical advice. If they ask for medical input, say:  \n    **Q:** \"I can’t give medical advice, but I can help you book an appointment so your clinician can discuss this with you.\"\n\n- **1.1.5 Insurance Provider (Optional)**\n  **Q:** \"Do you have an insurance provider you’d like us to note like UnitedHealthcare, Medicare, or Medicaid?\"  \n  ~log `<insurance_provider>`  \n  - If they don’t have or don’t want to share, acknowledge and move on.\n\n- **1.1.6 Insurance Member ID & Group Number (Optional)**\n  **Q:** \"If you have it handy, could you share your insurance member ID and group number for verification?\"  \n  ~log `<insurance_memberid>`\n\n- **1.1.7 Consultation Type**\n  **Q:** \"And was this for an in-person consultation, or a telehealth?\"  \n  ~log `<consult_type>` (in-person / telehealth)  \n  - If unsure:  \n    **Q:** \"No worries—if you’d like, you can discuss the best option with the clinician during your visit.\"\n\n- **1.1.8 Requested Time & Day**\n  **Q:** \"What day and time were you hoping to book?\"  \n  ~log `<requestedTime_raw>`  \n\n - [1.1.8.1 if R = asks for time inside 9–5 business hours]\n  **Q:**: \"Do you have a preferred doctor, or are you happy with the first available clinician?\"\n\n- [1.1.8.1.1 If R = Wants specific doctor]  \n  ~log `<preferred_doctor>`  \n\n  - [1.1.8.1.1.1 If R = Doctor Chan]  \n    - Inform availability:  \n      **Q:** \"Doctor Chan is available on Sundays, Saturdays, and Wednesdays. Which of those days suits you best?\"  \n\n  - [1.1.8.1.1.2 If R = Doctor Wong]  \n    - Inform availability:  \n      **Q:** \"Doctor Wong is available on Mondays, Tuesdays, Thursdays, and Fridays. Which of those days suits you best?\"  \n\n  Use that information to shape the `start` / `end` window in `checkCalendarVAPIHealth`.\n\n- [1.1.8.2.2 If R = No specific doctor]  \n  ~log `<preferred_doctor> = first_available`  \n  - Continue to slot checking using first available within their requested window.\n\n- [1.1.8.2 If R = Asks for a time outside 9–5]  \n    **Q:**: \"Our clinic books appointments between 9 a.m. and 5 p.m., every day. Is there another time in that window that works for you?\"  \n    ~adjust `<requestedTime_raw>` into acceptable window.\n\n\n### 1.2 Check Calendar for Availability\n\nUse `checkCalendarVAPIHealth` with:\n- Input: `{ eventTypeId, start, end }` based on `<consult_type>`, doctor preference, and `<requestedTime_raw>`.\n\nThen respond:\n\n- [1.2.1 If there are available slots for requested window]  \n  - Offer **2–4 nearby options**:  \n    **Q:** \"I can see a few options around that time: we have {{option_1}}, {{option_2}}, and {{option_3}}. Which one would you prefer?\"  \n    ~log `<selected_slot>`\n\n- [1.2.2 If no slots are available in requested window]  \n  - Expand slightly earlier/later **within 9–5**:  \n    **Q:** \"It looks like that exact time is fully booked, but I do have availability nearby—would you prefer something a little earlier or a little later between 9 and 5?\"  \n  - Re-run `checkCalendarVAPIHealth` with an updated window, then proceed as in 1.3.1.\n\n### 1.3 Confirm Details Before Booking\n\nOnce the caller chooses a slot:\n\n**Q:** \"Perfect, just to confirm, I have you down for a {{consult_type}} appointment on {{date}} at {{time}}, for {{reason_visit}}. Does that all look correct?\"\n\n- [1.3.1 If R = Yes]  \n  → Proceed to 1.5 Book Appointment.\n\n- [1.3.2 If R = No]  \n  - Briefly correct the specific fields they highlight (time, date, or consult type) and re-confirm once more.  \n  - Then → Proceed to 1.5.\n\n### 1.4 Book Appointment\n\nUse `bookCalendarVAPIHealth` with:\n- Input:  \n  `{ eventTypeId, start: <selected_slot>, attendee: { name: <firstName + lastName>, email: <email_if_captured_or_blank>, phone: <phone> }, timeZone }`\n\nAfter successful booking:\n→ Go to **2. Closing (Booked)**\n\n# 2. Closing\n\n[2.1 if R = Patient is already booked]\nQ: \"Wonderful, I’ve locked in your consultation for {{date & time}}. Our team will send you\nan SMS and email reminder regarding your requested schedule. Have a great day!\" →use `end_call_tool`\n\n[2.2 if R = Patient did not continue with booking]\nQ: \"Thank you for your time today, you can always reach us out if you need further assistance. Have a great day!\" →use `end_call_tool`\n\n## 3. Guardrails & Inappropriate or Curveball Questions\n\nUsed when the caller is deliberately off-topic, inappropriate, or testing limits.\n\n- [3.1 If R = Asks a rude, explicit, or clearly time-wasting question]  \n  **Q:** \"I’m sorry, that’s not appropriate for me to answer.\"\n\nThen immediately pivot back:  \n**Q:** \"Would you like help with booking, rescheduling, or asking a question about VAPI Health Clinic?\"\n\n- [3.2 If R = Continues with rude or time-wasting questions after the warning]  \n  - Repeat once more with a variation:  \n    **Q:** \"I’m still not able to help with that. If you don’t need assistance with appointments or clinic information, I’ll have to end this call.\"  \n  - Then use `end_call_tool`.\n\n- Never provide jokes, banter, or speculative answers.  \n- Never give health or legal advice. Always re-route to booking or transfer.\n\n# Transfer Logic\n\n[1.1 If R = asks questions]\n→ Use # Frequently Asked Questions and # Objection Handling for accurate response. After answering, ask:\nQ: “Is there anything else I can help you with today?\"\n\n[1.2 If R = Wants to reschedule an appointment]\n→ hand off to the VAPI Internal Demo (Reschedule) assistant.\n\n[1.3 If R = Wants to cancel an appointment]\n→ hand off to the VAPI Internal Demo (Cancel) assistant.\n\n[1.4 If R = Wants to speak to a nurse, doctor, billing, admin, or reception]  \n→ hand off to the VAPI Internal Demo (Transfer) Assistant\n\n\n# Frequently Asked Questions\n\n[ if O = “Do you have telehealth?” ]\n→ A: “Yes, telehealth appointments are available.”\n\n[ if O = “How much does it cost?” ]\n→ A: “Pricing depends on the appointment type, but our clinician will walk you through everything.”\n\nYou may also use the Objection Handling section below when relevant.\n\n# Objection Handling\n\n[ if O = “I’m not sure about privacy.” ]\n→ A: “We follow strict medical privacy standards — all your data is fully encrypted.”\n\n[ if O = “Are you a robot?” ]\n→ A: “Uh, I mean yeah, I’m a virtual assistant— but that doesn’t affect my goal here. I’m just here to help you get faster access to care.”\n\n\n# Guardrails\n- Never say the word “function”, “tool”, or the name of any tool.\n- Do not mention ending the call.\n- Do not entertain joke or trolling questions.\n- If the caller is rude, threatening, or clearly not serious, politely end the interaction.\n- Do not ad-lib beyond the scripted verbatims.\n- Respect pauses on “—” and “…” and do not replace them with extra words; use silence instead.\n- Do not repeat details such as name, email, or phone unless the caller asks you to repeat them.\n- After answering an objection or question, return to the original conversational flow (e.g., back to booking or the current step).\n- Sentences in double quotes must be spoken verbatim. Do not change or skip any part of them.\n- Always talk clearly, professionally, and avoid unnecessary filler unless it is part of the script.\n- NEVER say anything like \"transferring you to <Agent>\", \"Let me transfer you to our <agent_type>\" or similar statements. Just transfer silently to the appropriate agent\n- When identified who to transfer agent to, do not say anything, just silently handoff to the next assistant.\n- Avoid unnecessary words like repeating users words as response. Make replies concise and not redundant'\n- DO NOT CANCEL without confirmation from the caller. Always ask for the confirmation of the found appointment\n - parse in number with triple *digit* or double *digit* as individual numbers (e.g triple 8 / eight should be 888, double 7 / seven should be 77)"
+              }
+            ],
+            "provider": "openai",
+            "maxTokens": 175,
+            "temperature": 0.3,
+            "tools": [
+              {
+                "id": "7f9af3a2-0184-4fee-8d5e-6c7c1c9b7eb0",
+                "createdAt": "2025-11-20T02:43:18.470Z",
+                "updatedAt": "2025-12-02T11:18:16.484Z",
+                "type": "function",
+                "function": {
+                  "name": "checkCalendarVAPIHealth",
+                  "description": "Use this function to check availabilities in calendar.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "timeZone": {
+                        "description": "IANA timezone use \"America/Los_Angeles\"",
+                        "type": "string",
+                        "default": ""
+                      },
+                      "EventTypeID": {
+                        "description": "When determining eventTypeId and eventTypeSlug, you must always re-evaluate the caller’s current requested date, day-of-week, and consultation type.\r\nNever reuse or carry over the previous eventTypeId from a past booking. Choose the correct eventTypeId based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"3954317\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"3954310\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"3954311\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"3954306\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request.\r\n\r\n## Important:\r\n- You must correctly interpret the day of the week for ANY date mentioned by the caller.\r\nExamples:\r\n\r\nDecember 5, 2025 → Friday\r\nDecember 6, 2025 → Saturday\r\nDecember 7, 2025 → Sunday\r\n\r\n- Never assume the day; always compute the correct weekday.\r\n\r\nIf the previously selected eventTypeId does not match the new date’s day-of-week, you must correct it immediately by selecting the correct one.\r\n\r\nExample:\r\nOriginal booking: December 5 (Friday) → \"3954310\"\r\nCaller reschedules to December 6 (Saturday) → must switch to \"3954317\"\r\nDo not return \"3954310\" again.\n",
+                        "type": "string",
+                        "enum": [
+                          "3954317",
+                          "3954310",
+                          "3954311",
+                          "3954306"
+                        ],
+                        "default": ""
+                      },
+                      "EventTypeSlug": {
+                        "description": "Choose the correct eventTypeSlug based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\n\n\"dr-chan-clinic-30-minute\" = In-person on Sunday, Wednesday, or Saturday  \n\"dr-wong-clinic-30-minute\" = In-person on Monday, Tuesday, Thursday or Friday\n\"dr-chan-telehealth-30-minute\" = Telehealth on Sunday, Wednesday, or Saturday  \n\"dr-wong-telehealth-30-minute\" = Telehealth on Monday, Tuesday, Thursday or Friday\n\nReturn the variable that matches the caller’s request.",
+                        "type": "string",
+                        "enum": [
+                          "dr-chan-clinic-30-minute",
+                          "dr-wong-clinic-30-minute",
+                          "dr-chan-telehealth-30-minute",
+                          "dr-wong-telehealth-30-minute"
+                        ],
+                        "default": ""
+                      },
+                      "requestedTime": {
+                        "description": "the requested time of the user in this format: yyyy-mm-ddTHH:mm:ss (e.g.,  2025-07-04T11:00:00).",
+                        "type": "string",
+                        "default": ""
+                      }
+                    },
+                    "required": [
+                      "requestedTime",
+                      "EventTypeSlug",
+                      "EventTypeID"
+                    ]
+                  }
+                },
+                "messages": [
+                  {
+                    "type": "request-start",
+                    "blocking": false
+                  }
+                ],
+                "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+                "server": {
+                  "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12",
+                  "timeoutSeconds": 20
+                }
+              },
+              {
+                "id": "2a13e944-2c26-4524-aa27-e964055a5faf",
+                "createdAt": "2025-11-20T02:44:05.189Z",
+                "updatedAt": "2025-12-02T11:18:05.034Z",
+                "type": "function",
+                "function": {
+                  "name": "bookCalendarVAPIHealth",
+                  "description": "Use this function to book consultations in calendar.",
+                  "parameters": {
+                    "type": "object",
+                    "properties": {
+                      "phone": {
+                        "description": "The phone number of the lead",
+                        "type": "string",
+                        "default": ""
+                      },
+                      "reason": {
+                        "description": "the reason of the call or booking",
+                        "type": "string",
+                        "default": ""
+                      },
+                      "lastName": {
+                        "description": "the last name of the caller.",
+                        "type": "string",
+                        "default": ""
+                      },
+                      "birthDate": {
+                        "description": "the date of birth of the caller.",
+                        "type": "string",
+                        "default": ""
+                      },
+                      "firstName": {
+                        "description": "the first name of the caller / lead",
+                        "type": "string",
+                        "default": ""
+                      },
+                      "eventTypeID": {
+                        "description": "When determining eventTypeId and eventTypeSlug, you must always re-evaluate the caller’s current requested date, day-of-week, and consultation type.\r\nNever reuse or carry over the previous eventTypeId from a past booking. Choose the correct eventTypeId based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"3954317\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"3954310\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"3954311\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"3954306\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request.\r\n\r\n## Important:\r\n- You must correctly interpret the day of the week for ANY date mentioned by the caller.\r\nExamples:\r\n\r\nDecember 5, 2025 → Friday\r\nDecember 6, 2025 → Saturday\r\nDecember 7, 2025 → Sunday\r\n\r\n- Never assume the day; always compute the correct weekday.\r\n\r\nIf the previously selected eventTypeId does not match the new date’s day-of-week, you must correct it immediately by selecting the correct one.\r\n\r\nExample:\r\nOriginal booking: December 5 (Friday) → \"3954310\"\r\nCaller reschedules to December 6 (Saturday) → must switch to \"3954317\"\r\nDo not return \"3954310\" again.\n",
+                        "type": "string",
+                        "enum": [
+                          "3954317",
+                          "3954310",
+                          "3954311",
+                          "3954306"
+                        ],
+                        "default": ""
+                      },
+                      "insuranceID": {
+                        "description": "Member ID of Insurance of the caller.",
+                        "type": "string",
+                        "default": ""
+                      },
+                      "eventTypeSlug": {
+                        "description": "Choose the correct eventTypeSlug based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"dr-chan-clinic-30-minute\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"dr-wong-clinic-30-minute\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"dr-chan-telehealth-30-minute\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"dr-wong-telehealth-30-minute\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request.",
+                        "type": "string",
+                        "enum": [
+                          "dr-chan-clinic-30-minute",
+                          "dr-wong-clinic-30-minute",
+                          "dr-chan-telehealth-30-minute",
+                          "dr-wong-telehealth-30-minute"
+                        ],
+                        "default": ""
+                      },
+                      "requestedTime": {
+                        "description": "the requested time of the user in this format: yyyy-mm-ddTHH:mm:ss (e.g.,  2025-07-04T11:00:00).",
+                        "type": "string",
+                        "default": ""
+                      },
+                      "insuranceProvider": {
+                        "description": "Insurance Provider of the caller.",
+                        "type": "string",
+                        "default": ""
+                      }
+                    },
+                    "required": [
+                      "firstName",
+                      "requestedTime",
+                      "lastName",
+                      "phone",
+                      "eventTypeID"
+                    ]
+                  }
+                },
+                "messages": [
+                  {
+                    "type": "request-start",
+                    "blocking": false
+                  }
+                ],
+                "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+                "server": {
+                  "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12",
+                  "timeoutSeconds": 20
+                }
+              }
+            ]
+          },
+          "firstMessage": "Absolutely, I would just need a couple of information so we can proceed with the booking.",
+          "voicemailMessage": "Please call back when you're available.",
+          "endCallMessage": "Goodbye.",
+          "transcriber": {
+            "model": "nova-2",
+            "language": "en",
+            "provider": "deepgram"
+          },
+          "backgroundSound": "off",
+          "startSpeakingPlan": {
+            "smartEndpointingPlan": {
+              "provider": "livekit",
+              "waitFunction": "20 + 500 * sqrt(x) + 2500 * x^3"
+            }
+          },
+          "stopSpeakingPlan": {
+            "numWords": 2,
+            "backoffSeconds": 2
+          },
+          "isServerUrlSecretSet": false
+        },
+        "isStartMember": false,
+        "tools": [
+          {
+            "id": "7f9af3a2-0184-4fee-8d5e-6c7c1c9b7eb0",
+            "createdAt": "2025-11-20T02:43:18.470Z",
+            "updatedAt": "2025-12-02T11:18:16.484Z",
+            "type": "function",
+            "function": {
+              "name": "checkCalendarVAPIHealth",
+              "description": "Use this function to check availabilities in calendar.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "timeZone": {
+                    "description": "IANA timezone use \"America/Los_Angeles\"",
+                    "type": "string",
+                    "default": ""
+                  },
+                  "EventTypeID": {
+                    "description": "When determining eventTypeId and eventTypeSlug, you must always re-evaluate the caller’s current requested date, day-of-week, and consultation type.\r\nNever reuse or carry over the previous eventTypeId from a past booking. Choose the correct eventTypeId based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"3954317\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"3954310\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"3954311\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"3954306\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request.\r\n\r\n## Important:\r\n- You must correctly interpret the day of the week for ANY date mentioned by the caller.\r\nExamples:\r\n\r\nDecember 5, 2025 → Friday\r\nDecember 6, 2025 → Saturday\r\nDecember 7, 2025 → Sunday\r\n\r\n- Never assume the day; always compute the correct weekday.\r\n\r\nIf the previously selected eventTypeId does not match the new date’s day-of-week, you must correct it immediately by selecting the correct one.\r\n\r\nExample:\r\nOriginal booking: December 5 (Friday) → \"3954310\"\r\nCaller reschedules to December 6 (Saturday) → must switch to \"3954317\"\r\nDo not return \"3954310\" again.\n",
+                    "type": "string",
+                    "enum": [
+                      "3954317",
+                      "3954310",
+                      "3954311",
+                      "3954306"
+                    ],
+                    "default": ""
+                  },
+                  "EventTypeSlug": {
+                    "description": "Choose the correct eventTypeSlug based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\n\n\"dr-chan-clinic-30-minute\" = In-person on Sunday, Wednesday, or Saturday  \n\"dr-wong-clinic-30-minute\" = In-person on Monday, Tuesday, Thursday or Friday\n\"dr-chan-telehealth-30-minute\" = Telehealth on Sunday, Wednesday, or Saturday  \n\"dr-wong-telehealth-30-minute\" = Telehealth on Monday, Tuesday, Thursday or Friday\n\nReturn the variable that matches the caller’s request.",
+                    "type": "string",
+                    "enum": [
+                      "dr-chan-clinic-30-minute",
+                      "dr-wong-clinic-30-minute",
+                      "dr-chan-telehealth-30-minute",
+                      "dr-wong-telehealth-30-minute"
+                    ],
+                    "default": ""
+                  },
+                  "requestedTime": {
+                    "description": "the requested time of the user in this format: yyyy-mm-ddTHH:mm:ss (e.g.,  2025-07-04T11:00:00).",
+                    "type": "string",
+                    "default": ""
+                  }
+                },
+                "required": [
+                  "requestedTime",
+                  "EventTypeSlug",
+                  "EventTypeID"
+                ]
+              }
+            },
+            "messages": [
+              {
+                "type": "request-start",
+                "blocking": false
+              }
+            ],
+            "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+            "server": {
+              "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12",
+              "timeoutSeconds": 20
+            }
+          },
+          {
+            "id": "2a13e944-2c26-4524-aa27-e964055a5faf",
+            "createdAt": "2025-11-20T02:44:05.189Z",
+            "updatedAt": "2025-12-02T11:18:05.034Z",
+            "type": "function",
+            "function": {
+              "name": "bookCalendarVAPIHealth",
+              "description": "Use this function to book consultations in calendar.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "description": "The phone number of the lead",
+                    "type": "string",
+                    "default": ""
+                  },
+                  "reason": {
+                    "description": "the reason of the call or booking",
+                    "type": "string",
+                    "default": ""
+                  },
+                  "lastName": {
+                    "description": "the last name of the caller.",
+                    "type": "string",
+                    "default": ""
+                  },
+                  "birthDate": {
+                    "description": "the date of birth of the caller.",
+                    "type": "string",
+                    "default": ""
+                  },
+                  "firstName": {
+                    "description": "the first name of the caller / lead",
+                    "type": "string",
+                    "default": ""
+                  },
+                  "eventTypeID": {
+                    "description": "When determining eventTypeId and eventTypeSlug, you must always re-evaluate the caller’s current requested date, day-of-week, and consultation type.\r\nNever reuse or carry over the previous eventTypeId from a past booking. Choose the correct eventTypeId based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"3954317\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"3954310\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"3954311\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"3954306\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request.\r\n\r\n## Important:\r\n- You must correctly interpret the day of the week for ANY date mentioned by the caller.\r\nExamples:\r\n\r\nDecember 5, 2025 → Friday\r\nDecember 6, 2025 → Saturday\r\nDecember 7, 2025 → Sunday\r\n\r\n- Never assume the day; always compute the correct weekday.\r\n\r\nIf the previously selected eventTypeId does not match the new date’s day-of-week, you must correct it immediately by selecting the correct one.\r\n\r\nExample:\r\nOriginal booking: December 5 (Friday) → \"3954310\"\r\nCaller reschedules to December 6 (Saturday) → must switch to \"3954317\"\r\nDo not return \"3954310\" again.\n",
+                    "type": "string",
+                    "enum": [
+                      "3954317",
+                      "3954310",
+                      "3954311",
+                      "3954306"
+                    ],
+                    "default": ""
+                  },
+                  "insuranceID": {
+                    "description": "Member ID of Insurance of the caller.",
+                    "type": "string",
+                    "default": ""
+                  },
+                  "eventTypeSlug": {
+                    "description": "Choose the correct eventTypeSlug based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"dr-chan-clinic-30-minute\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"dr-wong-clinic-30-minute\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"dr-chan-telehealth-30-minute\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"dr-wong-telehealth-30-minute\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request.",
+                    "type": "string",
+                    "enum": [
+                      "dr-chan-clinic-30-minute",
+                      "dr-wong-clinic-30-minute",
+                      "dr-chan-telehealth-30-minute",
+                      "dr-wong-telehealth-30-minute"
+                    ],
+                    "default": ""
+                  },
+                  "requestedTime": {
+                    "description": "the requested time of the user in this format: yyyy-mm-ddTHH:mm:ss (e.g.,  2025-07-04T11:00:00).",
+                    "type": "string",
+                    "default": ""
+                  },
+                  "insuranceProvider": {
+                    "description": "Insurance Provider of the caller.",
+                    "type": "string",
+                    "default": ""
+                  }
+                },
+                "required": [
+                  "firstName",
+                  "requestedTime",
+                  "lastName",
+                  "phone",
+                  "eventTypeID"
+                ]
+              }
+            },
+            "messages": [
+              {
+                "type": "request-start",
+                "blocking": false
+              }
+            ],
+            "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+            "server": {
+              "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12",
+              "timeoutSeconds": 20
+            }
+          },
+          {
+            "type": "handoff",
+            "async": false,
+            "function": {
+              "name": "handoff_to_assistant"
+            },
+            "messages": [],
+            "destinations": [
+              {
+                "type": "assistant",
+                "assistantId": "c392618d-d63f-4a3d-af4e-bd7c105dbb1f",
+                "description": "Use this transfer when caller wants to be transferred to representative.",
+                "assistantName": "VAPI Internal Demo (Transfer)"
+              },
+              {
+                "type": "assistant",
+                "assistantId": "d456882c-df71-424c-83a9-00f5a1dbe3b3",
+                "description": "Use this transfer when caller wants to cancel an appointment.",
+                "assistantName": "VAPI Internal Demo (Cancel)"
+              },
+              {
+                "type": "assistant",
+                "assistantId": "c145f294-f9af-407e-96a5-e2b869dfe88e",
+                "description": "Use this transfer when caller wants to reschedule an appointment.",
+                "assistantName": "VAPI Internal Demo (Reschedule)"
+              }
+            ],
+            "id": "squad-handoff-dc13cdf8-7312-41a1-aec7-24db6510a2f7-4-0"
+          }
+        ],
+        "toolIds": [
+          "7f9af3a2-0184-4fee-8d5e-6c7c1c9b7eb0",
+          "2a13e944-2c26-4524-aa27-e964055a5faf"
+        ]
+      }
+    ],
+    "membersOverrides": {
+      "transcriber": {
+        "model": "nova-3",
+        "keyterm": [
+          "VAPI"
+        ],
+        "language": "en",
+        "numerals": true,
+        "provider": "deepgram"
+      },
+      "model": {
+        "model": "gpt-4o",
+        "provider": "openai"
+      },
+      "voice": {
+        "model": "eleven_flash_v2",
+        "voiceId": "fQ74DTbwd8TiAJFxu9v8",
+        "provider": "11labs"
+      }
+    }
+  }

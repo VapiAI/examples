@@ -1,37 +1,44 @@
 {
-    "id": "89ef7a80-fd92-4144-b971-9712521d6173",
-    "type": "function",
-    "function": {
-      "name": "rescheduleCalendarVAPIHealth",
-      "description": "This tool reschedules an existing meeting in the calendar.",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "start": {
-            "description": "The start time of the booking in ISO 8601 format in UTC timezone, e.g. ‘2024-08-13T09:00:00Z’.",
-            "type": "string",
-            "default": ""
-          },
-          "bookinguid": {
-            "description": "the unique identifier of the retreived booking from getCalendarVAPIHealth",
-            "type": "string",
-            "default": ""
-          }
+  "id": "89ef7a80-fd92-4144-b971-9712521d6173",
+  "type": "function",
+  "function": {
+    "name": "rescheduleCalendarVAPIHealth",
+    "description": "This tool reschedules an existing meeting in the calendar.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "description": "The start time of the booking in ISO 8601 format in UTC timezone, e.g. ‘2024-08-13T09:00:00Z’.",
+          "type": "string",
+          "default": ""
         },
-        "required": [
-          "bookinguid"
-        ]
-      }
-    },
-    "messages": [
-      {
-        "type": "request-start",
-        "blocking": false
-      }
-    ],
-    "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
-    "server": {
-      "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12",
-      "timeoutSeconds": 20
+        "bookinguid": {
+          "description": "the unique identifier of the retreived booking from getCalendarVAPIHealth",
+          "type": "string",
+          "default": ""
+        },
+        "EventTypeID": {
+          "description": "When determining eventTypeId and eventTypeSlug, you must always re-evaluate the caller’s current requested date, day-of-week, and consultation type.\r\nNever reuse or carry over the previous eventTypeId from a past booking. Choose the correct eventTypeId based on the caller’s request for either an in-person visit or a telehealth consultation, and the specific day of the week they want. Use:\r\n\r\n\"3954317\" = In-person on Sunday, Wednesday, or Saturday  \r\n\"3954310\" = In-person on Monday, Tuesday, Thursday or Friday\r\n\"3954311\" = Telehealth on Sunday, Wednesday, or Saturday  \r\n\"3954306\" = Telehealth on Monday, Tuesday, Thursday or Friday\r\n\r\nReturn the variable that matches the caller’s request.\r\n\r\n## Important:\r\n- You must correctly interpret the day of the week for ANY date mentioned by the caller.\r\nExamples:\r\n\r\nDecember 5, 2025 → Friday\r\nDecember 6, 2025 → Saturday\r\nDecember 7, 2025 → Sunday\r\n\r\n- Never assume the day; always compute the correct weekday.\r\n\r\nIf the previously selected eventTypeId does not match the new date’s day-of-week, you must correct it immediately by selecting the correct one.\r\n\r\nExample:\r\nOriginal booking: December 5 (Friday) → \"3954310\"\r\nCaller reschedules to December 6 (Saturday) → must switch to \"3954317\"\r\nDo not return \"3954310\" again.",
+          "type": "string",
+          "default": ""
+        }
+      },
+      "required": [
+        "bookinguid",
+        "EventTypeID"
+      ]
     }
+  },
+  "messages": [
+    {
+      "type": "request-start",
+      "content": "",
+      "blocking": false
+    }
+  ],
+  "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+  "server": {
+    "url": "https://vapiai.app.n8n.cloud/webhook/calendar-book12",
+    "timeoutSeconds": 20
   }
+}

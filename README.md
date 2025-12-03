@@ -56,8 +56,8 @@ Production-ready voice assistants for various industries and use cases.
 
 | Example | Description | Key Features |
 |---------|-------------|--------------|
-| **[Healthcare Booking](assistants/vapi_health_complex_booking/)** | AI receptionist for medical clinics with full appointment management | Booking, rescheduling, cancellation, cal.com integration, n8n workflows |
-| **[RAG Intent Router](assistants/rag-intent-transfer/)** | Intent-based call routing with retrieval-augmented instructions | Dynamic instructions, multi-intent handling, live agent transfer |
+| **[Healthcare Scheduling](assistants/healthcare_scheduling/)** | AI receptionist for medical clinics with full appointment management | Booking, rescheduling, cancellation, cal.com integration, n8n workflows |
+| **[Multi-Intent Handler](assistants/multi_intent_handler/)** | Intent-based call routing with retrieval-augmented instructions | Dynamic instructions, multi-intent handling, live agent transfer |
 
 ---
 

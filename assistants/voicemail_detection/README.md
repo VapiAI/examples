@@ -2,6 +2,10 @@
 
 An outbound calling assistant that detects voicemail systems and handles live contacts appropriately.
 
+<a href="https://dashboard.vapi.ai/import?=voicemail_detection">
+<img height="35" src="https://auth.vapi.ai/storage/v1/object/public/files/import-to-vapi.svg" alt="Import to Vapi"/>
+</a>
+
 ## Overview
 
 This assistant monitors uses transcriptions to distinguish between voicemail systems and live humans. When voicemail is detected, it uses the `leave_voicemail` tool to deliver a pre-recorded message. For live contacts, it delivers a brief message and handles responses professionally.

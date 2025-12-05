@@ -88,7 +88,7 @@
             "do": [
                 {
                     "type": "tool",
-                    "toolId": "TRANSFER_CALL_TOOL_ID"
+                    "toolId": "tools/general/transfer_call.json"
                 }
             ],
             "on": "call.ending",

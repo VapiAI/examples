@@ -83,6 +83,6 @@
         }
     ],
     "server": {
-        "url": "BOOK_TOOL_URL"
+        "url": "https://www.example.com"
     }
 }

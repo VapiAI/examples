@@ -2,7 +2,7 @@
     "name": "VAPI Medical Practice (V3)",
     "voice": {
         "model": "eleven_flash_v2",
-        "voiceId": "fQ74DTbwd8TiAJFxu9v8",
+        "voiceId": "sarah",
         "provider": "11labs",
         "stability": 0.5,
         "similarityBoost": 0.75

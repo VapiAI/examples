@@ -29,6 +29,6 @@
         }
     ],
     "server": {
-        "url": "RESCHEDULE_TOOL_URL"
+        "url": "https://www.example.com"
     }
 }

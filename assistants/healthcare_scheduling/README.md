@@ -4,7 +4,7 @@
 
 This system provides an AI-powered voice assistant for VAPI Health Clinic that handles appointment scheduling, rescheduling, cancellation, and general inquiries. The assistant, **Amy**, uses natural language processing to guide callers through appointment management workflows while maintaining a warm, professional, and empathetic tone.
 
-<a href="https://dashboard.vapi.ai/import?=healthcare_scheduling">
+<a href="https://dashboard.vapi.ai/import?id=healthcare_scheduling">
 <img height="35" src="https://auth.vapi.ai/storage/v1/object/public/files/import-to-vapi.svg" alt="Import to Vapi"/>
 </a>
 

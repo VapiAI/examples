@@ -2,7 +2,7 @@
 
 This repo is a minimal reference for building a Vapi assistant that routes callers by intent and augments its replies with Retrieval-Augmented Generation (RAG) instructions. The sample materials assume a roofing and exterior services company that cooperates with partner brands and maintains global contact numbers, but you can swap in any trade so long as the variable schema stays the same. Use these templates to stand up an assistant quickly, then replace the example data with your production values.
 
-<a href="https://dashboard.vapi.ai/import?=multi_intent_handler">
+<a href="https://dashboard.vapi.ai/import?id=multi_intent_handler">
 <img height="35" src="https://auth.vapi.ai/storage/v1/object/public/files/import-to-vapi.svg" alt="Import to Vapi"/>
 </a>
 

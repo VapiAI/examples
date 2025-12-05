@@ -75,7 +75,7 @@
                 },
                 {
                     "type": "tool",
-                    "toolId": "END_CALL_TOOL_ID"
+                    "toolId": "tools/general/end_call.json"
                 }
             ],
             "on": "customer.speech.timeout",

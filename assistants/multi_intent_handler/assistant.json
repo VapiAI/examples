@@ -7,9 +7,9 @@
     "model": {
         "model": "gpt-4.1",
         "toolIds": [
-            "GET_INSTRUCTIONS_TOOL_ID",
-            "TRANSFER_CALL_TOOL_ID",
-            "END_CALL_TOOL_ID"
+            "tools/get_instructions.json",
+            "tools/general/transfer_call.json",
+            "tools/general/end_call.json"
         ],
         "messages": [
             {

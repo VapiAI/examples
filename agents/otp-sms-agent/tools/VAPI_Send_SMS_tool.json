@@ -1,22 +1,21 @@
 {
-    "id": "1e00ef0f-8767-48c3-9483-2679036ed990",
     "type": "sms",
     "function": {
-      "name": "VAPI_Send_SMS_tool",
-      "parameters": {
-        "type": "object",
-        "properties": {},
-        "required": []
-      }
+        "name": "VAPI_Send_SMS_tool",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
     },
     "messages": [
-      {
-        "type": "request-start",
-        "content": "I've just sent a one-time code to your phone for security purposes.. If um you could please read it back to me once you received it so we can uh verify you.",
-        "blocking": false
-      }
+        {
+            "type": "request-start",
+            "content": "I've just sent a one-time code to your phone for security purposes.. If um you could please read it back to me once you received it so we can uh verify you.",
+            "blocking": false
+        }
     ],
     "metadata": {
-      "from": "+18047014237"
+        "from": "+18047014237"
     }
-  }
+}

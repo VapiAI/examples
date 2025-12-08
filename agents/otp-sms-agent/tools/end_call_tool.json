@@ -1,20 +1,19 @@
 {
-    "id": "a07781bc-2975-4aa0-b104-2752e0dce2d8",
     "type": "endCall",
     "function": {
-      "name": "end_call_tool",
-      "description": "use this when it's time to terminate the call.",
-      "parameters": {
-        "type": "object",
-        "properties": {},
-        "required": []
-      }
+        "name": "end_call_tool",
+        "description": "use this when it's time to terminate the call.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
     },
     "messages": [
-      {
-        "type": "request-start",
-        "content": "",
-        "blocking": false
-      }
+        {
+            "type": "request-start",
+            "content": "",
+            "blocking": false
+        }
     ]
-  }
+}

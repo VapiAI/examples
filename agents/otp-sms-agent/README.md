@@ -1,5 +1,9 @@
 # VAPI SMS OTP Verification Agent
 
+<a href="https://dashboard.vapi.ai/import?id=otp-sms-agent">
+<img height="35" src="https://auth.vapi.ai/storage/v1/object/public/files/import-to-vapi.svg" alt="Import to Vapi"/>
+</a>
+
 ## Overview
 
 This agent demonstrates VAPI's SMS integration capabilities by implementing a voice-based One-Time Password (OTP) verification system. The agent collects caller information, generates a 6-digit verification code, sends it via SMS, and validates the code through voice interaction.
@@ -248,7 +252,7 @@ This agent is ideal for demonstrating:
 
 ## Configuration Files
 
-- `agent/config.json`: Main agent configuration with system prompt
+- `assistant.json`: Main agent configuration with system prompt
 - `tools/code_tool.json`: OTP code generation tool
 - `tools/VAPI_Send_SMS_tool.json`: SMS sending tool configuration
 - `tools/end_call_tool.json`: Call termination tool

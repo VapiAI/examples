@@ -7,14 +7,12 @@
       "stability": 0.5,
       "similarityBoost": 0.75
     },
-    "createdAt": "2025-12-07T22:53:46.390Z",
-    "updatedAt": "2025-12-08T02:17:22.302Z",
     "model": {
       "model": "gemini-2.5-flash",
       "toolIds": [
-        "1e00ef0f-8767-48c3-9483-2679036ed990",
-        "a07781bc-2975-4aa0-b104-2752e0dce2d8",
-        "208ed3eb-87ce-4c2f-836c-6f633d600fc8"
+        "tools/VAPI_Send_SMS_tool.json",
+        "tools/end_call_tool.json",
+        "tools/code_tool.json"
       ],
       "messages": [
         {

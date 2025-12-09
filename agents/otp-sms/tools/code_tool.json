@@ -1,0 +1,14 @@
+{
+    "type": "code",
+    "function": {
+        "name": "code_tool",
+        "description": "This tool is used to generate a random 6 digit code."
+    },
+    "messages": [
+        {
+            "type": "request-start",
+            "content": ""
+        }
+    ],
+    "code": "const code = (() => {\n  const num = Math.floor(Math.random() * 1_000_000);\n  const sixDigit = num.toString().padStart(6, \"0\");\n  return { code: sixDigit };\n})();\nreturn code;"
+}

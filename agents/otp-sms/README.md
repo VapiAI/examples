@@ -1,6 +1,6 @@
 # VAPI SMS OTP Verification Agent
 
-<a href="https://dashboard.vapi.ai/import?id=otp-sms-agent">
+<a href="https://dashboard.vapi.ai/import?id=otp-sms">
 <img height="35" src="https://auth.vapi.ai/storage/v1/object/public/files/import-to-vapi.svg" alt="Import to Vapi"/>
 </a>
 

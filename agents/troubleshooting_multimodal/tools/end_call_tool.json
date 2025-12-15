@@ -1,0 +1,19 @@
+{
+    "type": "endCall",
+    "function": {
+        "name": "end_call_tool",
+        "description": "use this when it's time to terminate the call.",
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+    },
+    "messages": [
+        {
+            "type": "request-start",
+            "content": "",
+            "blocking": false
+        }
+    ]
+}

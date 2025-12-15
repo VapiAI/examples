@@ -1,0 +1,95 @@
+{
+    "name": "VAPI Tech",
+    "type": "ai",
+    "description": "Log every details and concern of the caller",
+    "schema": {
+        "type": "object",
+        "required": [
+            "device_type",
+            "customer_name",
+            "final_outcome",
+            "issue_summary",
+            "ticket_reason",
+            "customer_email",
+            "issue_resolved",
+            "primary_intent",
+            "ticket_created",
+            "troubleshooting_attempted",
+            "troubleshooting_steps_count"
+        ],
+        "properties": {
+            "device_type": {
+                "description": "device type of the customer.",
+                "type": "string",
+                "enum": [
+                    "router",
+                    "mesh",
+                    "smart_modem",
+                    "unknown",
+                    "null"
+                ]
+            },
+            "customer_name": {
+                "description": "name of the customer.",
+                "type": "string"
+            },
+            "final_outcome": {
+                "description": "outcome of the call / chat\n\nresolved: Issue of the customer is resolved\nescalated_ticket: issue was not resolved within the conversation and ticket needs to be escalated to a different support\nfaq_answered: customer only asked for some information, no troubleshooting included\nended: conversation was not finished when it ended",
+                "type": "string",
+                "enum": [
+                    "resolved",
+                    "escalated_ticket",
+                    "faq_answered",
+                    "ended",
+                    "unknown"
+                ]
+            },
+            "issue_summary": {
+                "description": "summary of the issue encountered by customer.",
+                "type": "string"
+            },
+            "ticket_reason": {
+                "description": "reason for ticket creation:\n\nunresolved: issue was not resolved and needed escalation for higher support\nout_of_scope: issue was not covered by level 1 support\nuser_requested: explicitly requested by customer",
+                "type": "string",
+                "enum": [
+                    "unresolved",
+                    "out_of_scope",
+                    "user_requested",
+                    "null"
+                ]
+            },
+            "customer_email": {
+                "description": "email of the customer.",
+                "type": "string"
+            },
+            "issue_resolved": {
+                "description": "is issue resolved?",
+                "type": "boolean"
+            },
+            "primary_intent": {
+                "description": "intent of the customer.\n\nfaq: asked some information about the business, no troubleshooting included\ntroubleshooting: need some issue to be resolved\nticket: customer wanted to raise a ticket",
+                "type": "string",
+                "enum": [
+                    "faq",
+                    "troubleshooting",
+                    "ticket",
+                    "unknown"
+                ]
+            },
+            "ticket_created": {
+                "description": "if ticket is created.",
+                "type": "boolean"
+            },
+            "troubleshooting_attempted": {
+                "description": "if troubleshooting was attempted for the customer concern",
+                "type": "boolean"
+            },
+            "troubleshooting_steps_count": {
+                "description": "how many steps did the troubleshooting take.",
+                "type": "number"
+            }
+        }
+    },
+    "assistantIds": [],
+    "workflowIds": []
+}

@@ -1,0 +1,45 @@
+{
+    "type": "ai",
+    "description": "extraction of necessary information",
+    "schema": {
+        "type": "object",
+        "required": [
+            "issue_type",
+            "customer_name",
+            "issue_summary",
+            "customer_email_raw",
+            "customer_email_confirmed",
+            "customer_email_polished"
+        ],
+        "properties": {
+            "issue_type": {
+                "description": "type of issue given by customer",
+                "type": "string"
+            },
+            "customer_name": {
+                "description": "Full name of the customer",
+                "type": "string"
+            },
+            "issue_summary": {
+                "description": "summary of the issue mentioned by customer",
+                "type": "string"
+            },
+            "customer_email_raw": {
+                "description": "raw spoken email of the customer",
+                "type": "string"
+            },
+            "customer_email_polished": {
+                "description": "polished written email of the customer (e.g jonas@vapi.ai)",
+                "type": "string"
+            },
+            "customer_email_confirmed": {
+                "description": "spelled out email of the customer",
+                "type": "string"
+            }
+        }
+    },
+    "assistantIds": [
+        "a32f47b8-49f7-4235-8995-6cc9c94476f6"
+    ],
+    "workflowIds": []
+}

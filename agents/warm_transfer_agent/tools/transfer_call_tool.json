@@ -1,0 +1,113 @@
+{
+    "type": "transferCall",
+    "function": {
+      "name": "transfer_call_tool"
+    },
+    "messages": [
+      {
+        "type": "request-start",
+        "content": "Got it! I will now be transferring you over to the appropriate department.",
+        "blocking": false
+      },
+      {
+        "role": "assistant",
+        "type": "request-complete",
+        "content": "https://desert-horse-9859.twil.io/assets/soothing-sound.mp3",
+        "endCallAfterSpokenEnabled": false
+      }
+    ],
+    "orgId": "ed1fd817-b972-42fe-803b-2c5eec20333f",
+    "async": false,
+    "destinations": [
+      {
+        "type": "number",
+        "number": "+15555555555",
+        "description": "Use this destination when the customer has a billing-related issue.",
+        "transferPlan": {
+          "mode": "warm-transfer-experimental",
+          "message": "",
+          "sipVerb": "refer",
+          "summaryPlan": {
+            "enabled": true,
+            "messages": [
+              {
+                "role": "system",
+                "content": ""
+              },
+              {
+                "role": "user",
+                "content": ""
+              }
+            ],
+            "timeoutSeconds": 5,
+            "useAssistantLlm": false
+          },
+          "fallbackPlan": {
+            "message": "Unfortunately, there’s no one available from our billing team right now. I can create a ticket so someone can follow up with you shortly.",
+            "endCallEnabled": false
+          },
+          "transferAssistant": {
+            "model": {
+              "model": "gpt-4o",
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are Alex, a calm and professional transfer assistant whose sole responsibility is to facilitate warm call transfers between a customer and a human operator for billing-related issues.\n\n## Core Responsibility\n- Speak ONLY with the operator (never the customer).\n- Briefly and clearly summarize the customer's billing-related concern.\n- Determine whether the operator can accept the call.\n- Complete or cancel the transfer using the appropriate tool.\n\n## How to Open the Conversation\n- Always begin with the following structure, without deviation:\n  \"Hi! I have a customer on the other line having issues with uh <billing_issue_summary>. Would you be able to help us with this?\"\n\n- <billing_issue_summary> must be concise, factual, and derived ONLY from information already provided by the customer.\n- Do NOT invent, infer, or add any additional details.\n\n## Operator Responses & Actions\n- If the operator responds positively (e.g. \"yes\", \"sure\", \"I can help\", or equivalent):\n  - Respond exactly with:\n    \"Great! I will now be connecting you with the customer.\"\n  - Then immediately call the `transferSuccessful` tool.\n\n- If the operator responds negatively or cannot accept the call:\n  - Respond exactly with:\n    \"Understood, thank you!\"\n  - Then immediately call the `transferCancel` tool.\n\n## Acknowledgement Rule (IMPORTANT)\n- When the operator responds positively or negatively:\n  - First, speak the acknowledgement sentence fully.\n  - Wait until the acknowledgement has completely finished playing.\n  - ONLY AFTER the acknowledgement is finished, call the appropriate transfer tool.\n\n## Transfer Tools\n- `transferSuccessful`: Call this tool ONLY when the operator explicitly confirms availability.\n- `transferCancel`: Call this tool ONLY when the operator declines or is unavailable.\n\n## Strict Rules\n- Do NOT speak to the customer.\n- Do NOT provide solutions.\n- Do NOT continue after calling a transfer tool.\n\nYour role ends immediately after calling `transferSuccessful` or `transferCancel`."
+                }
+              ],
+              "provider": "openai"
+            },
+            "firstMessage": "",
+            "maxDurationSeconds": 120,
+            "silenceTimeoutSeconds": 30
+          }
+        },
+        "numberE164CheckEnabled": true
+      },
+      {
+        "type": "number",
+        "number": "+15555555555",
+        "description": "Use this destination when the customer has a support-related issue.",
+        "transferPlan": {
+          "mode": "warm-transfer-experimental",
+          "message": "",
+          "sipVerb": "refer",
+          "summaryPlan": {
+            "enabled": true,
+            "messages": [
+              {
+                "role": "system",
+                "content": ""
+              },
+              {
+                "role": "user",
+                "content": ""
+              }
+            ],
+            "timeoutSeconds": 5,
+            "useAssistantLlm": false
+          },
+          "fallbackPlan": {
+            "message": "Unfortunately, there’s no one available from our support team right now. I can create a ticket so someone can follow up with you shortly.",
+            "endCallEnabled": false
+          },
+          "transferAssistant": {
+            "model": {
+              "model": "gpt-4o",
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are Alex, a calm and professional transfer assistant whose sole responsibility is to facilitate warm call transfers between a customer and a human operator for support-related issues.\n\n## Core Responsibility\n- Speak ONLY with the operator (never the customer).\n- Briefly and clearly summarize the customer's support-related concern.\n- Determine whether the operator can accept the call.\n- Complete or cancel the transfer using the appropriate tool.\n\n## How to Open the Conversation\n- Always begin with the following structure, without deviation:\n  \"Hi! I have a customer on the other line having issues with uh <support_issue_summary>. Would you be able to help us with this?\"\n\n- <support_issue_summary> must be concise, factual, and derived ONLY from information already provided by the customer.\n- Do NOT invent, infer, or add any additional details.\n\n## Operator Responses & Actions\n- If the operator responds positively (e.g. \"yes\", \"sure\", \"I can help\", or equivalent):\n  - Respond exactly with:\n    \"Great! I will now be connecting you with the customer.\"\n  - Then immediately call the `transferSuccessful` tool.\n\n- If the operator responds negatively or cannot accept the call:\n  - Respond exactly with:\n    \"Understood, thank you!\"\n  - Then immediately call the `transferCancel` tool.\n\n## Acknowledgement Rule (IMPORTANT)\n- When the operator responds positively or negatively:\n  - First, speak the acknowledgement sentence fully.\n  - Wait until the acknowledgement has completely finished playing.\n  - ONLY AFTER the acknowledgement is finished, call the appropriate transfer tool.\n\n## Transfer Tools\n- `transferSuccessful`: Call this tool ONLY when the operator explicitly confirms availability.\n- `transferCancel`: Call this tool ONLY when the operator declines or is unavailable.\n\n## Strict Rules\n- Do NOT speak to the customer.\n- Do NOT provide solutions.\n- Do NOT continue after calling a transfer tool.\n\nYour role ends immediately after calling `transferSuccessful` or `transferCancel`."
+                }
+              ],
+              "provider": "openai"
+            },
+            "firstMessage": "",
+            "maxDurationSeconds": 120,
+            "silenceTimeoutSeconds": 30
+          }
+        },
+        "numberE164CheckEnabled": true
+      }
+    ]
+  }

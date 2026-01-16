@@ -34,15 +34,27 @@ Once you understand the basics, import these examples into your organization and
 
 ## Quick Start
 
-### 1. Sign Up
+### 1. Clone the Repository
+
+```bash
+# Clone with all submodules (recommended)
+git clone --recurse-submodules https://github.com/VapiAI/examples.git
+
+# Or if you've already cloned without submodules:
+git submodule update --init --recursive
+```
+
+> **Note:** Some examples (like GitOps) are linked as submodules. The commands above ensure you get all content.
+
+### 2. Sign Up
 
 Create a free account at [dashboard.vapi.ai](https://dashboard.vapi.ai/).
 
-### 2. Choose an Example
+### 3. Choose an Example
 
 Browse the examples below and pick one that matches your use case.
 
-### 3. Import & Customize
+### 4. Import & Customize
 
 Each example includes ready-to-use configurations. Import the assistant JSON into your Vapi dashboard, customize the prompts and tools, and you're ready to go.
 

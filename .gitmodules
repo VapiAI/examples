@@ -1,0 +1,3 @@
+[submodule "gitops"]
+	path = gitops
+	url = git@github.com:VapiAI/gitops.git

@@ -1,0 +1,489 @@
+{
+  "name": "VAPI Vector Store",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vector-query",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        128,
+        48
+      ],
+      "id": "5be58255-64a5-4b1c-8e67-23d1a35dfcc3",
+      "name": "Webhook",
+      "webhookId": "bea4bd9c-e412-42cc-a11f-c4a72111eab5"
+    },
+    {
+      "parameters": {
+        "content": "# Query",
+        "height": 640,
+        "width": 1248
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -176
+      ],
+      "id": "538057e1-717b-4370-a79f-754da8541f5f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.responseBody }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1056,
+        48
+      ],
+      "id": "8e3de77e-f60d-4e22-b652-7da255028011",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "n8n-index2",
+          "mode": "list",
+          "cachedResultName": "n8n-index2"
+        },
+        "prompt": "=Legal research query.\n\n{{ $json.body.message.toolCalls[0].function.arguments.inquiry }}\n\nRetrieve authoritative California statutory law that directly answers this question.\n\nReturn:\n- Operative statutory text (black-letter law)\n- Mandatory requirements, prohibitions, and permissions\n- Procedures, deadlines, and notice requirements\n- Exceptions, limitations, and defenses\n- Penalties or remedies, if applicable\n- Exact Percentage\n\nPrefer primary law (California Codes) over summaries or commentary.\n",
+        "topK": 250,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        288,
+        48
+      ],
+      "id": "8a724048-2536-43e7-94cd-fe815b1bdb88",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "oJxsodDdVIRKQ00N",
+          "name": "Vector Store"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Upload RAG PDF",
+        "formDescription": "Upload RAG PDF",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "File",
+              "fieldType": "file",
+              "acceptFileTypes": ".txt",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3ae56f7a-b204-49ed-8ce2-4fd169469684",
+      "name": "On form submission",
+      "type": "n8n-nodes-base.formTrigger",
+      "position": [
+        112,
+        688
+      ],
+      "webhookId": "cab3dda4-3b49-4f05-a2c1-915ae4c62017",
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "content": "## Embedding Model",
+        "height": 300,
+        "color": 4
+      },
+      "id": "ced9561b-337c-4529-8b12-3236a1bb77de",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1360,
+        496
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "n8n-index2",
+          "mode": "list",
+          "cachedResultName": "n8n-index2"
+        },
+        "options": {}
+      },
+      "id": "e20d910a-1271-4372-aeb6-4d055643a4c4",
+      "name": "Pinecone Vector Store1",
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "position": [
+        816,
+        688
+      ],
+      "typeVersion": 1.3,
+      "credentials": {
+        "pineconeApi": {
+          "id": "oJxsodDdVIRKQ00N",
+          "name": "Vector Store"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "id": "ae3f27d4-9241-47bf-b9f4-2b87adb92629",
+      "name": "Embeddings OpenAI1",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "position": [
+        1456,
+        624
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "gJPtB8EtuCQ9QuQq",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Insert Data to Pinecone",
+        "height": 680,
+        "width": 1248,
+        "color": 3
+      },
+      "id": "16dea8fc-c525-44dd-a550-6ffed20eda9f",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        96,
+        496
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "const query = $('Webhook').first().json.body.message.toolCalls[0].function.arguments.inquiry;\nconst items = $input.all();\n\n// helper: keyword overlap score\nfunction keywordScore(text, query) {\n  const keywords = query\n    .split(/\\W+/)\n    .filter(w => w.length > 3);\n\n  let score = 0;\n  for (const word of keywords) {\n    if (text.includes(word)) score += 1;\n  }\n  return score;\n}\n\nconst reranked = items\n  .map(item => {\n    const text = (item.json.result || \"\").toLowerCase();\n    const pineconeScore = item.json.score ?? 0;\n\n    return {\n      ...item,\n      _rerankScore:\n        pineconeScore * 2 +           // base semantic similarity\n        keywordScore(text, query) * 0.5 + // lexical overlap\n        (text.includes(\"shall\") ? 0.3 : 0) + // legal obligation signal\n        (text.length > 300 ? 0.2 : -0.2)     // avoid tiny fragments\n    };\n  })\n  // drop garbage\n  .filter(item => item._rerankScore > 0.4)\n  // sort by rerank score\n  .sort((a, b) => b._rerankScore - a._rerankScore);\n\n// limit what the LLM sees\nconst TOP_N = 15;\n\nconst results = reranked.slice(0, TOP_N).map(item => ({\n  toolCallId: $node[\"Webhook\"].json.body.message.toolCalls[0].id,\n  result: item.json.result\n}));\n\nreturn [\n  {\n    json: {\n      responseBody: JSON.stringify({ results })\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        48
+      ],
+      "id": "c3e68067-ae55-4cb9-94f9-9162132d3414",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// 1️⃣ Get binary safely (THIS NEVER THROWS)\nconst item = $input.item;\n\nif (!item.binary || Object.keys(item.binary).length === 0) {\n  throw new Error('No binary data found on this item');\n}\n\n// 2️⃣ Get the single file key (File_0, File_1, etc.)\nconst binaryKey = Object.keys(item.binary)[0];\nconst file = item.binary[binaryKey];\n\n// 3️⃣ Filename\nconst filename = file.fileName;\nif (!filename) {\n  throw new Error('Binary file has no filename');\n}\n\n// 4️⃣ Parse metadata from filename\nconst match = filename.match(/^(CIV|CCP)_(\\d+(?:\\.\\d+)?)\\.txt$/i);\nif (!match) {\n  throw new Error(`Invalid filename format: ${filename}`);\n}\n\n// 5️⃣ Return JSON + PRESERVE BINARY\nreturn {\n  json: {\n    metadata: {\n      law_code: match[1].toUpperCase(),\n      section: match[2],\n      jurisdiction: 'CA',\n      source_filename: filename,\n    }\n  },\n  binary: item.binary\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        688
+      ],
+      "id": "c09fac18-3dcc-4194-b77a-6a74099a6fac",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "binaryPropertyName": "={{ Object.keys($binary)[0] }}",
+        "destinationKey": "text",
+        "options": {
+          "keepSource": "json"
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        688
+      ],
+      "id": "863c8207-360e-4d1b-afc2-38a914815f1c",
+      "name": "Extract from File1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "$binary",
+        "options": {
+          "includeBinary": true
+        }
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        240,
+        688
+      ],
+      "id": "8967f6f0-b79a-4f6f-adce-f976f311ef09",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  json: {\n    pageContent: $json.text,\n    metadata: {\n      law_code: $json.metadata.law_code,\n      section: $json.metadata.section,\n      jurisdiction: $json.metadata.jurisdiction,\n      source_filename: $json.metadata.source_filename,\n    }\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        688
+      ],
+      "id": "17c0c233-ea35-41c9-96a2-64055aa46b0e",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.pageContent }}",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "law_code",
+                "value": "={{ $json.metadata.law_code }}"
+              },
+              {
+                "name": "section",
+                "value": "={{ $json.metadata.section }}"
+              },
+              {
+                "name": "jurisdiction",
+                "value": "={{ $json.metadata.jurisdiction }}"
+              },
+              {
+                "name": "source_filename",
+                "value": "={{ $json.metadata.source_filename }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        864
+      ],
+      "id": "5c8c2f2d-f676-4fe2-85c2-6023db501840",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        976,
+        1008
+      ],
+      "id": "f40d5c09-108f-4ee2-94d5-98f5ce388fc5",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "43f2337a-8803-4bb6-879f-3c58b6d5e04e",
+              "name": "=result",
+              "value": "={{ $json.document.pageContent }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        48
+      ],
+      "id": "a589dc9c-eb08-4253-9c62-55d3bd3b9984",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fc202bab-9856-400b-8172-dd5ea36e4525",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e4691f3f60900d6204e96afc581f948d8c7c5395f84c661f2e0c47be7b57320b"
+  },
+  "id": "obIDnb9ORLb3gMOo",
+  "tags": []
+}

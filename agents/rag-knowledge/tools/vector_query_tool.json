@@ -1,0 +1,31 @@
+{
+    "type": "function",
+    "function": {
+      "name": "vectorQueryTool",
+      "description": "Use this tool when caller asks for specific clause or inquiry needing a RAG query.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "inquiry": {
+            "description": "the actual inquiry of the caller. be detailed or accurate with the inquiry gathered from the caller",
+            "type": "string",
+            "default": ""
+          }
+        },
+        "required": [
+          "inquiry"
+        ]
+      }
+    },
+    "messages": [
+      {
+        "type": "request-start",
+        "content": "",
+        "blocking": false
+      }
+    ],
+    "server": {
+      "url": "https://vapiai.app.n8n.cloud/webhook/vector-query",
+      "timeoutSeconds": 20
+    }
+  }

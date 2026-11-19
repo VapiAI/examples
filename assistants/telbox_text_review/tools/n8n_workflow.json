@@ -1,0 +1,398 @@
+{
+  "name": "Vapi support case review in Telbox",
+  "nodes": [
+    {
+      "id": "vapi-case-webhook",
+      "name": "Receive Vapi case review",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "path": "telbox-vapi-case-review",
+        "httpMethod": "POST",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "review-event",
+      "name": "Read case reference",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "payload",
+              "name": "review",
+              "value": "={{ $json.body }}",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "notes": "Only the fixed case reference and review UUID are needed.",
+      "notesInFlow": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "validate-event",
+      "name": "Prepare review event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const items = $input.all();\nconst review = items[0]?.json.review;\nif (items.length !== 1 || !review || Object.keys(review).length !== 2 ||\n    typeof review.case_ref !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9_-]{0,39}$/.test(review.case_ref) ||\n    typeof review.review_id !== 'string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(review.review_id)) {\n  throw new Error('Expected one case reference and review UUID.');\n}\nreturn [{json: {\n  event_key: JSON.stringify(['vapi-review-v1', review.case_ref, review.review_id.toLowerCase()]),\n  content: `Vapi text chat requested a human review for case ${review.case_ref}.`,\n}}];\n"
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "hash-review-identity",
+      "name": "Validate one event",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        0
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "identity",
+              "name": "client_message_id",
+              "type": "string",
+              "value": "={{ $json.event_key.hash('sha256') }}"
+            },
+            {
+              "id": "content",
+              "name": "content",
+              "type": "string",
+              "value": "={{ $json.content }}"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "telbox-inbox",
+      "name": "Find my Telbox inbox",
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1.1,
+      "position": [
+        960,
+        0
+      ],
+      "parameters": {
+        "serverTransport": "httpStreamable",
+        "endpointUrl": "https://api.telbox.ai/mcp",
+        "authentication": "mcpOAuth2Api",
+        "tool": {
+          "__rl": true,
+          "mode": "id",
+          "value": "get_my_inbox"
+        },
+        "inputMode": "json",
+        "jsonInput": "={{ {} }}",
+        "options": {
+          "timeout": 30000,
+          "convertToBinary": false
+        }
+      },
+      "retryOnFail": false,
+      "onError": "continueErrorOutput",
+      "notes": "Choose the same approved MCP OAuth2 credential on both Telbox nodes. Resolves the connected account’s existing Notes to Self without reading messages or creating a conversation.",
+      "notesInFlow": true
+    },
+    {
+      "id": "prepare-inbox-message",
+      "name": "Use my existing inbox",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const items = $input.all();\nif (items.length !== 1) throw new Error('Expected one Telbox inbox result. No message requested.');\nconst body = items[0]?.json;\nif (!body || typeof body !== 'object' || Array.isArray(body) || body.error || body.isError) {\n  throw new Error('Telbox inbox discovery failed. No message requested.');\n}\nconst uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\nfunction valid(value) {\n  return value && typeof value === 'object' && !Array.isArray(value)\n    && ['ready', 'setup_required'].includes(value.status)\n    && value.owner_approval_required === true\n    && value.destination === 'Notes to Self' && typeof value.next_step === 'string'\n    && (value.status === 'ready'\n      ? typeof value.thread_id === 'string' && uuid.test(value.thread_id)\n      : value.thread_id === null);\n}\nconst candidates = [];\nif (body.structuredContent !== undefined) {\n  if (!valid(body.structuredContent)) throw new Error('Invalid structured inbox result. No message requested.');\n  candidates.push(body.structuredContent);\n}\nif (body.content !== undefined && !Array.isArray(body.content)) {\n  throw new Error('Invalid inbox content blocks. No message requested.');\n}\nfor (const block of body.content ?? []) {\n  if (!block || block.type !== 'text') continue;\n  let value = block.text;\n  if (typeof value === 'string') {\n    try { value = JSON.parse(value); } catch { continue; }\n  }\n  if (valid(value)) candidates.push(value);\n}\nif (!candidates.length) throw new Error('No valid Telbox inbox result. No message requested.');\nconst inbox = candidates[0];\nif (candidates.some(value => ['status', 'thread_id', 'owner_approval_required', 'next_step'].some(key => value[key] !== inbox[key]))) {\n  throw new Error('Conflicting Telbox inbox results. No message requested.');\n}\nif (inbox.status !== 'ready') {\n  const instruction = inbox.next_step.trim() || 'Check inbox setup in the receiving Telbox account.';\n  throw new Error(instruction + ' No message requested.');\n}\n// One event was validated before discovery; never take message text or an event ID from remote output.\nconst events = $('Validate one event').all();\nif (events.length !== 1) throw new Error('Expected one validated event. No message requested.');\nconst event = events[0]?.json;\nif (!event || typeof event.content !== 'string' || !event.content.trim() || Array.from(event.content).length > 8192\n    || typeof event.client_message_id !== 'string' || !/^[A-Za-z0-9._:-]{1,64}$/.test(event.client_message_id)) {\n  throw new Error('Invalid original event. No message requested.');\n}\nreturn [{ json: {\n  thread_id: inbox.thread_id,\n  content: event.content,\n  client_message_id: event.client_message_id,\n} }];\n"
+      },
+      "notes": "Stops if the inbox needs setup or discovery results conflict. Keeps the original validated text and logical event ID.",
+      "notesInFlow": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "telbox-propose",
+      "name": "Request Telbox message approval",
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        0
+      ],
+      "parameters": {
+        "serverTransport": "httpStreamable",
+        "endpointUrl": "https://api.telbox.ai/mcp",
+        "authentication": "mcpOAuth2Api",
+        "tool": {
+          "__rl": true,
+          "mode": "id",
+          "value": "send_message"
+        },
+        "inputMode": "json",
+        "jsonInput": "={{ $json }}",
+        "options": {
+          "timeout": 30000,
+          "convertToBinary": false
+        }
+      },
+      "retryOnFail": false,
+      "onError": "continueErrorOutput",
+      "notes": "Select the same approved MCP OAuth2 credential as inbox discovery, with messages:write. No automatic node retries. A timeout has an unknown outcome. Token refresh may retry rejected 401 requests inside the host transport; real lifecycle qualification is pending.",
+      "notesInFlow": true
+    },
+    {
+      "id": "classify-receipt",
+      "name": "Record proposal outcome only",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const items = $input.all();\nif (items.length !== 1) throw new Error('Unknown Telbox outcome: expected one result. Do not automatically repeat the message request.');\nconst body = items[0]?.json;\nif (!body || typeof body !== 'object' || body.error || body.isError) {\n  throw new Error('Telbox request failed or its outcome is unknown. Inspect the execution and Telbox drafts before retrying.');\n}\nconst uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\nconst states = {\n  pending_approval: 'awaiting_owner_approval',\n  approved: 'approval_recorded_delivery_unverified',\n  executed: 'proposal_executed_delivery_unverified',\n  rejected: 'owner_rejected',\n  expired: 'proposal_expired',\n};\nfunction valid(value) {\n  return value && typeof value === 'object' && !Array.isArray(value)\n    && typeof value.draft_id === 'string' && uuid.test(value.draft_id)\n    && typeof value.approval_request_id === 'string' && uuid.test(value.approval_request_id)\n    && Object.hasOwn(states, value.status);\n}\nconst candidates = [];\nif (body.structuredContent !== undefined) {\n  if (!valid(body.structuredContent)) throw new Error('Invalid structured Telbox result; outcome unverified.');\n  candidates.push(body.structuredContent);\n}\nfor (const block of body.content ?? []) {\n  if (block.type !== 'text') continue;\n  let value = block.text;\n  // n8n MCP Client parses JSON text blocks, while older transports may leave strings.\n  if (typeof value === 'string') {\n    try { value = JSON.parse(value); } catch { continue; }\n  }\n  if (valid(value)) candidates.push(value);\n}\nif (!candidates.length) throw new Error('No valid Telbox proposal receipt. Do not treat this execution as delivery.');\nconst receipt = candidates[0];\nif (candidates.some(value => ['draft_id', 'approval_request_id', 'status'].some(key => value[key] !== receipt[key]))) {\n  throw new Error('Conflicting Telbox receipts; do not resume or repeat the action.');\n}\nreturn [{ json: {\n  draft_id: receipt.draft_id,\n  approval_request_id: receipt.approval_request_id,\n  proposal_status: receipt.status,\n  outcome: states[receipt.status],\n  native_delivery: 'not_verified',\n  workflow_may_resume: false,\n  continuation: 'not_implemented',\n} }];\n"
+      },
+      "notes": "Terminal output. Do not connect business actions here: owner approval of this message is not approval of an external action, and native delivery/reply continuation have not been verified.",
+      "notesInFlow": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "vapi-review-receipt",
+      "name": "Return Telbox receipt",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1920,
+        0
+      ],
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "vapi-invalid-event",
+      "name": "Return invalid case review",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        720,
+        260
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"error\":\"invalid_case_review\"}",
+        "options": {
+          "responseCode": 400
+        }
+      }
+    },
+    {
+      "id": "vapi-inbox-unavailable",
+      "name": "Return inbox connection error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1440,
+        260
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"error\":\"telbox_inbox_unavailable\",\"next_step\":\"In n8n, check Find my Telbox inbox. If it returned setup_required, follow its next_step in the receiving account. Otherwise check the OAuth connection. No proposal was attempted.\"}",
+        "options": {
+          "responseCode": 502
+        }
+      }
+    },
+    {
+      "id": "vapi-unknown-outcome",
+      "name": "Return unconfirmed review",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1920,
+        260
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"error\":\"review_outcome_unknown\",\"next_step\":\"Check pending requests in Telbox. Keep the same review ID if you retry.\"}",
+        "options": {
+          "responseCode": 502
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Receive Vapi case review": {
+      "main": [
+        [
+          {
+            "node": "Read case reference",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read case reference": {
+      "main": [
+        [
+          {
+            "node": "Prepare review event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return invalid case review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare review event": {
+      "main": [
+        [
+          {
+            "node": "Validate one event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return invalid case review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate one event": {
+      "main": [
+        [
+          {
+            "node": "Find my Telbox inbox",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find my Telbox inbox": {
+      "main": [
+        [
+          {
+            "node": "Use my existing inbox",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return inbox connection error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Use my existing inbox": {
+      "main": [
+        [
+          {
+            "node": "Request Telbox message approval",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return inbox connection error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Telbox message approval": {
+      "main": [
+        [
+          {
+            "node": "Record proposal outcome only",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return unconfirmed review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record proposal outcome only": {
+      "main": [
+        [
+          {
+            "node": "Return Telbox receipt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return unconfirmed review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none",
+    "saveManualExecutions": false,
+    "saveExecutionProgress": false
+  },
+  "pinData": {},
+  "tags": []
+}

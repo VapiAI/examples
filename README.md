@@ -74,6 +74,14 @@ Production-ready voice assistants for various industries and use cases.
 
 ---
 
+### Text Chat
+
+| Example | Description | Key Features |
+|---------|-------------|--------------|
+| [Human Review with Telbox](assistants/telbox_text_review/) | Request owner-approved case review notifications from a text chat | API Request tool, application-owned identifiers, authenticated n8n bridge, offline SDK tests |
+
+---
+
 ## Infrastructure & Tooling
 
 ### **GitOps for Vapi**
